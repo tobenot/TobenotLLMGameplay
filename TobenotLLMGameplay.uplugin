@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "TobenotLLMGameplay",
+	"Description": "This is a collection plugin of the universal logic used by Tobenot in his LLM game.",
+	"Category": "Other",
+	"CreatedBy": "tobenot",
+	"CreatedByURL": "https://tobenot.github.io/",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "TobenotLLMGameplay",
+			"Type": "Runtime",
+			"LoadingPhase": "PreLoadingScreen"
+		}
+	]
+}
