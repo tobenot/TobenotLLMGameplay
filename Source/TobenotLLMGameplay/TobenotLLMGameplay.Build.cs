@@ -50,5 +50,8 @@ public class TobenotLLMGameplay : ModuleRules
 				// ... add any modules that your module loads dynamically here ...
 			}
 			);
+		
+		PrivateIncludePaths.AddRange(new string[] { "TobenotLLMGameplay" });
+		PublicIncludePaths.AddRange(new string[] { "TobenotLLMGameplay" });
 	}
 }
