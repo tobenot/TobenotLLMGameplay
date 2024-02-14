@@ -7,7 +7,7 @@
 #include "TAAgentInterface.generated.h"
 
 // This class does not need to be modified.
-UINTERFACE()
+UINTERFACE(MinimalAPI)
 class UTAAgentInterface : public UInterface
 {
 	GENERATED_BODY()
@@ -22,5 +22,5 @@ class TOBENOTLLMGAMEPLAY_API ITAAgentInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual FString GetSystemPrompt(){return "";};
+	virtual FString GetSystemPrompt() = 0;
 };
