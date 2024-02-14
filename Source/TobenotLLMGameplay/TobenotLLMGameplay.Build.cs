@@ -39,7 +39,8 @@ public class TobenotLLMGameplay : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-				"OpenAIAPI"
+				"OpenAIAPI",
+				"UMG",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
