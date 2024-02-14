@@ -12,6 +12,19 @@ void UTAChatWidget::NativeConstruct()
 	if (ChatTextBox)
 	{
 		ChatTextBox->OnTextCommitted.AddDynamic(this, &UTAChatWidget::OnChatTextCommitted);
+		
+		// 将键盘焦点设置到 ChatTextBox 上。
+		APlayerController* PlayerController = GetOwningPlayer();
+		if (PlayerController)
+		{
+			// Change the input mode to UI only
+			FInputModeUIOnly InputModeData;
+			InputModeData.SetWidgetToFocus(ChatTextBox->TakeWidget());
+			InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+			PlayerController->SetInputMode(InputModeData);
+			PlayerController->bShowMouseCursor = true;
+		}
+		FSlateApplication::Get().SetKeyboardFocus(ChatTextBox->TakeWidget(), EFocusCause::SetDirectly);
 	}
 }
 
