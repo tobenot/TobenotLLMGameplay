@@ -16,6 +16,17 @@ struct FTAActorChatHistory
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Chat")
 	TArray<FChatLog> ChatHistory;
 };
+USTRUCT()
+struct FTAActorMessageQueue
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TArray<FString> MessageQueue;
+
+	UPROPERTY()
+	UTAChatCallback* CallbackObject;
+};
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMessageSent, const FChatCompletion&, Message);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMessageFailed);
@@ -34,15 +45,21 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	UFUNCTION(BlueprintCallable, Category="TAChatWidget")
+	static UTAChatComponent* GetTAChatComponent(AActor* Actor);
+	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "LLM")
 	bool ChatMessageJsonFormat = true;
 	
 	// Called every frame
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
+	UPROPERTY()
+	TMap<AActor*, FTAActorMessageQueue> ActorMessageQueueMap;
+	
 	UFUNCTION(BlueprintCallable, Category = "TAChatComponent")
 	void SendMessageToOpenAI(AActor* OriActor, FString UserMessage, UTAChatCallback* CallbackObject, bool IsSystemMessage = false);
-
+	
 	UFUNCTION(BlueprintCallable, Category = "TAChatComponent")
 	FString GetSystemPromptFromOwner() const;
 
@@ -63,7 +80,10 @@ private:
 	void HandleSuccessfulMessage(FChatCompletion Message);
 	UFUNCTION()
 	void HandleFailedMessage();
-
+	
+	void ProcessMessage(AActor* OriActor, FString UserMessage, UTAChatCallback* CallbackObject, bool IsSystemMessage);
+	void CheckMessageQueue();
+	
 	UPROPERTY()
 	TMap<AActor*, FTAActorChatHistory> ActorChatHistoryMap;
 
@@ -73,5 +93,6 @@ private:
 	UPROPERTY()
 	class UOpenAIChat* CacheChat;
 
-	bool IsGettingAPIMessage;
+	UPROPERTY()
+	TSet<AActor*> ActiveActors;
 };

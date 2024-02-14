@@ -12,13 +12,51 @@
 UTAChatComponent::UTAChatComponent()
 {
     PrimaryComponentTick.bCanEverTick = false;
-    IsGettingAPIMessage = false;
 }
 
 // Called when the game starts
 void UTAChatComponent::BeginPlay()
 {
     Super::BeginPlay();
+}
+
+UTAChatComponent* UTAChatComponent::GetTAChatComponent(AActor* Actor)
+{
+    if (Actor)
+    {
+        // Try to find the component directly on the Actor first
+        UTAChatComponent* ChatComponent = Actor->FindComponentByClass<UTAChatComponent>();
+        if (ChatComponent)
+        {
+            return ChatComponent;
+        }
+    }
+
+    // If not found on Actor, or Actor is null, try to get it from the Pawn's controller
+    AController* PlayerController = Cast<AController>(Actor);
+    if (!PlayerController)
+    {
+        APawn* Pawn = Cast<APawn>(Actor);
+        if (!Pawn) return nullptr;
+        PlayerController = Pawn->GetController();
+    }
+    
+    if (!PlayerController) return nullptr;
+
+    UTAChatComponent* ChatComponent = PlayerController->FindComponentByClass<UTAChatComponent>();
+    if (ChatComponent)
+    {
+        return ChatComponent;
+    }
+
+    // If the PlayerController doesn't have the component, try to get it from the Controller's Pawn
+    APawn* ControlledPawn = PlayerController->GetPawn();
+    if (ControlledPawn)
+    {
+        ChatComponent = ControlledPawn->FindComponentByClass<UTAChatComponent>();
+    }
+
+    return ChatComponent;
 }
 
 // Called every frame
@@ -30,18 +68,35 @@ void UTAChatComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 
 void UTAChatComponent::SendMessageToOpenAI(AActor* OriActor, FString UserMessage, UTAChatCallback* CallbackObject, bool IsSystemMessage)
 {
-    if (IsGettingAPIMessage)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("Another message is being processed. Please wait."));
-        return;
-    }
     if (!OriActor)
     {
         UE_LOG(LogTemp, Warning, TEXT("OriActor is nullptr"));
         return;
     }
 
-    IsGettingAPIMessage = true;
+    // 如果当前正在处理该Actor的消息，将新消息添加到队列中
+    if (ActiveActors.Contains(OriActor))
+    {
+        FTAActorMessageQueue& ActorQueue = ActorMessageQueueMap.FindOrAdd(OriActor);
+        ActorQueue.MessageQueue.Add(UserMessage);
+        ActorQueue.CallbackObject = CallbackObject;
+        UE_LOG(LogTemp, Warning, TEXT("Another message is being processed for this Actor. Your message has been added to the queue."));
+        return;
+    }
+
+    // 如果没有正在处理的消息，开始处理新消息
+    ProcessMessage(OriActor, UserMessage, CallbackObject, IsSystemMessage);
+}
+
+void UTAChatComponent::ProcessMessage(AActor* OriActor, FString UserMessage, UTAChatCallback* CallbackObject, bool IsSystemMessage)
+{
+    if (!OriActor)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("OriActor is nullptr"));
+        return;
+    }
+    
+    ActiveActors.Add(OriActor);
     CacheCallbackObject = CallbackObject;
     CacheCallbackObject->OnSuccess.AddDynamic(this, &UTAChatComponent::HandleSuccessfulMessage);
     CacheCallbackObject->OnFailure.AddDynamic(this, &UTAChatComponent::HandleFailedMessage);
@@ -78,6 +133,8 @@ void UTAChatComponent::SendMessageToOpenAI(AActor* OriActor, FString UserMessage
     
     CacheChat = UOpenAIChat::Chat(ChatSettings, [this,OriActor](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
     {
+        //消息处理前移出激活，因为可能会连续激活
+        ActiveActors.Remove(OriActor);
         if (Success)
         {
             CacheCallbackObject->OnSuccess.Broadcast(Message);
@@ -118,11 +175,35 @@ void UTAChatComponent::ClearChatHistoryWithActor(AActor* OtherActor)
 void UTAChatComponent::HandleSuccessfulMessage(FChatCompletion Message)
 {
     OnMessageSent.Broadcast(Message);
-    IsGettingAPIMessage = false;
+
+    // 检查是否有待处理的消息
+    CheckMessageQueue();
 }
 
 void UTAChatComponent::HandleFailedMessage()
 {
     OnMessageFailed.Broadcast();
-    IsGettingAPIMessage = false;
+
+    // 检查是否有待处理的消息
+    CheckMessageQueue();
+}
+
+void UTAChatComponent::CheckMessageQueue()
+{
+    for (auto& Elem : ActorMessageQueueMap)
+    {
+        // 如果当前正在处理该Actor的消息，跳过
+        if (ActiveActors.Contains(Elem.Key))
+            continue;
+
+        if (Elem.Value.MessageQueue.Num() > 0)
+        {
+            FString NextMessage = Elem.Value.MessageQueue[0];
+            Elem.Value.MessageQueue.RemoveAt(0);
+
+            // 处理下一条消息
+            ProcessMessage(Elem.Key, NextMessage, Elem.Value.CallbackObject, false);
+            break;
+        }
+    }
 }
