@@ -5,6 +5,7 @@
 #include "OpenAIChat.h"
 #include "OpenAIDefinitions.h"
 #include "TAChatCallback.h"
+#include "TAFunctionInvokeComponent.h"
 #include "Common/TAAgentInterface.h"
 #include "Common/TALLMLibrary.h"
 
@@ -126,7 +127,7 @@ void UTAChatComponent::ProcessMessage(AActor* OriActor, FString UserMessage, UTA
         FString RoleName = UEnum::GetValueAsString(ChatEntry.role);
         StringBuilder.Append(FString::Printf(TEXT("Role: %s, Content: %s\n"), *RoleName, *ChatEntry.content));
     }
-    UE_LOG(LogTemp, Warning, TEXT("%s"), StringBuilder.ToString());
+    UE_LOG(LogTemp, Log, TEXT("%s"), StringBuilder.ToString());
     
     FChatSettings ChatSettings{UTALLMLibrary::GetChatEngineTypeFromQuality(ELLMChatEngineQuality::Fast), TempMessagesList};
     ChatSettings.jsonFormat = ChatMessageJsonFormat;
@@ -175,7 +176,12 @@ void UTAChatComponent::ClearChatHistoryWithActor(AActor* OtherActor)
 void UTAChatComponent::HandleSuccessfulMessage(FChatCompletion Message)
 {
     OnMessageSent.Broadcast(Message);
-
+    UE_LOG(LogTemp, Log, TEXT("Received message: %s"), *Message.message.content);
+    // 尝试进行 FunctionInvoke
+    if (bEnableFunctionInvoke)
+    {
+        PerformFunctionInvokeBasedOnResponse(Message.message.content);
+    }
     // 检查是否有待处理的消息
     CheckMessageQueue();
 }
@@ -204,6 +210,24 @@ void UTAChatComponent::CheckMessageQueue()
             // 处理下一条消息
             ProcessMessage(Elem.Key, NextMessage, Elem.Value.CallbackObject, false);
             break;
+        }
+    }
+}
+
+void UTAChatComponent::PerformFunctionInvokeBasedOnResponse(const FString& Response)
+{
+    UTAFunctionInvokeComponent* FunctionInvokeComp = GetOwner()->FindComponentByClass<UTAFunctionInvokeComponent>();
+    
+    if(FunctionInvokeComp)
+    {
+        // 如果成功获取到组件，则用获得的响应调用ParseAndTriggerFunctions方法
+        FunctionInvokeComp->ParseAndTriggerFunctions(Response);
+    }
+    else
+    {
+        if (bEnableFunctionInvoke)
+        {
+            UE_LOG(LogTemp, Error, TEXT("bEnableFunctionInvoke is true, but UTAFunctionInvokeComponent not found on the Owner of UTAChatComponent."));
         }
     }
 }
