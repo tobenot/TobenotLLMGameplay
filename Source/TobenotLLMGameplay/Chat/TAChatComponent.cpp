@@ -98,9 +98,9 @@ void UTAChatComponent::ProcessMessage(AActor* OriActor, FString UserMessage, UTA
     }
     
     ActiveActors.Add(OriActor);
-    CacheCallbackObject = CallbackObject;
-    CacheCallbackObject->OnSuccess.AddDynamic(this, &UTAChatComponent::HandleSuccessfulMessage);
-    CacheCallbackObject->OnFailure.AddDynamic(this, &UTAChatComponent::HandleFailedMessage);
+    CallbackMap.Add(OriActor, CallbackObject);
+    CallbackObject->OnSuccess.AddDynamic(this, &UTAChatComponent::HandleSuccessfulMessage);
+    CallbackObject->OnFailure.AddDynamic(this, &UTAChatComponent::HandleFailedMessage);
 
     auto& TempMessagesList = GetChatHistoryWithActor(OriActor);
     // 构造系统提示的ChatLog对象
@@ -138,13 +138,21 @@ void UTAChatComponent::ProcessMessage(AActor* OriActor, FString UserMessage, UTA
         ActiveActors.Remove(OriActor);
         if (Success)
         {
-            CacheCallbackObject->OnSuccess.Broadcast(Message);
+            if(CallbackMap.Contains(OriActor))
+            {
+                CallbackMap[OriActor]->OnSuccess.Broadcast(Message);
+            }
+            CallbackMap.Remove(OriActor);
             auto& TempMessagesList = GetChatHistoryWithActor(OriActor);
             TempMessagesList.Add({EOAChatRole::ASSISTANT, Message.message.content});
         }
         else
         {
-            CacheCallbackObject->OnFailure.Broadcast();
+            if(CallbackMap.Contains(OriActor))
+            {
+                CallbackMap[OriActor]->OnFailure.Broadcast();
+            }
+            CallbackMap.Remove(OriActor);
         }
     });
 }
@@ -171,6 +179,7 @@ TArray<FChatLog>& UTAChatComponent::GetChatHistoryWithActor(AActor* OtherActor)
 void UTAChatComponent::ClearChatHistoryWithActor(AActor* OtherActor)
 {
     ActorChatHistoryMap.Remove(OtherActor);
+    CallbackMap.Remove(OtherActor);
 }
 
 void UTAChatComponent::HandleSuccessfulMessage(FChatCompletion Message)

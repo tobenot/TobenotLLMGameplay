@@ -86,9 +86,9 @@ private:
 	
 	UPROPERTY()
 	TMap<AActor*, FTAActorChatHistory> ActorChatHistoryMap;
-
+	
 	UPROPERTY()
-	class UTAChatCallback* CacheCallbackObject;
+	TMap<AActor*, class UTAChatCallback*> CallbackMap; // 用于缓存 Callback 对象
 
 	UPROPERTY()
 	class UOpenAIChat* CacheChat;
