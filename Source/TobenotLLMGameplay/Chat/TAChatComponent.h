@@ -16,6 +16,16 @@ struct FTAActorChatHistory
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Chat")
 	TArray<FChatLog> ChatHistory;
 };
+
+USTRUCT(BlueprintType)
+struct FTAChatComponentSaveData
+{
+	GENERATED_BODY()
+
+	// 保存所有Actor的聊天历史映射
+	UPROPERTY(BlueprintReadWrite, Category = "SaveData")
+	TMap<FGuid, FTAActorChatHistory> SavedActorChatHistoryMap;
+};
 USTRUCT()
 struct FTAActorMessageQueue
 {
@@ -103,4 +113,11 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "Chat")
 	void PerformFunctionInvokeBasedOnResponse(const FString& Response);
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "ChatHistorySave")
+	void SetChatHistoryData(const FTAChatComponentSaveData& NewData);
+	
+	UFUNCTION(BlueprintCallable, Category = "ChatHistorySave")
+	FTAChatComponentSaveData GetChatHistoryData() const;
 };

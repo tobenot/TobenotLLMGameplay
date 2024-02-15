@@ -6,36 +6,26 @@
 #include "UObject/Interface.h"
 #include "TAGuidInterface.generated.h"
 
-UINTERFACE()
+UINTERFACE(BlueprintType, NotBlueprintable)
 class UTAGuidInterface : public UInterface
 {
 	GENERATED_BODY()
 };
 
-/**
- * 
- */
 class TOBENOTLLMGAMEPLAY_API ITAGuidInterface
 {
 	GENERATED_BODY()
-private:
+
 	FGuid TAGuid;
 
 public:
-	FGuid GetTAGuid()
-	{
-		if(!TAGuid.IsValid())
-		{
-			InitTAGuid();
-		}
-		return TAGuid;
-	}
-	
-	void InitTAGuid()
-	{
-		if(!TAGuid.IsValid())
-		{
-			TAGuid = FGuid::NewGuid();
-		}
-	}
+	UFUNCTION(BlueprintCallable, Category = "TAGuid")
+	virtual FGuid GetTAGuid();
+
+	UFUNCTION(BlueprintCallable, Category = "TAGuid")
+	virtual void RegisterActorTAGuid(AActor* Actor, FName Name);
+    
+	virtual void GenNewTAGuid();
+    
+	virtual void SetTAGuid(FGuid NewGuid);
 };

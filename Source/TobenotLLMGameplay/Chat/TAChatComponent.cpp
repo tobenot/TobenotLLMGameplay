@@ -7,7 +7,7 @@
 #include "TAChatCallback.h"
 #include "TAFunctionInvokeComponent.h"
 #include "Common/TAAgentInterface.h"
-#include "Common/TAGuidInterface.h"
+#include "Save/TAGuidInterface.h"
 #include "Common/TALLMLibrary.h"
 
 // Sets default values for this component's properties
@@ -256,4 +256,16 @@ void UTAChatComponent::PerformFunctionInvokeBasedOnResponse(const FString& Respo
             UE_LOG(LogTemp, Error, TEXT("bEnableFunctionInvoke is true, but UTAFunctionInvokeComponent not found on the Owner of UTAChatComponent."));
         }
     }
+}
+
+void UTAChatComponent::SetChatHistoryData(const FTAChatComponentSaveData& NewData)
+{
+    ActorChatHistoryMap = NewData.SavedActorChatHistoryMap;
+}
+
+FTAChatComponentSaveData UTAChatComponent::GetChatHistoryData() const
+{
+    FTAChatComponentSaveData ChatHistoryData;
+    ChatHistoryData.SavedActorChatHistoryMap = ActorChatHistoryMap;
+    return ChatHistoryData;
 }
