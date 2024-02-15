@@ -85,7 +85,7 @@ private:
 	void CheckMessageQueue();
 	
 	UPROPERTY()
-	TMap<AActor*, FTAActorChatHistory> ActorChatHistoryMap;
+	TMap<FGuid, FTAActorChatHistory> ActorChatHistoryMap;
 	
 	UPROPERTY()
 	TMap<AActor*, class UTAChatCallback*> CallbackMap; // 用于缓存 Callback 对象

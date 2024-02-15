@@ -7,6 +7,7 @@
 #include "TAChatCallback.h"
 #include "TAFunctionInvokeComponent.h"
 #include "Common/TAAgentInterface.h"
+#include "Common/TAGuidInterface.h"
 #include "Common/TALLMLibrary.h"
 
 // Sets default values for this component's properties
@@ -64,7 +65,7 @@ UTAChatComponent* UTAChatComponent::GetTAChatComponent(AActor* Actor)
 void UTAChatComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
     Super::EndPlay(EndPlayReason);
-    ActorChatHistoryMap.Empty();
+    // ActorChatHistoryMap.Empty();
 }
 
 void UTAChatComponent::SendMessageToOpenAI(AActor* OriActor, FString UserMessage, UTAChatCallback* CallbackObject, bool IsSystemMessage)
@@ -173,12 +174,28 @@ FString UTAChatComponent::GetSystemPromptFromOwner() const
 
 TArray<FChatLog>& UTAChatComponent::GetChatHistoryWithActor(AActor* OtherActor)
 {
-    return ActorChatHistoryMap.FindOrAdd(OtherActor).ChatHistory;
+    // 使用接口获取Actor实例
+    ITAGuidInterface* GuidInterface = Cast<ITAGuidInterface>(OtherActor);
+    if (!GuidInterface)
+    {
+        UE_LOG(LogTemp, Error, TEXT("%s 未实现ITAGuidInterface"),*OtherActor->GetName());
+        ensure(GuidInterface != nullptr);
+    }
+    FGuid TAGuid = GuidInterface->GetTAGuid();
+    return ActorChatHistoryMap.FindOrAdd(TAGuid).ChatHistory;
 }
 
 void UTAChatComponent::ClearChatHistoryWithActor(AActor* OtherActor)
 {
-    ActorChatHistoryMap.Remove(OtherActor);
+    ITAGuidInterface* GuidInterface = Cast<ITAGuidInterface>(OtherActor);
+    if (GuidInterface)
+    {
+        FGuid TAGuid = GuidInterface->GetTAGuid();
+        ActorChatHistoryMap.Remove(TAGuid);
+    }else
+    {
+        UE_LOG(LogTemp, Error, TEXT("%s 未实现ITAGuidInterface"),*OtherActor->GetName());
+    }
     CallbackMap.Remove(OtherActor);
 }
 
