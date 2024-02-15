@@ -3,6 +3,8 @@
 
 #include "TATargetComponent.h"
 
+#include "TAAgentInterface.h"
+
 DEFINE_LOG_CATEGORY_STATIC(LogTATarget, Log, All);
 
 // 构造函数
@@ -60,7 +62,7 @@ bool UTATargetComponent::HasTargetListChanged(const TArray<AActor*>& OldList, co
 void UTATargetComponent::UpdateNearbyTargets()
 {
 	TArray<AActor*> OldNearbyTargets = NearbyTargets;
-	
+
 	// 清空当前的目标列表
 	NearbyTargets.Empty();
 
@@ -70,35 +72,39 @@ void UTATargetComponent::UpdateNearbyTargets()
 	// 定义碰撞查询参数
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(GetOwner()); // 忽略自己
-	QueryParams.bReturnPhysicalMaterial = false; // 如果不需要物理材质信息，可以设置为false以优化性能
+	QueryParams.bReturnPhysicalMaterial = false;
 
 	// 定义碰撞形状，这里使用球形
 	FCollisionShape CollisionShape;
 	CollisionShape.SetSphere(SearchRadius);
 
-	// 执行重叠检查
+	// 执行重叠检查，这里我们使用所有的Actor类型
 	TArray<FOverlapResult> OverlapResults;
-	GetWorld()->OverlapMultiByObjectType(
+	GetWorld()->OverlapMultiByChannel(
 		OverlapResults,
 		Location,
 		FQuat::Identity,
-		FCollisionObjectQueryParams(ECollisionChannel::ECC_Pawn),
+		ECollisionChannel::ECC_WorldDynamic, // 注意：这里可能需要修改为合适的碰撞通道
 		CollisionShape,
 		QueryParams
 	);
-	
+
 	// 遍历重叠结果
 	for (const FOverlapResult& Result : OverlapResults)
 	{
-		// 确认Actor是否为潜在的目标，例如可以检查是否有特定的标签或接口
 		AActor* PotentialTarget = Result.GetActor();
 		if (PotentialTarget
 			&& !PotentialTarget->ActorHasTag(FName("CanNotBeTargeted"))
 			&& !NearbyTargets.Contains(PotentialTarget)
 			&& IsValid(PotentialTarget))
 		{
-			// 将潜在目标添加到列表中
-			NearbyTargets.Add(PotentialTarget);
+			// 检查目标是否实现了ITAAgentInterface接口
+			ITAAgentInterface* AgentInterface = Cast<ITAAgentInterface>(PotentialTarget);
+			if(AgentInterface)
+			{
+				// 将实现了接口的潜在目标添加到列表中
+				NearbyTargets.Add(PotentialTarget);
+			}
 		}
 	}
 
@@ -114,9 +120,10 @@ void UTATargetComponent::UpdateNearbyTargets()
 		// 如果当前选中的目标不在范围内，则取消选中
 		CurrentTarget = nullptr;
 		OnTargetChanged.Broadcast(CurrentTarget);
-	}else if (!CurrentTarget && NearbyTargets.Num() > 0) // 如果周围目标由0变成1
+	}
+	else if (!CurrentTarget && NearbyTargets.Num() > 0)
 	{
-		// 自动选择这个唯一的目标
+		// 选取第一个实现了接口的Actor作为当前目标
 		CurrentTarget = NearbyTargets[0];
 		OnTargetChanged.Broadcast(CurrentTarget);
 	}
