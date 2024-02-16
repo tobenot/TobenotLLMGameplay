@@ -7,6 +7,7 @@
 #include "TASaveGameSubsystem.generated.h"
 
 
+class ITAGuidInterface;
 class UTASaveGame;
 /**
  *  
@@ -51,8 +52,10 @@ private:
 	
 	// 这里定义了Actor定位名和GUID的对应关系
 	TMap<FName, FGuid> NameGuidMap;
-
-	void RestoreActorData(AActor* Actor, FGuid ActorGuid);
+	
+	void SerializeActorData(AActor* Actor, ITAGuidInterface* TAGuidInterface);
+	
+	void RestoreActorData(AActor* Actor, ITAGuidInterface* TAGuidInterface, FGuid ActorGuid);
 
 	UPROPERTY()
 	UTASaveGame* SaveGameInstance;

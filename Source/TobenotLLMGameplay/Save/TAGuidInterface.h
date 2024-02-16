@@ -28,4 +28,8 @@ public:
 	virtual void GenNewTAGuid();
     
 	virtual void SetTAGuid(FGuid NewGuid);
+
+	virtual FString SerializeCustomData();
+	
+	virtual void DeserializeCustomData(const FString& SerializedData);
 };

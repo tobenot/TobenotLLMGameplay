@@ -3,6 +3,7 @@
 
 #include "TASaveGameSubsystem.h"
 
+#include "EngineUtils.h"
 #include "TAGuidInterface.h"
 #include "TASaveGame.h"
 #include "Chat/TAChatComponent.h"
@@ -20,23 +21,14 @@ void UTASaveGameSubsystem::StoreAllTAData()
 	//打印日志，表示开始存储所有TA数据
 	UE_LOG(logTASave, Display, TEXT("StoreAllTAData - Begin storing all TA data."));
 	
-	//我们需要遍历所有带有UTAChatComponent的actor
-	for (TObjectIterator<UTAChatComponent> Itr; Itr; ++Itr)
+	for (TActorIterator<AActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
 	{
-		//这是一个带有UTAChatComponent组件的actor
-		UTAChatComponent* ChatComponent = *Itr;
-
-		//通过ITAGuid接口获取该actor的TAGuid
-		ITAGuidInterface* TAGuidInterface = Cast<ITAGuidInterface>(ChatComponent->GetOwner());
+		AActor* Actor = *ActorItr;
+		ITAGuidInterface* TAGuidInterface = Cast<ITAGuidInterface>(Actor);
 		if (TAGuidInterface)
 		{
-			FGuid ActorGuid = TAGuidInterface->GetTAGuid();
-
-			//获取ChatComponent的聊天数据
-			FTAChatComponentSaveData ActorChatData = ChatComponent->GetChatHistoryData();
-
-			//把Actor的聊天数据和相应的TAGuid一起保存到存档实例中
-			SaveGameInstance->TAChatDataMap.Add(ActorGuid, ActorChatData);
+			// 调用序列化Actor数据的函数
+			SerializeActorData(Actor, TAGuidInterface);
 		}
 	}
 	
@@ -150,7 +142,7 @@ void UTASaveGameSubsystem::RegisterActorTAGuid(AActor* Actor, FName Name)
 				FGuid StoredGuid = NameGuidMap[Name];
 				GuidInterface->SetTAGuid(StoredGuid);
 				// 恢复存档数据给Actor
-				RestoreActorData(Actor, StoredGuid);
+				RestoreActorData(Actor, GuidInterface, StoredGuid);
 				UE_LOG(logTASave, Display, TEXT("RegisterActorTAGuid - RestoreActorData"));
 			} 
 			else
@@ -169,8 +161,27 @@ void UTASaveGameSubsystem::RegisterActorTAGuid(AActor* Actor, FName Name)
 	}
 }
 
+void UTASaveGameSubsystem::SerializeActorData(AActor* Actor, ITAGuidInterface* TAGuidInterface)
+{
+	FGuid ActorGuid = TAGuidInterface->GetTAGuid();
+            
+	//获取ChatComponent的聊天数据
+	UTAChatComponent* ChatComponent = Actor->FindComponentByClass<UTAChatComponent>();
+	if (ChatComponent)
+	{
+		FTAChatComponentSaveData ActorChatData = ChatComponent->GetChatHistoryData();
+
+		//把Actor的聊天数据和相应的TAGuid一起保存到存档实例中
+		SaveGameInstance->TAChatDataMap.Add(ActorGuid, ActorChatData);
+	}
+	FString SerializedData = TAGuidInterface->SerializeCustomData();
+	// 将序列化数据存储到TMap中
+	SaveGameInstance->SerializedDataMap.Add(ActorGuid, SerializedData);
+	// 需要存储的其他数据也可以在这里添加相应的逻辑
+}
+
 //新增函数，根据Guid恢复Actor数据
-void UTASaveGameSubsystem::RestoreActorData(AActor* Actor, FGuid ActorGuid)
+void UTASaveGameSubsystem::RestoreActorData(AActor* Actor, ITAGuidInterface* TAGuidInterface, FGuid ActorGuid)
 {
 	if(!SaveGameInstance)
 	{
@@ -190,6 +201,12 @@ void UTASaveGameSubsystem::RestoreActorData(AActor* Actor, FGuid ActorGuid)
 			//如果找到，那么就用存档的聊天数据来设置这个ChatComponent
 			ChatComponent->SetChatHistoryData(*ActorChatData);
 		}
+	}
+	const FString* SerializedData = SaveGameInstance->SerializedDataMap.Find(ActorGuid);
+	if (SerializedData)
+	{
+		// 存在序列化数据，调用接口方法进行反序列化操作
+		TAGuidInterface->DeserializeCustomData(*SerializedData);
 	}
 }
 

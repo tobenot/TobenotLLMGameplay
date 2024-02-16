@@ -35,3 +35,12 @@ void ITAGuidInterface::SetTAGuid(FGuid NewGuid)
 {
 	TAGuid = NewGuid;
 }
+
+FString ITAGuidInterface::SerializeCustomData()
+{
+	return "";
+}
+
+void ITAGuidInterface::DeserializeCustomData(const FString& SerializedData)
+{
+}

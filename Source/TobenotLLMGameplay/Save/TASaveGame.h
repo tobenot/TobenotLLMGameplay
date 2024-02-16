@@ -22,6 +22,9 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "TAGuid")
 	TMap<FName, FGuid> NameGuidMap;
 	
+	UPROPERTY(VisibleAnywhere, Category = "Serialization")
+	TMap<FGuid, FString> SerializedDataMap;
+	
 	UPROPERTY(VisibleAnywhere, Category = "Chat")
 	TMap<FGuid, FTAChatComponentSaveData> TAChatDataMap;
 };
