@@ -3,6 +3,8 @@
 
 #include "TALLMLibrary.h"
 
+#include "OpenAIChat.h"
+
 EOAChatEngineType UTALLMLibrary::GetChatEngineTypeFromQuality(const ELLMChatEngineQuality Quality)
 {
 	switch (Quality)
@@ -16,4 +18,10 @@ EOAChatEngineType UTALLMLibrary::GetChatEngineTypeFromQuality(const ELLMChatEngi
 	default:
 		return EOAChatEngineType::GPT_3_5_TURBO; // Default to a reasonable type
 	}
+}
+
+UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& ChatSettings, TFunction<void(const FChatCompletion& Message, const FString& ErrorMessage,  bool Success)> Callback)
+{
+	// 调用OpenAIChat进行通信
+	return UOpenAIChat::Chat(ChatSettings, Callback);
 }

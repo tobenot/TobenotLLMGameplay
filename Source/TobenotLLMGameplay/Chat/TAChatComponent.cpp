@@ -132,8 +132,8 @@ void UTAChatComponent::ProcessMessage(AActor* OriActor, FString UserMessage, UTA
     
     FChatSettings ChatSettings{UTALLMLibrary::GetChatEngineTypeFromQuality(ELLMChatEngineQuality::Fast), TempMessagesList};
     ChatSettings.jsonFormat = ChatMessageJsonFormat;
-    
-    CacheChat = UOpenAIChat::Chat(ChatSettings, [this,OriActor](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
+
+    CacheChat = UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, [this,OriActor](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
     {
         //消息处理前移出激活，因为可能会连续激活
         ActiveActors.Remove(OriActor);
