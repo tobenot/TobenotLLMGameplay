@@ -7,6 +7,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "TALLMLibrary.generated.h"
 
+struct FTAPrompt;
 class UOpenAIChat;
 
 UENUM(BlueprintType)
@@ -30,6 +31,8 @@ public:
 	
 	static UOpenAIChat* SendMessageToOpenAIWithRetry(const FChatSettings& ChatSettings, TFunction<void(const FChatCompletion& Message, const FString& ErrorMessage,  bool Success)> Callback);
 
+	UFUNCTION(BlueprintCallable, Category = "Prompt")
+	static FString PromptToStr(const FTAPrompt& Prompt);
 private:
 	static constexpr int32 MaxRetryCount = 3;
 	static constexpr float RetryDelay = 2.0f;

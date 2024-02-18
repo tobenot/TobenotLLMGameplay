@@ -42,6 +42,8 @@ public class TobenotLLMGameplay : ModuleRules
 				"OpenAIAPI",
 				"UMG",
 				"Json",
+				"Http",
+				"ApplicationCore", 
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

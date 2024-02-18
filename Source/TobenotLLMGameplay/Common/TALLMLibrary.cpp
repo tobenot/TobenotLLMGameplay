@@ -2,7 +2,7 @@
 
 
 #include "TALLMLibrary.h"
-
+#include "Common/TAPromptDefinitions.h"
 #include "OpenAIChat.h"
 
 EOAChatEngineType UTALLMLibrary::GetChatEngineTypeFromQuality(const ELLMChatEngineQuality Quality)
@@ -24,4 +24,12 @@ UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& Ch
 {
 	// 调用OpenAIChat进行通信
 	return UOpenAIChat::Chat(ChatSettings, Callback);
+}
+
+FString UTALLMLibrary::PromptToStr(const FTAPrompt& Prompt)
+{
+	return FString::Printf(TEXT("Prompt:[%s];%s%s"),
+				*Prompt.PromptTemplate,
+				!Prompt.PromptExample.IsEmpty() ? *FString::Printf(TEXT("Example:[%s];"), *Prompt.PromptExample) : TEXT(""),
+				Prompt.bUseJsonFormat ? TEXT("reply in json format;") : TEXT(""));
 }
