@@ -4,7 +4,8 @@
 
 #include "TAImageGenerator.h"
 
-
+#include "IImageWrapperModule.h"
+#include "IImageWrapper.h"
 #include "Common/TALLMLibrary.h"
 
 #include "Engine/Texture2DDynamic.h"
@@ -39,17 +40,17 @@ void UTAImageGenerator::OnDownloadComplete(UTexture2DDynamic* Texture)
 			ENQUEUE_RENDER_COMMAND(CheckTextureRHICommand)(
 				[TextureResource, &TextureRHI, &SurfData](FRHICommandListImmediate& RHICmdList)
 				{
-					if(TextureResource != nullptr)
+					if (TextureResource != nullptr)
 					{
 						// 可选的额外检查，确认RHI资源是否已经创建。
-						if(TextureResource->IsInitialized())
+						if (TextureResource->IsInitialized())
 						{
 							// 在这里，您处于渲染线程上下文中
 							TextureRHI = TextureResource->TextureRHI;
 							if (TextureRHI.IsValid())
 							{
 								// 读取像素数据
-								if(TextureRHI.IsValid())
+								if (TextureRHI.IsValid())
 								{
 									RHICmdList.ReadSurfaceData(
 										TextureRHI,
@@ -63,14 +64,14 @@ void UTAImageGenerator::OnDownloadComplete(UTexture2DDynamic* Texture)
 					}
 				}
 			);
-			
+
 			// 确保渲染命令被执行
 			FlushRenderingCommands();
 
 			// 检查是否已经读取了数据
 			if (SurfData.Num() > 0)
 			{
-				// 将纹理数据保存到文件
+				// 将纹理数据保存到PNG文件
 				int32 Width = TextureRHI->GetSizeX();
 				int32 Height = TextureRHI->GetSizeY();
 				FString SavePath = FPaths::ProjectSavedDir() / TEXT("DownloadedTexture/Texture");
@@ -78,12 +79,25 @@ void UTAImageGenerator::OnDownloadComplete(UTexture2DDynamic* Texture)
 				DataTimeStr.ReplaceInline(TEXT("-"), TEXT(""));
 				DataTimeStr.ReplaceInline(TEXT(":"), TEXT(""));
 				DataTimeStr.ReplaceInline(TEXT("."), TEXT(""));
-				SavePath = SavePath + DataTimeStr;
-				FFileHelper::CreateBitmap(*SavePath, Width, Height, SurfData.GetData(), nullptr, &IFileManager::Get(), nullptr, false);
+				SavePath = SavePath + DataTimeStr + TEXT(".png"); // 添加文件扩展名为.png
+
+				// 使用ImageWrapper模块中的功能来保存PNG
+				IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));
+				TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(EImageFormat::PNG);
+
+				if (ImageWrapper.IsValid() && ImageWrapper->SetRaw(SurfData.GetData(), SurfData.Num() * sizeof(FColor), Width, Height, ERGBFormat::BGRA, 8))
+				{
+					const TArray64<uint8>& PngData = ImageWrapper->GetCompressed();
+					FFileHelper::SaveArrayToFile(PngData, *SavePath);
+				}
 
 				if (FPaths::FileExists(SavePath))
 				{
 					UE_LOG(LogTemp, Log, TEXT("Image saved to %s"), *SavePath);
+				}
+				else
+				{
+					UE_LOG(LogTemp, Log, TEXT("Image saved failed to %s"), *SavePath);
 				}
 			}
 		}
