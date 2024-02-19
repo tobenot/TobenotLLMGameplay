@@ -9,6 +9,7 @@
 #include "Event/TAEventLogCategory.h"
 #include "Event/Generator/TAEventGenerator.h"
 #include "Image/TAImageGenerator.h"
+#include "Save/TAGuidInterface.h"
 #include "Scene/TASceneSubsystem.h"
 
 void UTAEventSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -17,12 +18,34 @@ void UTAEventSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 }
 
 // HandleGeneratedEvents 方法，用于处理生成器成功生成的事件
-void UTAEventSubsystem::HandleGeneratedEvents(const TArray<FTAEventInfo>& GeneratedEvents)
+void UTAEventSubsystem::HandleGeneratedEvents(TArray<FTAEventInfo>& GeneratedEvents)
 {
-	for (const FTAEventInfo& EventInfo : GeneratedEvents)
+	UTASceneSubsystem* SceneSubsystem = GetWorld()->GetSubsystem<UTASceneSubsystem>();
+
+	for (FTAEventInfo& EventInfo : GeneratedEvents)
 	{
-		auto& Info = EventPool->AddEvent(EventInfo);
-		GenerateImageForEvent(Info);
+		// 通过场景子系统查询地点信息，获得位点Actor
+		ATAPlaceActor* PlaceActor = SceneSubsystem->QueryEventLocationByInfo(EventInfo);
+        
+		if (PlaceActor)
+		{
+			// 获取位点Actor的Guid
+			ITAGuidInterface* GuidInterface = Cast<ITAGuidInterface>(PlaceActor);
+			FGuid LocationGuid = GuidInterface->GetTAGuid();
+
+			// 为事件设置地点GUID
+			EventInfo.LocationGuid = LocationGuid;
+
+			// 将事件和它的地点GUID添加到事件池
+			auto& Info = EventPool->AddEvent(EventInfo);
+
+			// 如果有必要，生成事件对应的图像或者其他资源
+			GenerateImageForEvent(Info);
+		}
+		else
+		{
+			UE_LOG(LogTAEventSystem, Warning, TEXT("无法为EventID %d 找到对应的位点Actor"), EventInfo.EventID);
+		}
 	}
 }
 

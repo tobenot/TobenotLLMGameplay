@@ -29,6 +29,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event")
 	int32 EventID;
 
+	// 保存地点的唯一标识符
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event")
+	FGuid LocationGuid;
+
+	// LLM start
+
 	// 事件触发地名（如水井、草丛）
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event")
 	FString LocationName;
@@ -44,6 +50,8 @@ public:
 	// 事件权重
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event")
 	int32 Weight;
-
+	
+	// LLM end
+	
 	FString ToString() const;
 };

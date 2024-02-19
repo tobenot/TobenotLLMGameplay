@@ -14,10 +14,11 @@ FString FTAEventInfo::ToString() const
 	case ETAEventType::Other: EventTypeStr = TEXT("Other"); break;
 	default: EventTypeStr = TEXT("Unknown"); break;
 	}
-
-	return FString::Printf(TEXT("{\"EventID\": %d, \"Description\": \"%s\", \"Type\": \"%s\", \"Weight\": %d}"),
+	return FString::Printf(TEXT("{\"EventID\": %d, \"Description\": \"%s\", \"Type\": \"%s\", \"Weight\": %d, \"LocationGuid: %s\"}"),
 		EventID,
 		*Description,
 		*EventTypeStr,
-		Weight);
+		Weight
+	,	*LocationGuid.ToString()
+	);
 }

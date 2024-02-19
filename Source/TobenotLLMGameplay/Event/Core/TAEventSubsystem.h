@@ -29,7 +29,7 @@ public:
 
 private:
 	UFUNCTION()
-	void HandleGeneratedEvents(const TArray<FTAEventInfo>& GeneratedEvents);
+	void HandleGeneratedEvents(TArray<FTAEventInfo>& GeneratedEvents);
 
 	void GenerateImageForEvent(const FTAEventInfo& GeneratedEvent);
 };

@@ -6,6 +6,7 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "TASceneSubsystem.generated.h"
 
+class ATAPlaceActor;
 struct FTAEventInfo;
 /**
  * 
@@ -18,13 +19,22 @@ class TOBENOTLLMGAMEPLAY_API UTASceneSubsystem : public UWorldSubsystem
 public:
 	// 查询当前关卡的人文、地理信息
 	FString QuerySceneMapInfo();
-	
+
 	// 查询指定位置所在的区域地点
 	FString QueryLocationInfo(const FVector& Location);
 
 	// 根据事件信息查询推荐的事件位置
-	// @param EventInfo 事件的详细信息，用于确定事件合适的地理位置
-	// @return 返回事件推荐的Location
 	UFUNCTION(BlueprintCallable, Category = "Event|Location")
-	FVector QueryEventLocationByInfo(const FTAEventInfo& EventInfo);
+	ATAPlaceActor* QueryEventLocationByInfo(const FTAEventInfo& EventInfo);
+	
+	// 创建并添加新的位点到列表中，返回创建的位点Actor
+	UFUNCTION(BlueprintCallable, Category = "Place")
+	ATAPlaceActor* CreateAndAddPlace(const FVector& Location, float Radius, const FString& Name);
+	
+private:
+	// 存储所有位点Actors的引用的列表
+	UPROPERTY()
+	TArray<ATAPlaceActor*> PlaceActors;
+	
+	int32 MaxQueryEventLocationRetryCount = 100;
 };

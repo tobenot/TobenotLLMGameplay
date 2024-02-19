@@ -15,9 +15,6 @@ class UTAGuidInterface : public UInterface
 class TOBENOTLLMGAMEPLAY_API ITAGuidInterface
 {
 	GENERATED_BODY()
-
-	FGuid TAGuid;
-
 public:
 	UFUNCTION(BlueprintCallable, Category = "TAGuid")
 	virtual FGuid GetTAGuid();
@@ -32,4 +29,8 @@ public:
 	virtual FString SerializeCustomData();
 	
 	virtual void DeserializeCustomData(const FString& SerializedData);
+	
+private:
+	
+	FGuid TAGuid;
 };
