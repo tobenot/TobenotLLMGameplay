@@ -84,9 +84,32 @@ TArray<FTAEventInfo> UTAEventGenerator::ParseEventsFromJson(const FString& JsonS
 				// 获取并设置事件描述
 				EventInfo.Description = EventObject->GetStringField(TEXT("Description"));
 
-				// 获取并设置事件类型
-				int32 EventTypeInt = EventObject->GetIntegerField(TEXT("EventType"));
-				EventInfo.EventType = static_cast<ETAEventType>(EventTypeInt);
+				int32 EventTypeInt;
+				FString EventTypeStr;
+				if (EventObject->TryGetNumberField(TEXT("EventType"), EventTypeInt))
+				{
+					// 处理数值字段
+					EventInfo.EventType = static_cast<ETAEventType>(EventTypeInt);
+				}else if (EventObject->TryGetStringField(TEXT("EventType"), EventTypeStr))
+				{
+					// 尝试将字符串的第一个字符转换为数字
+					TCHAR FirstChar = EventTypeStr[0];
+					if (FChar::IsDigit(FirstChar))
+					{
+						EventTypeInt = FCString::Atoi(*EventTypeStr);
+						EventInfo.EventType = static_cast<ETAEventType>(EventTypeInt);
+					}
+					else
+					{
+						// 处理非数字开始的字符串或其他情况
+						UE_LOG(LogTAEventSystem, Error, TEXT("无效的事件类型格式 %s"), *EventTypeStr);
+					}
+				}
+				else
+				{
+					// 处理既不是字符串也不是数字的情况
+					UE_LOG(LogTAEventSystem, Error, TEXT("无EventType字段"));
+				}
 
 				// 获取并设置事件权重
 				EventInfo.Weight = EventObject->GetIntegerField(TEXT("Weight"));
