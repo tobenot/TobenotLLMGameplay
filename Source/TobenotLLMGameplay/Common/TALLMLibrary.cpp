@@ -71,11 +71,11 @@ UOpenAIChat* UTALLMLibrary::DownloadImageFromPollinations(const FString& ImagePr
 	TArray<FChatLog> TempMessagesList;
 	const FString SystemPrompt =
 		"You need to design a scene \"description\" for the text description I give,"
-		"which is a scene description of the text."
-		"Remember, only describe the scenery, DO NOT describe any characters or creatures or monster."
+		"which is a vast scene description of the text."
+		"Remember, only describe the vast scenery, DO NOT describe any characters or creatures or monster."
 		"Follow the ensuing JSON template: "
 		"{"
-			"\"description\": \"description within 20 words or less\""
+			"\"description\": \"description within 20 words or less, exp:A%20[place]%20creating%20an%20[adj]%20atmosphere.\""
 		"}";
 	TempMessagesList.Add({EOAChatRole::SYSTEM, SystemPrompt});
 	TempMessagesList.Add({EOAChatRole::USER, "text description:"+ImagePrompt});
