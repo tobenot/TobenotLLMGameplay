@@ -15,14 +15,23 @@ class TOBENOTLLMGAMEPLAY_API UTAEventPool : public UObject
 	GENERATED_BODY()
 
 public:
+	UFUNCTION(BlueprintCallable, Category = "Event")
+	FTAEventInfo& AddEvent(FTAEventInfo EventInfo);
+
+	UFUNCTION(BlueprintCallable, Category = "Event")
+	bool GetEventByID(int32 EventID, FTAEventInfo& OutEventInfo);
+
+	FTAEventInfo ZeroEvent;
+private:
+	// 所有事件信息的集合，这里是最持久的保存事件信息的地方。由EventSubsystem管理。
+	UPROPERTY(VisibleAnywhere, Category = "Event")
+	TArray<FTAEventInfo> AllEventInfo;
+	
 	// 活跃事件的集合
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Event")
+	UPROPERTY(VisibleAnywhere, Category = "Event")
 	TArray<UTAEventInstance*> ActiveEvents;
 
 	// 待触发的事件的集合
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Event")
+	UPROPERTY(VisibleAnywhere, Category = "Event")
 	TArray<UTAEventInstance*> PendingEvents;
-
-	UFUNCTION(BlueprintCallable, Category = "Event")
-	void AddEvent(UTAEventInstance* Event);
 };

@@ -120,16 +120,6 @@ void UTAChatComponent::ProcessMessage(AActor* OriActor, FString UserMessage, UTA
     // 构造用户消息的ChatLog对象并添加到TempMessagesList
     TempMessagesList.Add({EOAChatRole::USER, UserMessage});
     
-    // 打印TempMessagesList的调试信息
-    FStringBuilderBase StringBuilder;
-    StringBuilder.Append(TEXT("Sending chat messages:\n"));
-    for (const FChatLog& ChatEntry : TempMessagesList)
-    {
-        FString RoleName = UEnum::GetValueAsString(ChatEntry.role);
-        StringBuilder.Append(FString::Printf(TEXT("Role: %s, Content: %s\n"), *RoleName, *ChatEntry.content));
-    }
-    UE_LOG(LogTemp, Log, TEXT("%s"), StringBuilder.ToString());
-    
     FChatSettings ChatSettings{UTALLMLibrary::GetChatEngineTypeFromQuality(ELLMChatEngineQuality::Fast), TempMessagesList};
     ChatSettings.jsonFormat = ChatMessageJsonFormat;
 

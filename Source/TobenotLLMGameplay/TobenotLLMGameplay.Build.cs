@@ -45,6 +45,11 @@ public class TobenotLLMGameplay : ModuleRules
 				"Http",
 				"ApplicationCore",
 				"DeveloperSettings",
+				
+				// 下载图片
+				"RHI",
+				"RenderCore",
+				
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

@@ -8,6 +8,7 @@
 #include "TAEventPool.h"
 #include "Event/TAEventLogCategory.h"
 #include "Event/Generator/TAEventGenerator.h"
+#include "Image/TAImageGenerator.h"
 #include "Scene/TASceneSubsystem.h"
 
 void UTAEventSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -20,16 +21,8 @@ void UTAEventSubsystem::HandleGeneratedEvents(const TArray<FTAEventInfo>& Genera
 {
 	for (const FTAEventInfo& EventInfo : GeneratedEvents)
 	{
-		// 创建事件实例
-		UTAEventInstance* NewEvent = NewObject<UTAEventInstance>(this, UTAEventInstance::StaticClass());
-		if (NewEvent)
-		{
-			// 使用生成的事件信息初始化NewEvent
-			NewEvent->EventInfo = EventInfo;
-
-			// 将新事件添加到事件池中
-			EventPool->AddEvent(NewEvent);
-		}
+		auto& Info = EventPool->AddEvent(EventInfo);
+		GenerateImageForEvent(Info);
 	}
 }
 
@@ -80,5 +73,17 @@ void UTAEventSubsystem::Start()
 			}
 		}
 		
+	}
+}
+
+
+// UTAEventSubsystem.cpp
+
+void UTAEventSubsystem::GenerateImageForEvent(const FTAEventInfo& GeneratedEvent)
+{
+	UTAImageGenerator* ImageGenerator = NewObject<UTAImageGenerator>(this);
+	if (ImageGenerator)
+	{
+		ImageGenerator->RequestGenerateImage(GeneratedEvent);
 	}
 }
