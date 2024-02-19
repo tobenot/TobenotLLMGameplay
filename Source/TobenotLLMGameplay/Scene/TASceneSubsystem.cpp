@@ -5,6 +5,7 @@
 #include "TAPlaceActor.h"
 #include "Event/Data/TAEventInfo.h"
 #include "TASceneLogCategory.h"
+#include "TASettings.h"
 
 FString UTASceneSubsystem::QuerySceneMapInfo()
 {
@@ -21,7 +22,23 @@ ATAPlaceActor* UTASceneSubsystem::CreateAndAddPlace(const FVector& Location, flo
 	// 假设这个方法被正确的调用在允许创建Actor的上下文中
 	if (UWorld* World = GetWorld())
 	{
-		ATAPlaceActor* NewPlaceActor = World->SpawnActor<ATAPlaceActor>(Location, FRotator::ZeroRotator);
+		UClass* PlaceActorClass = nullptr;
+        
+		// 从配置文件中获取类路径
+		const UTASettings* Settings = GetDefault<UTASettings>();
+		if (Settings)
+		{
+			PlaceActorClass = Settings->PlaceActorClass.TryLoadClass<ATAPlaceActor>();
+		}
+
+		// 如果没有指定类或者类加载失败，使用默认的ATAPlaceActor类
+		if (!PlaceActorClass)
+		{
+			PlaceActorClass = ATAPlaceActor::StaticClass();
+		}
+
+		// 使用加载的类生成Actor实例
+		ATAPlaceActor* NewPlaceActor = World->SpawnActor<ATAPlaceActor>(PlaceActorClass, Location, FRotator::ZeroRotator);
 		if (NewPlaceActor)
 		{
 			NewPlaceActor->PlaceName = Name;

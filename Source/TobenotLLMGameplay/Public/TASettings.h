@@ -18,4 +18,8 @@ public:
 	// 设置要使用的事件生成器的类名。需要是 UTAEventGenerator 的子类
 	UPROPERTY(config, EditAnywhere, Category="Event")
 	FSoftClassPath EventGeneratorClass;
+
+	// 设置要使用的ATAPlaceActor的子类的类名。
+	UPROPERTY(config, EditAnywhere, Category="Scene")
+	FSoftClassPath PlaceActorClass;
 };
