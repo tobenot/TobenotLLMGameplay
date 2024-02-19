@@ -11,6 +11,7 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "TAEventSubsystem.generated.h"
 
+struct FTAEventInfo;
 class UTAEventPool;
 
 UCLASS()
@@ -19,12 +20,14 @@ class TOBENOTLLMGAMEPLAY_API UTAEventSubsystem : public UWorldSubsystem
 	GENERATED_BODY()
 
 public:
-	// 初始化事件子系统
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
-
-	// 清理/卸载事件子系统
 	virtual void Deinitialize() override;
+	virtual void Start();
 
 	UPROPERTY(BlueprintReadOnly, Category = "Event")
 	UTAEventPool* EventPool;
+
+private:
+	UFUNCTION()
+	void HandleGeneratedEvents(const TArray<FTAEventInfo>& GeneratedEvents);
 };

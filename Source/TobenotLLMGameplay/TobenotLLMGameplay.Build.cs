@@ -43,7 +43,8 @@ public class TobenotLLMGameplay : ModuleRules
 				"UMG",
 				"Json",
 				"Http",
-				"ApplicationCore", 
+				"ApplicationCore",
+				"DeveloperSettings",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

@@ -29,6 +29,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event")
 	int32 EventID;
 
+	// 事件触发地名（如水井、草丛）
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event")
+	FString LocationName;
+	
 	// 事件描述
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event")
 	FString Description;
