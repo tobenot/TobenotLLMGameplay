@@ -73,8 +73,12 @@ void UTAImageGenerator::OnDownloadComplete(UTexture2DDynamic* Texture)
 				// 将纹理数据保存到文件
 				int32 Width = TextureRHI->GetSizeX();
 				int32 Height = TextureRHI->GetSizeY();
-				FString SavePath = FPaths::ProjectSavedDir() / TEXT("DownloadedTexture");
-				SavePath = SavePath + FGuid::NewGuid().ToString();
+				FString SavePath = FPaths::ProjectSavedDir() / TEXT("DownloadedTexture/Texture");
+				FString DataTimeStr = FDateTime::UtcNow().ToIso8601();
+				DataTimeStr.ReplaceInline(TEXT("-"), TEXT(""));
+				DataTimeStr.ReplaceInline(TEXT(":"), TEXT(""));
+				DataTimeStr.ReplaceInline(TEXT("."), TEXT(""));
+				SavePath = SavePath + DataTimeStr;
 				FFileHelper::CreateBitmap(*SavePath, Width, Height, SurfData.GetData(), nullptr, &IFileManager::Get(), nullptr, false);
 
 				if (FPaths::FileExists(SavePath))
