@@ -23,7 +23,7 @@ void UTAImageGenerator::RequestGenerateImage(const FTAEventInfo& EventInfo)
 
 	// 从 EventInfo 的描述出发，发起下载图片的异步请求
 	// 注意：这里我们直接使用UTASystemLibrary提供的函数和委托类型
-	UTALLMLibrary::DownloadImageFromPollinations(EventInfo.Description, OnDownloadCompleteDelegate, OnDownloadFailedDelegate);
+	CacheOpenAIChat = UTALLMLibrary::DownloadImageFromPollinations(EventInfo.Description, OnDownloadCompleteDelegate, OnDownloadFailedDelegate);
 }
 
 void UTAImageGenerator::OnDownloadComplete(UTexture2DDynamic* Texture)

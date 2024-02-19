@@ -11,6 +11,8 @@
 #include "Common/TALLMLibrary.h"
 #include "TAImageGenerator.generated.h"
 
+class UTAChatCallback;
+
 UCLASS()
 class TOBENOTLLMGAMEPLAY_API UTAImageGenerator : public UObject
 {
@@ -33,4 +35,7 @@ public:
 private:
 	FTAImageDownloadedDelegate OnDownloadCompleteDelegate;
 	FTAImageDownloadedDelegate OnDownloadFailedDelegate;
+
+	UPROPERTY()
+	UOpenAIChat* CacheOpenAIChat;
 };

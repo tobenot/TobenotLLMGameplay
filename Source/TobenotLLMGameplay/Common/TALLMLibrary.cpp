@@ -66,7 +66,7 @@ FString UTALLMLibrary::PromptToStr(const FTAPrompt& Prompt)
 				Prompt.bUseJsonFormat ? TEXT("reply in json format;") : TEXT(""));
 }
 
-void UTALLMLibrary::DownloadImageFromPollinations(const FString& ImagePrompt, const FTAImageDownloadedDelegate & OnDownloadComplete, const FTAImageDownloadedDelegate & OnDownloadFailed)
+UOpenAIChat* UTALLMLibrary::DownloadImageFromPollinations(const FString& ImagePrompt, const FTAImageDownloadedDelegate & OnDownloadComplete, const FTAImageDownloadedDelegate & OnDownloadFailed)
 {
 	TArray<FChatLog> TempMessagesList;
 	const FString SystemPrompt =
@@ -86,7 +86,7 @@ void UTALLMLibrary::DownloadImageFromPollinations(const FString& ImagePrompt, co
 	ChatSettings.jsonFormat = true;
 	
 	// 异步发送消息
-	UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, [OnDownloadFailed,OnDownloadComplete,ImagePrompt](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
+	return UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, [OnDownloadFailed,OnDownloadComplete,ImagePrompt](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
 	{
 		if (Success)
 		{
