@@ -32,7 +32,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Chat Engine")
 	static EOAChatEngineType GetChatEngineTypeFromQuality(const ELLMChatEngineQuality Quality);
 	
-	static UOpenAIChat* SendMessageToOpenAIWithRetry(const FChatSettings& ChatSettings, TFunction<void(const FChatCompletion& Message, const FString& ErrorMessage,  bool Success)> Callback);
+	static UOpenAIChat* SendMessageToOpenAIWithRetry(const FChatSettings& ChatSettings, TFunction<void(const FChatCompletion& Message, const FString& ErrorMessage,  bool Success)> Callback, const UObject* LogObject = nullptr);
 	
 	static UOpenAIChat* DownloadImageFromPollinations(const FString& ImagePrompt, const FTAImageDownloadedDelegate & OnDownloadComplete, const FTAImageDownloadedDelegate & OnDownloadFailed);
 	

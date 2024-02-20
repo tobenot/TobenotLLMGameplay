@@ -146,7 +146,7 @@ void UTAChatComponent::ProcessMessage(AActor* OriActor, FString UserMessage, UTA
             CallbackMap.Remove(OriActor);
         }
         CacheChat = nullptr;
-    });
+    },this->GetOwner());
 }
 
 FString UTAChatComponent::GetSystemPromptFromOwner() const

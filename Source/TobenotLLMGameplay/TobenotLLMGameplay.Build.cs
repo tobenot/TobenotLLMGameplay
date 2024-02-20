@@ -48,7 +48,9 @@ public class TobenotLLMGameplay : ModuleRules
 				
 				// 下载图片
 				"RHI",
-				"RenderCore",
+				"RenderCore", 
+				
+				"TobenotToolkit",
 				
 				// ... add private dependencies that you statically link with here ...	
 			}

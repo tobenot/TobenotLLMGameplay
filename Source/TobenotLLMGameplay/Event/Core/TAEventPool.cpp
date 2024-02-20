@@ -47,7 +47,10 @@ void UTAEventPool::StartProximityCheck() {
 
 void UTAEventPool::BeginDestroy()
 {
-	GetWorld()->GetTimerManager().ClearTimer(EventTriggerTimerHandle);
+	if(EventTriggerTimerHandle.IsValid())
+	{
+		GetWorld()->GetTimerManager().ClearTimer(EventTriggerTimerHandle);
+	}
 	UObject::BeginDestroy();
 }
 

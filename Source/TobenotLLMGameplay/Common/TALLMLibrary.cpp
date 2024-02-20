@@ -15,6 +15,7 @@
 #include "HttpModule.h"
 #include "TextureResource.h"
 #include "RenderingThread.h"
+#include "TobenotToolkit/Debug/CategoryLogSubsystem.h"
 
 EOAChatEngineType UTALLMLibrary::GetChatEngineTypeFromQuality(const ELLMChatEngineQuality Quality)
 {
@@ -31,20 +32,10 @@ EOAChatEngineType UTALLMLibrary::GetChatEngineTypeFromQuality(const ELLMChatEngi
 	}
 }
 
-UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& ChatSettings, TFunction<void(const FChatCompletion& Message, const FString& ErrorMessage,  bool Success)> Callback)
+UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& ChatSettings, TFunction<void(const FChatCompletion& Message, const FString& ErrorMessage,  bool Success)> Callback, const UObject* LogObject)
 {
-	// 打印ChatSettings的调试信息
-	FStringBuilderBase StringBuilder;
-	StringBuilder.Append(TEXT("Sending chat messages:\n"));
-	for (const FChatLog& ChatEntry : ChatSettings.messages)
-	{
-		FString RoleName = UEnum::GetValueAsString(ChatEntry.role);
-		StringBuilder.Append(FString::Printf(TEXT("Role: %s, Content: %s\n"), *RoleName, *ChatEntry.content));
-	}
-	UE_LOG(LogTemp, Log, TEXT("%s"), StringBuilder.ToString());
-
 	// 调用OpenAIChat进行通信
-	return UOpenAIChat::Chat(ChatSettings, [Callback](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
+	UOpenAIChat* Chat = UOpenAIChat::Chat(ChatSettings, [Callback, &Chat, LogObject](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
 	{
 		if (Success)
 		{
@@ -53,8 +44,39 @@ UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& Ch
 		{
 			UE_LOG(LogTemp, Log, TEXT("Reponse failed: %s"), *ErrorMessage);
 		}
+		if(LogObject)
+		{
+			if (UCategoryLogSubsystem* CategoryLogSubsystem = LogObject->GetWorld()->GetSubsystem<UCategoryLogSubsystem>())
+			{
+				const FString ResponseStr = FString::Printf(TEXT("[%s] Assistant Response:\n%s\n"), *LogObject->GetName(),*Message.message.content);
+				CategoryLogSubsystem->WriteLog(TEXT("Chat"), *ResponseStr);
+			}
+		}
+		Chat = nullptr;
 		Callback(Message,ErrorMessage,Success);
 	});
+
+	// 打印ChatSettings的调试信息
+	FStringBuilderBase StringBuilder;
+	StringBuilder.Append(TEXT("Sending chat messages:\n"));
+	for (const FChatLog& ChatEntry : ChatSettings.messages)
+	{
+		FString RoleName = UEnum::GetValueAsString(ChatEntry.role);
+		StringBuilder.Append(FString::Printf(TEXT("Role: %s, Content: %s\n"), *RoleName, *ChatEntry.content));
+	}
+	const FString LogContent = StringBuilder.ToString();
+	UE_LOG(LogTemp, Log, TEXT("%s"), *LogContent);
+
+	if(LogObject)
+	{
+		if (UCategoryLogSubsystem* CategoryLogSubsystem = LogObject->GetWorld()->GetSubsystem<UCategoryLogSubsystem>())
+		{
+			const FString LogStr = FString::Printf(TEXT("[%s] %s"), *LogObject->GetName(),*LogContent);
+			CategoryLogSubsystem->WriteLog(TEXT("Chat"), LogStr);
+		}
+	}
+	
+	return Chat;
 }
 
 
