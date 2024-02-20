@@ -9,10 +9,6 @@
 // Add default functionality here for any ITAGuidInterface functions that are not pure virtual.
 FGuid ITAGuidInterface::GetTAGuid()
 {
-	if(!TAGuid.IsValid())
-	{
-		GenNewTAGuid();
-	}
 	return TAGuid;
 }
 
@@ -26,14 +22,6 @@ void ITAGuidInterface::RegisterActorTAGuid(AActor* Actor, FName Name)
 	{
 		const FGuid ActorGuid = GetTAGuid();
 		GuidSubsystem->RegisterActorGUID(ActorGuid, Actor);
-	}
-}
-
-void ITAGuidInterface::GenNewTAGuid()
-{
-	if(!TAGuid.IsValid())
-	{
-		TAGuid = FGuid::NewGuid();
 	}
 }
 

@@ -14,6 +14,7 @@ class TOBENOTLLMGAMEPLAY_API UTAEventPool : public UObject
 {
 	GENERATED_BODY()
 
+	virtual void BeginDestroy() override;
 public:
 	UFUNCTION(BlueprintCallable, Category = "Event")
 	FTAEventInfo& AddEvent(FTAEventInfo EventInfo);
@@ -34,19 +35,18 @@ private:
 
 	TArray<FTAEventInfo*> PendingEventInfos;
 	// 傻眼了吧孩子，这个结构体指针不能暴露给蓝图
-
 private:
 	bool bHasStartedProximityCheck = false;
 	
 	// 定义定时器句柄
 	FTimerHandle EventTriggerTimerHandle;
-	
-	// 定义检查功能函数
-	UFUNCTION()
-	void CheckPlayerProximityToEvents();
     
 	// 此函数用于开启周期性检查
 	void StartProximityCheck();
 
-	virtual void BeginDestroy() override;
+public:
+	// 定义检查功能函数
+	UFUNCTION()
+	void CheckPlayerProximityToEvents();
+	
 };

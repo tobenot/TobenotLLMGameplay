@@ -3,6 +3,7 @@
 
 #include "TAEventPool.h"
 
+#include "Event/TAEventLogCategory.h"
 #include "Save/TAGuidSubsystem.h"
 #include "Scene/TAPlaceActor.h"
 
@@ -39,8 +40,9 @@ bool UTAEventPool::GetEventByID(int32 EventID, FTAEventInfo& OutEventInfo)
 
 // 开启周期性检查
 void UTAEventPool::StartProximityCheck() {
+	UE_LOG(LogTAEventSystem, Log, TEXT("StartProximityCheck"));
 	// 配置定时器代理来定时执行检查函数
-	GetWorld()->GetTimerManager().SetTimer(EventTriggerTimerHandle, this, &UTAEventPool::CheckPlayerProximityToEvents, 5.0f, true);
+	GetWorld()->GetTimerManager().SetTimer(EventTriggerTimerHandle, this, &UTAEventPool::CheckPlayerProximityToEvents, 1.0f, true);
 }
 
 void UTAEventPool::BeginDestroy()
@@ -68,6 +70,7 @@ void UTAEventPool::CheckPlayerProximityToEvents() {
 				// 检查玩家是否在位点附近
 				if(PlaceActor && FVector::Dist(PlayerLocation, PlaceActor->GetActorLocation()) <= PlaceActor->PlaceRadius) {
 					// 玩家在范围内，激活事件并从待激活列表移除
+					UE_LOG(LogTAEventSystem, Log, TEXT("CheckPlayerProximityToEvents, trigger one , remain pending %d") , PendingEventInfos.Num() - 1);
 					UTAEventInstance* NewEventInstance = NewObject<UTAEventInstance>(this, UTAEventInstance::StaticClass());
 					if(NewEventInstance) {
 						// 使用生成的事件信息初始化NewEvent

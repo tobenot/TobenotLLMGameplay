@@ -22,8 +22,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "TAGuid")
 	virtual void RegisterActorTAGuid(AActor* Actor, FName Name);
     
-	virtual void GenNewTAGuid();
-    
 	virtual void SetTAGuid(FGuid NewGuid);
 
 	virtual FString SerializeCustomData();

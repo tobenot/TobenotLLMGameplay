@@ -44,6 +44,13 @@ ATAPlaceActor* UTASceneSubsystem::CreateAndAddPlace(const FVector& Location, flo
 			NewPlaceActor->PlaceName = Name;
 			NewPlaceActor->SetPlaceRadius(Radius);
 			PlaceActors.Add(NewPlaceActor);
+			ITAGuidInterface* GuidInterface = Cast<ITAGuidInterface>(NewPlaceActor);
+			if (GuidInterface)
+			{
+				// todo: save recoverable name
+				const FString GuidNameStr = FString::Printf(TEXT("%s%d"),*Name, PlaceActors.Num());
+				GuidInterface->RegisterActorTAGuid(NewPlaceActor, FName(*GuidNameStr));
+			}
 			return NewPlaceActor;
 		}
 	}
@@ -87,7 +94,7 @@ ATAPlaceActor* UTASceneSubsystem::QueryEventLocationByInfo(const FTAEventInfo& E
 
         if (bIsValidLocation)
         {
-            UE_LOG(LogTASceneSystem, Log, TEXT("位置有效，位置选取重试次数： %，开始创建并添加新的位点到列表中... "),RetryCount);
+            UE_LOG(LogTASceneSystem, Log, TEXT("位置有效，位置选取重试次数： %d，开始创建并添加新的位点到列表中... "),RetryCount);
             // 创建并添加新的位点到列表中
             ATAPlaceActor* NewPlaceActor = CreateAndAddPlace(RandomPoint, RandomRadius, EventInfo.LocationName);
             return NewPlaceActor;
