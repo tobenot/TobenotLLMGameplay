@@ -14,7 +14,6 @@ UTAInteractionComponent::UTAInteractionComponent()
 void UTAInteractionComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	InitPrompt(); // 放beginPlay可以hotReload
 }
 
 FString UTAInteractionComponent::GetFullPrompt()
@@ -22,6 +21,9 @@ FString UTAInteractionComponent::GetFullPrompt()
 	return UTALLMLibrary::PromptToStr(InteractiveActorPromptTemplate)
 	.Replace(TEXT("{Language}"), *UTASystemLibrary::GetGameLanguage())
 	.Replace(TEXT("{InteractableActorProfile}"), *InteractableInfo.Name)
+	.Replace(TEXT("{UniqueFeature}"), *InteractableInfo.UniqueFeature)
+	.Replace(TEXT("{Objective}"), *InteractableInfo.Objective)
+	.Replace(TEXT("{BelongEventDescription}"), *BelongEventDescription)
 	;
 }
 
@@ -39,4 +41,10 @@ void UTAInteractionComponent::InitPrompt()
 		,1
 		,true
 	};
+}
+
+void UTAInteractionComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+	InitPrompt();
 }

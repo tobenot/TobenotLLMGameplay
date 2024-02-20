@@ -63,7 +63,12 @@ public:
 	// 事件权重
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event")
 	int32 Weight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event")
+	FString AdventurePoint;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event")
+	FString HumorousPoint;
 	// LLM end
 	
 	FString ToString() const;

@@ -22,12 +22,15 @@ class TOBENOTLLMGAMEPLAY_API ATAInteractiveActor : public AActor
 	,public ITAGuidInterface
 {
 	GENERATED_BODY()
-
+	virtual void OnConstruction(const FTransform& Transform) override;
 public:	
 	ATAInteractiveActor();
 
 protected:
 	virtual void BeginPlay() override;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	USceneComponent* RootSceneComponent;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UTAChatComponent* ChatComponent;

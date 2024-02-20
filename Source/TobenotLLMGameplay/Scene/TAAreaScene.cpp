@@ -28,7 +28,7 @@ void UTAAreaScene::LoadAreaScene(const FTAEventInfo& EventInfo)
 			const UTAPromptSetting* DefaultPromptSettings = GetDefault<UTAPromptSetting>(TAPromptSettingClass);
 			if (DefaultPromptSettings)
 			{
-				const FString EventInfoDes = EventInfo.Description;
+				const FString EventInfoDes = EventInfo.AdventurePoint+EventInfo.HumorousPoint+EventInfo.Description;
 				SystemPrompt =	UTALLMLibrary::PromptToStr(DefaultPromptSettings->PromptEventGenInteractables)
 					.Replace(TEXT("{EventInfo}"), *EventInfoDes)
 					.Replace(TEXT("{Language}"), *UTASystemLibrary::GetGameLanguage())
@@ -50,7 +50,7 @@ void UTAAreaScene::LoadAreaScene(const FTAEventInfo& EventInfo)
 	ChatSettings.jsonFormat = true;
 	
 	// 异步发送消息
-	CacheChat = UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, [this](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
+	CacheChat = UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, [this, EventInfo](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
 	{
 		if (Success)
 		{
@@ -81,17 +81,30 @@ void UTAAreaScene::LoadAreaScene(const FTAEventInfo& EventInfo)
 						}
 					}
 
+					UClass* InteractiveActorClass = nullptr;
+					const UTASettings* Settings = GetDefault<UTASettings>();
+					if (Settings)
+					{
+						InteractiveActorClass = Settings->InteractiveActorClass.TryLoadClass<ATAInteractiveActor>();
+					}
+					// 如果没有指定类或者类加载失败，使用默认的InteractiveActorClass类
+					if (!InteractiveActorClass)
+					{
+						InteractiveActorClass = ATAInteractiveActor::StaticClass();
+					}
+					
 					// 生成交互物
 					for (const FInteractableInfo& Interactable : InteractablesArray)
 					{
 						// 这里你可以访问Interactable.Name, Interactable.UniqueFeature, 和 Interactable.Objective
-						ATAInteractiveActor* NewActor = GetWorld()->SpawnActor<ATAInteractiveActor>();
+						ATAInteractiveActor* NewActor = GetWorld()->SpawnActor<ATAInteractiveActor>(InteractiveActorClass);
 						if (NewActor)
 						{
 							UTAInteractionComponent* InteractionCom = NewActor->GetInteractionComponent();
 							if (InteractionCom)
 							{
 								InteractionCom->InteractableInfo = Interactable;
+								InteractionCom->BelongEventDescription = EventInfo.Description;
 							}
 							InteractiveActors.Add(NewActor);
 						}
@@ -100,5 +113,5 @@ void UTAAreaScene::LoadAreaScene(const FTAEventInfo& EventInfo)
 			}
 		}
 		CacheChat = nullptr;
-	});
+	},this);
 }

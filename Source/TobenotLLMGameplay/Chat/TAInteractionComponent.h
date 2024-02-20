@@ -34,7 +34,7 @@ class TOBENOTLLMGAMEPLAY_API UTAInteractionComponent : public UActorComponent
 public:
 	UTAInteractionComponent();
 	virtual void InitPrompt();
-	
+	virtual void InitializeComponent() override;
 	virtual void BeginPlay() override;
 	
 	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly, Category = "Prompts")
@@ -42,6 +42,9 @@ public:
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Prompts")
 	FInteractableInfo InteractableInfo;
+	
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Prompts")
+	FString BelongEventDescription;
 	
 	FString GetFullPrompt();
 };

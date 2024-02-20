@@ -44,7 +44,7 @@ void UTAEventGenerator::RequestEventGeneration(const FString& SceneInfo)
 			CacheCallbackObject->OnFailure.Broadcast();
 		}
 		CacheChat = nullptr;
-	});
+	},this);
 }
 
 void UTAEventGenerator::OnChatSuccess(FChatCompletion ChatCompletion)
@@ -114,7 +114,17 @@ TArray<FTAEventInfo> UTAEventGenerator::ParseEventsFromJson(const FString& JsonS
 
 				// 获取并设置事件权重
 				EventInfo.Weight = EventObject->GetIntegerField(TEXT("Weight"));
-
+				
+				if (JsonObject->HasField(TEXT("AdventurePoint")))
+				{
+					EventInfo.AdventurePoint = JsonObject->GetStringField(TEXT("AdventurePoint"));
+				}
+				
+				if (JsonObject->HasField(TEXT("HumorousPoint")))
+				{
+					EventInfo.HumorousPoint = JsonObject->GetStringField(TEXT("HumorousPoint"));
+				}
+				
 				// 添加到结果数组中
 				ParsedEvents.Add(EventInfo);
 			}

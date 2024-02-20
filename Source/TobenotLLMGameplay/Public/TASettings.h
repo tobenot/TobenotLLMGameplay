@@ -27,4 +27,12 @@ public:
 	// 设置要使用的Prompt模板，UTAPromptSetting子类
 	UPROPERTY(config, EditAnywhere, Category="Prompt")
 	FSoftClassPath TAPromptSetting;
+
+	// 设置要使用的交互Actor类，ATAInteractiveActor子类
+	UPROPERTY(config, EditAnywhere, Category="Event")
+	FSoftClassPath InteractiveActorClass;
+	
+	// 设置要使用的交互组件类，UTAInteractionComponent子类
+	UPROPERTY(config, EditAnywhere, Category="Event")
+	FSoftClassPath InteractionComponentClass;
 };
