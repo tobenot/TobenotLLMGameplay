@@ -192,7 +192,6 @@ void UTAChatComponent::ClearChatHistoryWithActor(AActor* OtherActor)
 void UTAChatComponent::HandleSuccessfulMessage(FChatCompletion Message)
 {
     OnMessageSent.Broadcast(Message);
-    UE_LOG(LogTemp, Log, TEXT("Received message: %s"), *Message.message.content);
     // 尝试进行 FunctionInvoke
     if (bEnableFunctionInvoke)
     {
