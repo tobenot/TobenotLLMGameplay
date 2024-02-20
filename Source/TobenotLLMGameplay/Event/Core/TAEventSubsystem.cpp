@@ -35,7 +35,8 @@ void UTAEventSubsystem::HandleGeneratedEvents(TArray<FTAEventInfo>& GeneratedEve
 
 			// 为事件设置地点GUID
 			EventInfo.LocationGuid = LocationGuid;
-
+			EventInfo.ActivationType = EEventActivationType::Proximity;
+			
 			// 将事件和它的地点GUID添加到事件池
 			auto& Info = EventPool->AddEvent(EventInfo);
 

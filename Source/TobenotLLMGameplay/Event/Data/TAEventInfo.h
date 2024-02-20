@@ -19,6 +19,15 @@ enum class ETAEventType : uint8
 	Other UMETA(DisplayName = "其他"),
 };
 
+// 定义事件激活类型枚举
+UENUM(BlueprintType)
+enum class EEventActivationType : uint8
+{
+	Proximity UMETA(DisplayName = "靠近位点触发"),
+	Geographic UMETA(DisplayName = "地理信息触发"),
+	PlotProgress UMETA(DisplayName = "剧情进展触发"),
+};
+
 USTRUCT(BlueprintType)
 struct FTAEventInfo
 {
@@ -33,6 +42,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event")
 	FGuid LocationGuid;
 
+	// 事件触发方式
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event")
+	EEventActivationType ActivationType;
+	
 	// LLM start
 
 	// 事件触发地名（如水井、草丛）

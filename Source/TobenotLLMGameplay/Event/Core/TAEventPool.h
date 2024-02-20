@@ -22,8 +22,9 @@ public:
 	bool GetEventByID(int32 EventID, FTAEventInfo& OutEventInfo);
 
 	FTAEventInfo ZeroEvent;
+	
 private:
-	// 所有事件信息的集合，这里是最持久的保存事件信息的地方。由EventSubsystem管理。
+	// 所有事件信息的集合，这里是唯一的最持久的保存事件信息的地方。由EventSubsystem管理。请用指针指它
 	UPROPERTY(VisibleAnywhere, Category = "Event")
 	TArray<FTAEventInfo> AllEventInfo;
 	
@@ -31,7 +32,21 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Event")
 	TArray<UTAEventInstance*> ActiveEvents;
 
-	// 待触发的事件的集合
-	UPROPERTY(VisibleAnywhere, Category = "Event")
-	TArray<UTAEventInstance*> PendingEvents;
+	TArray<FTAEventInfo*> PendingEventInfos;
+	// 傻眼了吧孩子，这个结构体指针不能暴露给蓝图
+
+private:
+	bool bHasStartedProximityCheck = false;
+	
+	// 定义定时器句柄
+	FTimerHandle EventTriggerTimerHandle;
+	
+	// 定义检查功能函数
+	UFUNCTION()
+	void CheckPlayerProximityToEvents();
+    
+	// 此函数用于开启周期性检查
+	void StartProximityCheck();
+
+	virtual void BeginDestroy() override;
 };
