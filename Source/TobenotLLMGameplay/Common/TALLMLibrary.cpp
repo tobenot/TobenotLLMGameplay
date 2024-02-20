@@ -104,6 +104,7 @@ UOpenAIChat* UTALLMLibrary::DownloadImageFromPollinations(const FString& ImagePr
 					// 简易的替换屏蔽词，它们生成出来的图片不好看
 					Description.ReplaceInline(TEXT("mushroom"), TEXT("*"));
 					Description.ReplaceInline(TEXT("monster"), TEXT("*"));
+					Description.ReplaceInline(TEXT("fungi"), TEXT("*"));
 					
 					// URL编码图片提示词
 					FString EncodedPrompt = FGenericPlatformHttp::UrlEncode(Description);

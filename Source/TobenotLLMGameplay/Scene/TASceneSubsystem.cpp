@@ -41,7 +41,7 @@ ATAPlaceActor* UTASceneSubsystem::CreateAndAddPlace(const FVector& Location, flo
 		ATAPlaceActor* NewPlaceActor = World->SpawnActor<ATAPlaceActor>(PlaceActorClass, Location, FRotator::ZeroRotator);
 		if (NewPlaceActor)
 		{
-			NewPlaceActor->PlaceName = Name;
+			NewPlaceActor->SetPlaceName(Name);
 			NewPlaceActor->SetPlaceRadius(Radius);
 			PlaceActors.Add(NewPlaceActor);
 			ITAGuidInterface* GuidInterface = Cast<ITAGuidInterface>(NewPlaceActor);

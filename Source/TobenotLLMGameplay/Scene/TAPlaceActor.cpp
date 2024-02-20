@@ -42,3 +42,23 @@ void ATAPlaceActor::SetPlaceRadius(float Radius)
 		AreaDisplaySphere->SetSphereRadius(PlaceRadius);
 	}
 }
+
+// Implementation of SetPlaceName
+void ATAPlaceActor::SetPlaceName(const FString& NewName)
+{
+	if (PlaceName != NewName)
+	{
+		PlaceName = NewName;
+		OnPlaceNameChanged.Broadcast(NewName);
+	}
+}
+
+// Implementation of SetPlaceTexture
+void ATAPlaceActor::SetPlaceTexture(UTexture2DDynamic* NewTexture)
+{
+	if (PlaceTexture != NewTexture)
+	{
+		PlaceTexture = NewTexture;
+		OnTextureChanged.Broadcast(NewTexture);
+	}
+}

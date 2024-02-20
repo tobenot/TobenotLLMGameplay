@@ -20,7 +20,7 @@ public:
 	FTAEventInfo& AddEvent(FTAEventInfo EventInfo);
 
 	UFUNCTION(BlueprintCallable, Category = "Event")
-	bool GetEventByID(int32 EventID, FTAEventInfo& OutEventInfo);
+	FTAEventInfo& GetEventByID(int32 EventID, bool& bSuccess);
 
 	FTAEventInfo ZeroEvent;
 	

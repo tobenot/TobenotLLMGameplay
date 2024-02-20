@@ -10,6 +10,11 @@
 
 #include "Engine/Texture2DDynamic.h"
 
+#include "Event/Core/TAEventPool.h"
+#include "Event/Core/TAEventSubsystem.h"
+#include "Scene/TAPlaceActor.h"
+#include "Save/TAGuidSubsystem.h"
+
 UTAImageGenerator::UTAImageGenerator()
 {
 	OnDownloadCompleteDelegate.AddDynamic(this, &UTAImageGenerator::OnDownloadComplete);
@@ -33,6 +38,28 @@ void UTAImageGenerator::OnDownloadComplete(UTexture2DDynamic* Texture)
 {
 	if (Texture != nullptr)
 	{
+		// 设置到位点上
+		UTAEventSubsystem* EventSubsystem = GetWorld()->GetSubsystem<UTAEventSubsystem>();
+		if (EventSubsystem)
+		{
+			auto Pool = EventSubsystem->GetEventPool();
+			if(Pool)
+			{
+				bool bFlag;
+				FTAEventInfo& BoundEventInfo = Pool->GetEventByID(BoundEventID,bFlag);
+				if(bFlag)
+				{
+					UTAGuidSubsystem* GuidSubsystem = GetWorld()->GetSubsystem<UTAGuidSubsystem>();
+					if(GuidSubsystem)
+					{
+						ATAPlaceActor* PlaceActor = Cast<ATAPlaceActor>(GuidSubsystem->GetActorByGUID(BoundEventInfo.LocationGuid));
+						PlaceActor->SetPlaceTexture(Texture);
+					}
+				}
+			}
+		}
+		
+		// 下面是存文件
 		// 将纹理转换为2D纹理资源
 		FTexture2DDynamicResource* TextureResource = static_cast<FTexture2DDynamicResource*>(Texture->GetResource());
 		if (TextureResource != nullptr)

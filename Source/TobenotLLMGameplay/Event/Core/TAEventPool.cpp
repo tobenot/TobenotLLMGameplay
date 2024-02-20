@@ -23,19 +23,19 @@ FTAEventInfo& UTAEventPool::AddEvent(FTAEventInfo EventInfo)
 	return EventInfoRef;
 }
 
-bool UTAEventPool::GetEventByID(int32 EventID, FTAEventInfo& OutEventInfo)
+FTAEventInfo& UTAEventPool::GetEventByID(int32 EventID, bool& bSuccess)
 {
 	for (FTAEventInfo& EventInfoRef : AllEventInfo)
 	{
 		if (EventInfoRef.EventID == EventID)
 		{
-			OutEventInfo = EventInfoRef;
-			return true;
+			bSuccess = true;
+			return EventInfoRef;
 		}
 	}
 	
-	OutEventInfo = ZeroEvent;
-	return false;
+	bSuccess = false;
+	return ZeroEvent;
 }
 
 // 开启周期性检查

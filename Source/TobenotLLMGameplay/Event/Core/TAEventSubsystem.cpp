@@ -100,9 +100,6 @@ void UTAEventSubsystem::Start()
 	}
 }
 
-
-// UTAEventSubsystem.cpp
-
 void UTAEventSubsystem::GenerateImageForEvent(const FTAEventInfo& GeneratedEvent)
 {
 	UTAImageGenerator* ImageGenerator = NewObject<UTAImageGenerator>(this);
