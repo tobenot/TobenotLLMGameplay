@@ -75,7 +75,7 @@ UOpenAIChat* UTALLMLibrary::DownloadImageFromPollinations(const FString& ImagePr
 		"Remember, only describe the vast scenery, DO NOT describe any characters or creatures or monster."
 		"Follow the ensuing JSON template: "
 		"{"
-			"\"description\": \"description within 20 words or less, exp:A%20[place]%20creating%20an%20[adj]%20atmosphere.\""
+			"\"description\": \"description within 20 words or less, exp:A [place] creating an [adj] atmosphere.\""
 		"}";
 	TempMessagesList.Add({EOAChatRole::SYSTEM, SystemPrompt});
 	TempMessagesList.Add({EOAChatRole::USER, "text description:"+ImagePrompt});
