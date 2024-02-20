@@ -98,6 +98,13 @@ UOpenAIChat* UTALLMLibrary::DownloadImageFromPollinations(const FString& ImagePr
 				FString Description;
 				if (JsonObject->TryGetStringField(TEXT("description"), Description))
 				{
+					// 全小写，因为网址里面大小写是不区分的
+					Description.ToLowerInline();
+					
+					// 简易的替换屏蔽词，它们生成出来的图片不好看
+					Description.ReplaceInline(TEXT("mushroom"), TEXT("*"));
+					Description.ReplaceInline(TEXT("monster"), TEXT("*"));
+					
 					// URL编码图片提示词
 					FString EncodedPrompt = FGenericPlatformHttp::UrlEncode(Description);
 		    
