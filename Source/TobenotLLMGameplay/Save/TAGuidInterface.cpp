@@ -3,6 +3,7 @@
 
 #include "TAGuidInterface.h"
 
+#include "TAGuidSubsystem.h"
 #include "TASaveGameSubsystem.h"
 
 // Add default functionality here for any ITAGuidInterface functions that are not pure virtual.
@@ -20,6 +21,11 @@ void ITAGuidInterface::RegisterActorTAGuid(AActor* Actor, FName Name)
 	if (UTASaveGameSubsystem* SaveGameSubsystem = Actor->GetGameInstance()->GetSubsystem<UTASaveGameSubsystem>())
 	{
 		SaveGameSubsystem->RegisterActorTAGuid(Actor, Name);
+	}
+	if (UTAGuidSubsystem* GuidSubsystem = Actor->GetWorld()->GetSubsystem<UTAGuidSubsystem>())
+	{
+		const FGuid ActorGuid = GetTAGuid();
+		GuidSubsystem->RegisterActorGUID(ActorGuid, Actor);
 	}
 }
 
