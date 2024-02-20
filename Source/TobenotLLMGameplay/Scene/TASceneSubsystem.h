@@ -6,6 +6,7 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "TASceneSubsystem.generated.h"
 
+class UTAAreaScene;
 class ATAPlaceActor;
 struct FTAEventInfo;
 /**
@@ -30,6 +31,9 @@ public:
 	// 创建并添加新的位点到列表中，返回创建的位点Actor
 	UFUNCTION(BlueprintCallable, Category = "Place")
 	ATAPlaceActor* CreateAndAddPlace(const FVector& Location, float Radius, const FString& Name);
+
+	// 创建并返回一个UTAAreaScene实例的函数，同时加载区域地图
+	UTAAreaScene* CreateAndLoadAreaScene(const FTAEventInfo& EventInfo);
 	
 private:
 	// 存储所有位点Actors的引用的列表
@@ -37,4 +41,6 @@ private:
 	TArray<ATAPlaceActor*> PlaceActors;
 	
 	int32 MaxQueryEventLocationRetryCount = 100;
+
+	TMap<int32, UTAAreaScene*> AreaScenesMap;
 };

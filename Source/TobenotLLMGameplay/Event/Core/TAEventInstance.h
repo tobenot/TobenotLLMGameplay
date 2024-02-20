@@ -7,6 +7,7 @@
 #include "Event/Data/TAEventInfo.h"
 #include "TAEventInstance.generated.h"
 
+class UTAAreaScene;
 /**
  * 
  */
@@ -23,4 +24,7 @@ public:
 	// 用于打印信息的函数，以模拟事件的触发
 	UFUNCTION(BlueprintCallable, Category = "Event")
 	void TriggerEvent();
+
+private:
+	bool bTriggered = false;
 };

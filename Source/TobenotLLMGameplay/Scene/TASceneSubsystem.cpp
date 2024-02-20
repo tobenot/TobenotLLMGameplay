@@ -6,6 +6,7 @@
 #include "Event/Data/TAEventInfo.h"
 #include "TASceneLogCategory.h"
 #include "TASettings.h"
+#include "TAAreaScene.h"
 
 FString UTASceneSubsystem::QuerySceneMapInfo()
 {
@@ -55,6 +56,18 @@ ATAPlaceActor* UTASceneSubsystem::CreateAndAddPlace(const FVector& Location, flo
 		}
 	}
 	return nullptr;
+}
+
+UTAAreaScene* UTASceneSubsystem::CreateAndLoadAreaScene(const FTAEventInfo& EventInfo)
+{
+	// 创建区域地图实例
+	UTAAreaScene* NewAreaScene = NewObject<UTAAreaScene>(this, UTAAreaScene::StaticClass());
+	if (NewAreaScene)
+	{
+		AreaScenesMap.Add(EventInfo.EventID, NewAreaScene);
+		NewAreaScene->LoadAreaScene(EventInfo);
+	}
+	return NewAreaScene; // 返回创建的实例
 }
 
 ATAPlaceActor* UTASceneSubsystem::QueryEventLocationByInfo(const FTAEventInfo& EventInfo)

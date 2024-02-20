@@ -56,40 +56,45 @@ void UTAAreaScene::LoadAreaScene(const FTAEventInfo& EventInfo)
 		{
 			TSharedPtr<FJsonObject> JsonObject;
 			const TArray<TSharedPtr<FJsonValue>>* InteractablesArrayJson;
-			InteractablesArray.Empty();
-			if (JsonObject->TryGetArrayField(TEXT("Interactables"), InteractablesArrayJson))
+			const TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Message.message.content);
+
+			if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
 			{
-				// 遍历JSON数组
-				for (int32 Index = 0; Index < InteractablesArrayJson->Num(); ++Index)
+				InteractablesArray.Empty();
+				if (JsonObject->TryGetArrayField(TEXT("Interactables"), InteractablesArrayJson))
 				{
-					// 获取每个交互物的JSON对象
-					TSharedPtr<FJsonObject> InteractableJson = (*InteractablesArrayJson)[Index]->AsObject();
-					if (InteractableJson.IsValid())
+					// 遍历JSON数组
+					for (int32 Index = 0; Index < InteractablesArrayJson->Num(); ++Index)
 					{
-						// 创建结构体实例并填充数据
-						FInteractableInfo InteractableInfo;
-						InteractableInfo.Name = InteractableJson->GetStringField(TEXT("Name"));
-						InteractableInfo.UniqueFeature = InteractableJson->GetStringField(TEXT("UniqueFeature"));
-						InteractableInfo.Objective = InteractableJson->GetStringField(TEXT("Objective"));
-
-						// 将填充好的结构体添加到数组中
-						InteractablesArray.Add(InteractableInfo);
-					}
-				}
-
-				// 生成交互物
-				for (const FInteractableInfo& Interactable : InteractablesArray)
-				{
-					// 这里你可以访问Interactable.Name, Interactable.UniqueFeature, 和 Interactable.Objective
-					ATAInteractiveActor* NewActor = GetWorld()->SpawnActor<ATAInteractiveActor>();
-					if (NewActor)
-					{
-						UTAInteractionComponent* InteractionCom = NewActor->GetInteractionComponent();
-						if (InteractionCom)
+						// 获取每个交互物的JSON对象
+						TSharedPtr<FJsonObject> InteractableJson = (*InteractablesArrayJson)[Index]->AsObject();
+						if (InteractableJson.IsValid())
 						{
-							InteractionCom->InteractableInfo = Interactable;
+							// 创建结构体实例并填充数据
+							FInteractableInfo InteractableInfo;
+							InteractableInfo.Name = InteractableJson->GetStringField(TEXT("Name"));
+							InteractableInfo.UniqueFeature = InteractableJson->GetStringField(TEXT("UniqueFeature"));
+							InteractableInfo.Objective = InteractableJson->GetStringField(TEXT("Objective"));
+
+							// 将填充好的结构体添加到数组中
+							InteractablesArray.Add(InteractableInfo);
 						}
-						InteractiveActors.Add(NewActor);
+					}
+
+					// 生成交互物
+					for (const FInteractableInfo& Interactable : InteractablesArray)
+					{
+						// 这里你可以访问Interactable.Name, Interactable.UniqueFeature, 和 Interactable.Objective
+						ATAInteractiveActor* NewActor = GetWorld()->SpawnActor<ATAInteractiveActor>();
+						if (NewActor)
+						{
+							UTAInteractionComponent* InteractionCom = NewActor->GetInteractionComponent();
+							if (InteractionCom)
+							{
+								InteractionCom->InteractableInfo = Interactable;
+							}
+							InteractiveActors.Add(NewActor);
+						}
 					}
 				}
 			}
