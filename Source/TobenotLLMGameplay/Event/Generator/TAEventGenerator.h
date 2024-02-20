@@ -43,5 +43,9 @@ private:
 	// 解析大模型返回的JSON字符串并转换为事件数组
 	TArray<FTAEventInfo> ParseEventsFromJson(const FString& JsonString);
 
+	UPROPERTY()
 	UTAChatCallback* CacheCallbackObject;
+
+	UPROPERTY()
+	class UOpenAIChat* CacheChat;
 };

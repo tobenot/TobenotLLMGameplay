@@ -33,7 +33,7 @@ void UTAEventGenerator::RequestEventGeneration(const FString& SceneInfo)
 	CallbackObject->OnFailure.AddDynamic(this, &UTAEventGenerator::OnChatFailure);
     
 	// 异步发送消息
-	UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, [this](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
+	CacheChat = UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, [this](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
 	{
 		if (Success)
 		{
@@ -43,6 +43,7 @@ void UTAEventGenerator::RequestEventGeneration(const FString& SceneInfo)
 		{
 			CacheCallbackObject->OnFailure.Broadcast();
 		}
+		CacheChat = nullptr;
 	});
 }
 
