@@ -21,7 +21,7 @@ FString UTAInteractionComponent::GetFullPrompt()
 {
 	return UTALLMLibrary::PromptToStr(InteractiveActorPromptTemplate)
 	.Replace(TEXT("{Language}"), *UTASystemLibrary::GetGameLanguage())
-	.Replace(TEXT("{InteractableActorProfile}"), *InteractableActorProfile)
+	.Replace(TEXT("{InteractableActorProfile}"), *InteractableInfo.Name)
 	;
 }
 

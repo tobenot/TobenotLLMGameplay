@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "TAPromptSetting.h"
 #include "Engine/DeveloperSettings.h"
 #include "TASettings.generated.h"
 
@@ -22,4 +23,8 @@ public:
 	// 设置要使用的ATAPlaceActor的子类的类名。
 	UPROPERTY(config, EditAnywhere, Category="Scene")
 	FSoftClassPath PlaceActorClass;
+
+	// 设置要使用的Prompt模板，UTAPromptSetting子类
+	UPROPERTY(config, EditAnywhere, Category="Prompt")
+	FSoftClassPath TAPromptSetting;
 };

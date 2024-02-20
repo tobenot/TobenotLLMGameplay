@@ -8,6 +8,21 @@
 #include "TobenotLLMGameplay/Common/TAPromptDefinitions.h"
 #include "TAInteractionComponent.generated.h"
 
+USTRUCT(BlueprintType)
+struct FInteractableInfo
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString Name;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString UniqueFeature;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FString Objective;
+};
+
 /**
  * TA游戏中用于特定交互物的组件
  */
@@ -26,7 +41,7 @@ public:
 	FTAPrompt InteractiveActorPromptTemplate;
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Prompts")
-	FString InteractableActorProfile;
+	FInteractableInfo InteractableInfo;
 	
 	FString GetFullPrompt();
 };
