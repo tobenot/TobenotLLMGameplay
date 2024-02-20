@@ -12,11 +12,11 @@ This plugin is a compilation of general logic frequently employed by Tobenot for
 - **Chat UI**: Facilitates a selection of interactions and dialogues; minimal UI handling recommended as UI elements are outside the realm of C++.
 
 ### Scene System:
-- **Waypoint Module**: Denotes an area using a spherical representation.
+- **Location Module**: Denotes an area using a spherical representation.
 
 ### Event System:
 - **Event Dynamic Creation**: Allows for on-the-fly event creation.
-- **Event Activation**: Presently limited to proximity-based activation using waypoints.
+- **Event Activation**: Presently limited to proximity-based activation.
 - **Interactive Object Production**: Spawns interactive objects upon event initiation.
 
 ### Ancillary Systems:
@@ -58,7 +58,7 @@ This plugin is a compilation of general logic frequently employed by Tobenot for
   
 ### 事件系统：
 - **事件动态生成**：支持事件动态生成
-- **事件触发**：目前只接位点做了接近触发
+- **事件触发**：目前只做了接近触发
 - **交互物生成**：触发事件后生成交互物
 
 ### 外围系统：
