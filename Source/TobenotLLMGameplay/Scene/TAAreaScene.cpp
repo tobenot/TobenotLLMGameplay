@@ -8,6 +8,7 @@
 #include "Common/TALLMLibrary.h"
 #include "Common/TASystemLibrary.h"
 #include "Event/Data/TAEventInfo.h"
+#include "Save/TAGuidSubsystem.h"
 
 void UTAAreaScene::LoadAreaScene(const FTAEventInfo& EventInfo)
 {
@@ -92,21 +93,41 @@ void UTAAreaScene::LoadAreaScene(const FTAEventInfo& EventInfo)
 					{
 						InteractiveActorClass = ATAInteractiveActor::StaticClass();
 					}
-					
-					// 生成交互物
-					for (const FInteractableInfo& Interactable : InteractablesArray)
+
+					// 定义位置和旋转
+					UTAGuidSubsystem* GuidSubsystem = GetWorld()->GetSubsystem<UTAGuidSubsystem>();
+					if(GuidSubsystem)
 					{
-						// 这里你可以访问Interactable.Name, Interactable.UniqueFeature, 和 Interactable.Objective
-						ATAInteractiveActor* NewActor = GetWorld()->SpawnActor<ATAInteractiveActor>(InteractiveActorClass);
-						if (NewActor)
+						AActor* PlaceActor = GuidSubsystem->GetActorByGUID(EventInfo.LocationGuid);
+						if (PlaceActor)
 						{
-							UTAInteractionComponent* InteractionCom = NewActor->GetInteractionComponent();
-							if (InteractionCom)
+							// 获取位置
+							FVector Location = PlaceActor->GetActorLocation();
+							FRotator Rotation = PlaceActor->GetActorRotation();
+					        
+							// 生成交互物
+							for (const FInteractableInfo& Interactable : InteractablesArray)
 							{
-								InteractionCom->InteractableInfo = Interactable;
-								InteractionCom->BelongEventDescription = EventInfo.Description;
+								FVector NewLocation = Location + FMath::VRand() * 1000;
+								NewLocation.Z = Location.Z;
+								FRotator NewRotation = Rotation + FRotator(0, (FMath::FRand() - 0.5) * 180, 0);
+
+								// 旋转直接随机数
+								ATAInteractiveActor* NewActor = GetWorld()->SpawnActor<ATAInteractiveActor>(InteractiveActorClass, NewLocation, NewRotation);
+								if (NewActor)
+								{
+									UTAInteractionComponent* InteractionCom = NewActor->GetInteractionComponent();
+									if (InteractionCom)
+									{
+										InteractionCom->InteractableInfo = Interactable;
+										InteractionCom->BelongEventDescription = EventInfo.Description;
+									}
+									InteractiveActors.Add(NewActor);
+								}
 							}
-							InteractiveActors.Add(NewActor);
+						}else
+						{
+							UE_LOG(LogTASceneSystem, Error, TEXT("LoadAreaScene 未绑定位点，生成交互物失败"));
 						}
 					}
 				}
