@@ -51,7 +51,7 @@ public class TobenotLLMGameplay : ModuleRules
 				"RenderCore", 
 				
 				"TobenotToolkit",
-				
+				"NavigationSystem", // 场景系统用
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

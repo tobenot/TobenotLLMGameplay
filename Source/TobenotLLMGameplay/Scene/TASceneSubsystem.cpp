@@ -2,6 +2,8 @@
 
 
 #include "TASceneSubsystem.h"
+
+#include "NavigationSystem.h"
 #include "TAPlaceActor.h"
 #include "Event/Data/TAEventInfo.h"
 #include "TASceneLogCategory.h"
@@ -70,6 +72,77 @@ UTAAreaScene* UTASceneSubsystem::CreateAndLoadAreaScene(const FTAEventInfo& Even
 	return NewAreaScene; // 返回创建的实例
 }
 
+void UTASceneSubsystem::PopulateMapWithMonsters(const TArray<FVector>& ForbiddenLocations)
+{
+    // 检查世界是否有效
+    if (GetWorld() == nullptr)
+    {
+        UE_LOG(LogTASceneSystem, Error, TEXT("Invalid world in PopulateMapWithMonsters"));
+        return;
+    }
+    bHasPopulateMapWithMonsters = true;
+
+    // 初始化随机数生成器
+    FRandomStream RandomStream;
+    RandomStream.GenerateNewSeed();
+
+    // 定义地图生成怪物的配置项
+    const float MapRadius = 10000.f; // 地图半径
+    const float Interval = 800.f;   // 间隔
+    const float SafeZoneRadius = 2000.f; // PlayerStart 安全区域半径
+
+    FVector GenStartLocation = FVector::ZeroVector;
+
+    // 获取怪物类引用
+    UClass* MonsterClass = GetMonsterClass();
+    if (!MonsterClass || MonsterClass == AActor::StaticClass())
+    {
+        UE_LOG(LogTASceneSystem, Error, TEXT("Invalid MonsterClass in PopulateMapWithMonsters"));
+        return;
+    }
+
+    int32 GeneratedMonsterCount = 0;
+
+    // 在地图上随机生成怪物
+    for (float X = -MapRadius; X < MapRadius; X += Interval)
+    {
+        for (float Y = -MapRadius; Y < MapRadius; Y += Interval)
+        {
+            FVector RandomLocation = FVector(X, Y, 0.f) + GenStartLocation;
+            RandomLocation.Z = GenStartLocation.Z; // 假设地图是平坦的，使用PlayerStart的Z值
+
+            // 确保不在ForbiddenLocations中的位置生成怪物
+            bool bIsForbiddenLocation = false;
+            for (const FVector& ForbiddenLocation : ForbiddenLocations)
+            {
+                if (FVector::Dist2D(RandomLocation, ForbiddenLocation) < SafeZoneRadius)
+                {
+                    bIsForbiddenLocation = true;
+                    break;
+                }
+            }
+
+            if (!bIsForbiddenLocation)
+            {
+                // 使用导航系统来确保点是可达的
+                FNavLocation NavLocation;
+                UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+                if (NavSys && NavSys->GetRandomPointInNavigableRadius(RandomLocation, Interval, NavLocation, nullptr))
+                {
+                    // 在这个位置生成一个怪物
+                    AActor* NewMonster = GetWorld()->SpawnActor<AActor>(MonsterClass, NavLocation.Location, FRotator::ZeroRotator);
+                    if (NewMonster)
+                    {
+                        GeneratedMonsterCount++;
+                    }
+                }
+            }
+        }
+    }
+
+    UE_LOG(LogTASceneSystem, Log, TEXT("怪物生成完毕，生成数量：%d"), GeneratedMonsterCount);
+}
+
 ATAPlaceActor* UTASceneSubsystem::QueryEventLocationByInfo(const FTAEventInfo& EventInfo)
 {
     UE_LOG(LogTASceneSystem, Log, TEXT("开始查询事件位置信息..."));
@@ -129,4 +202,25 @@ ATAPlaceActor* UTASceneSubsystem::QueryEventLocationByInfo(const FTAEventInfo& E
     } while (!bIsValidLocation);
 
     return nullptr;
+}
+
+
+UClass* UTASceneSubsystem::GetMonsterClass() const
+{
+	UClass* MonsterClass = nullptr;
+
+	// Fetch the default class path from settings
+	const UTASettings* Settings = GetDefault<UTASettings>();
+	if (Settings)
+	{
+		MonsterClass = Settings->MonsterClass.TryLoadClass<AActor>();
+	}
+
+	// If no specified class or class loading fails, use the default AActor class
+	if (!MonsterClass)
+	{
+		MonsterClass = AActor::StaticClass();
+	}
+
+	return MonsterClass;
 }

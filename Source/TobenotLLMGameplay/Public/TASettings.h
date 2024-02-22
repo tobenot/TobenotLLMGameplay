@@ -35,4 +35,8 @@ public:
 	// 设置要使用的交互组件类，UTAInteractionComponent子类
 	UPROPERTY(config, EditAnywhere, Category="Event")
 	FSoftClassPath InteractionComponentClass;
+	
+	// 设置要使用的怪物类，UAActor类的子类
+	UPROPERTY(config, EditAnywhere, Category = "Scene")
+	FSoftClassPath MonsterClass;
 };
