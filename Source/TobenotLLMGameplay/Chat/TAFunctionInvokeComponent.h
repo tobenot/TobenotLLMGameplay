@@ -56,5 +56,5 @@ protected:
     virtual void TriggerBattle(const FString& Depict);
     
     UFUNCTION()
-    virtual void GiveItemToPlayer(const FString& Depict);
+    virtual void GiveItem(const FString& Depict);
 };

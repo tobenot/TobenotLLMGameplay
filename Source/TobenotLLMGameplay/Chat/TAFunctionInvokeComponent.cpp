@@ -51,7 +51,16 @@ void UTAFunctionInvokeComponent::ParseAndTriggerFunctions(const FString& Respons
         }
         else
         {
-            UE_LOG(LogFunctionInvoke, Verbose, TEXT("FunctionInvoke: 'func_invoke' field is missing."));
+            // Try parsing as a single object instead of an array
+            const TSharedPtr<FJsonObject>* FuncInvokeObject;
+            if (JsonObject->TryGetObjectField(TEXT("func_invoke"), FuncInvokeObject))
+            {
+                HandleFunctionInvoke(MakeShareable(new FJsonValueObject(*FuncInvokeObject)));
+            }
+            else
+            {
+                UE_LOG(LogFunctionInvoke, Verbose, TEXT("FunctionInvoke: 'func_invoke' field is neither an array nor a valid object."));
+            }
         }
     }
     else
@@ -68,7 +77,7 @@ void UTAFunctionInvokeComponent::TriggerBattle(const FString& Depict)
 }
 
 // 实现给玩家物品的逻辑
-void UTAFunctionInvokeComponent::GiveItemToPlayer(const FString& Depict)
+void UTAFunctionInvokeComponent::GiveItem(const FString& Depict)
 {
     UE_LOG(LogFunctionInvoke, Warning, TEXT("FunctionInvoke: GiveItemToPlayer! Depict: %s"), *Depict);
     // TODO: 根据Depict实现具体的给予物品逻辑
