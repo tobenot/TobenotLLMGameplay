@@ -55,7 +55,7 @@ ATAInteractiveActor::ATAInteractiveActor()
 	ChatComponent = CreateDefaultSubobject<UTAChatComponent>(TEXT("ChatComponent"));
 	ChatComponent->bEnableFunctionInvoke = true;
     
-	FunctionInvokeComponent = CreateDefaultSubobject<UTAFunctionInvokeComponent>(TEXT("FunctionInvokeComponent"));
+	//FunctionInvokeComponent = CreateDefaultSubobject<UTAFunctionInvokeComponent>(TEXT("FunctionInvokeComponent"));
 }
 
 void ATAInteractiveActor::BeginPlay()

@@ -39,6 +39,7 @@ struct FTAActorMessageQueue
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMessageSent, const FChatCompletion&, Message);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMessageSentWithSender, const FChatCompletion&, Message, AActor*, SenderCom);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnMessageFailed);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -81,13 +82,16 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "TAChatComponent")
 	FOnMessageSent OnMessageSent;
+	
+	UPROPERTY(BlueprintAssignable, Category = "TAChatComponent")
+	FOnMessageSentWithSender OnMessageSentWithSender;
 
 	UPROPERTY(BlueprintAssignable, Category = "TAChatComponent")
 	FOnMessageFailed OnMessageFailed;
 	
 private:
 	UFUNCTION()
-	void HandleSuccessfulMessage(FChatCompletion Message);
+	void HandleSuccessfulMessage(FChatCompletion Message,AActor* Sender);
 	UFUNCTION()
 	void HandleFailedMessage();
 	

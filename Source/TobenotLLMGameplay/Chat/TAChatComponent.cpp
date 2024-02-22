@@ -100,7 +100,7 @@ void UTAChatComponent::ProcessMessage(AActor* OriActor, FString UserMessage, UTA
     
     ActiveActors.Add(OriActor);
     CallbackMap.Add(OriActor, CallbackObject);
-    CallbackObject->OnSuccess.AddDynamic(this, &UTAChatComponent::HandleSuccessfulMessage);
+    CallbackObject->OnSuccessWithSender.AddDynamic(this, &UTAChatComponent::HandleSuccessfulMessage);
     CallbackObject->OnFailure.AddDynamic(this, &UTAChatComponent::HandleFailedMessage);
 
     auto& TempMessagesList = GetChatHistoryWithActor(OriActor);
@@ -132,6 +132,7 @@ void UTAChatComponent::ProcessMessage(AActor* OriActor, FString UserMessage, UTA
             if(CallbackMap.Contains(OriActor))
             {
                 CallbackMap[OriActor]->OnSuccess.Broadcast(Message);
+                CallbackMap[OriActor]->OnSuccessWithSender.Broadcast(Message,OriActor);
             }
             CallbackMap.Remove(OriActor);
             auto& TempMessagesList = GetChatHistoryWithActor(OriActor);
@@ -190,9 +191,10 @@ void UTAChatComponent::ClearChatHistoryWithActor(AActor* OtherActor)
     CallbackMap.Remove(OtherActor);
 }
 
-void UTAChatComponent::HandleSuccessfulMessage(FChatCompletion Message)
+void UTAChatComponent::HandleSuccessfulMessage(FChatCompletion Message, AActor* Sender)
 {
     OnMessageSent.Broadcast(Message);
+    OnMessageSentWithSender.Broadcast(Message, Sender);
     // 尝试进行 FunctionInvoke
     if (bEnableFunctionInvoke)
     {
