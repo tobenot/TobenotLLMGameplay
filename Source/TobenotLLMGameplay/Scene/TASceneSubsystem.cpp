@@ -87,9 +87,13 @@ void UTASceneSubsystem::PopulateMapWithMonsters(const TArray<FVector>& Forbidden
     RandomStream.GenerateNewSeed();
 
     // 定义地图生成怪物的配置项
-    const float MapRadius = 10000.f; // 地图半径
-    const float Interval = 800.f;   // 间隔
-    const float SafeZoneRadius = 2000.f; // PlayerStart 安全区域半径
+    constexpr float Interval = 800.f;   // 间隔
+    constexpr float SafeZoneRadius = 2000.f; // PlayerStart 安全区域半径
+	// 定义方形地图的边界
+	constexpr float MinX = 200.f;
+	constexpr float MaxX = 19800.f;
+	constexpr float MinY = 200.f;
+	constexpr float MaxY = 4800.f;
 
     FVector GenStartLocation = FVector::ZeroVector;
 
@@ -103,13 +107,13 @@ void UTASceneSubsystem::PopulateMapWithMonsters(const TArray<FVector>& Forbidden
 
     int32 GeneratedMonsterCount = 0;
 
-    // 在地图上随机生成怪物
-    for (float X = -MapRadius; X < MapRadius; X += Interval)
-    {
-        for (float Y = -MapRadius; Y < MapRadius; Y += Interval)
-        {
-            FVector RandomLocation = FVector(X, Y, 0.f) + GenStartLocation;
-            RandomLocation.Z = GenStartLocation.Z; // 假设地图是平坦的，使用PlayerStart的Z值
+	// 在地图上随机生成怪物
+	for (float X = MinX; X < MaxX; X += Interval)
+	{
+		for (float Y = MinY; Y < MaxY; Y += Interval)
+		{
+			FVector RandomLocation = FVector(X, Y, 0.f) + GenStartLocation;
+			RandomLocation.Z = GenStartLocation.Z; // 假设地图是平坦的，使用PlayerStart的Z值
 
             // 确保不在ForbiddenLocations中的位置生成怪物
             bool bIsForbiddenLocation = false;
@@ -156,14 +160,14 @@ ATAPlaceActor* UTASceneSubsystem::QueryEventLocationByInfo(const FTAEventInfo& E
     do
     {
         bIsValidLocation = true;
-        float MinX = -4000.0f;
-        float MaxX = 4000.0f;
-        float MinY = -4000.0f;
-        float MaxY = 4000.0f;
+        constexpr float MinX = 0.0f + 200.f;
+        constexpr float MaxX = 20000.0f- 200.f;
+        constexpr float MinY = 0.0f + 200.f;
+        constexpr float MaxY = 5000.0f - 200.f;
         FVector RandomPoint(FMath::FRandRange(MinX, MaxX), FMath::FRandRange(MinY, MaxY), 0);
 
-        float MinRadius = 1500.0f;
-        float MaxRadius = 3000.0f;
+        constexpr float MinRadius = 1500.0f;
+        constexpr float MaxRadius = 3000.0f;
         float RandomRadius = FMath::RandRange(MinRadius, MaxRadius);
 
         // 使用导航系统来确保点是可达的
