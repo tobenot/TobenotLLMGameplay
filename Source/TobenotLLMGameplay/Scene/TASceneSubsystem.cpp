@@ -150,51 +150,61 @@ ATAPlaceActor* UTASceneSubsystem::QueryEventLocationByInfo(const FTAEventInfo& E
     bool bIsValidLocation;
     int32 RetryCount = 0;
 
+    UNavigationSystemV1* NavSys = FNavigationSystem::GetCurrent<UNavigationSystemV1>(GetWorld());
+    FNavLocation NavLocation;
+
     do
     {
         bIsValidLocation = true;
-        float MinX = 500.0f;
-        float MaxX = 1500.0f;
-        float MinY = -500.0f;
-        float MaxY = 500.0f;
-
+        float MinX = -4000.0f;
+        float MaxX = 4000.0f;
+        float MinY = -4000.0f;
+        float MaxY = 4000.0f;
         FVector RandomPoint(FMath::FRandRange(MinX, MaxX), FMath::FRandRange(MinY, MaxY), 0);
 
-        float MinRadius = 100.0f;
-        float MaxRadius = 300.0f;
+        float MinRadius = 1500.0f;
+        float MaxRadius = 3000.0f;
         float RandomRadius = FMath::RandRange(MinRadius, MaxRadius);
 
-        // 测试新生成的点与现有位点之间的距离
-        for (ATAPlaceActor* PlaceActor : PlaceActors)
-        {
-            if (PlaceActor)
-            {
-                float Distance = (PlaceActor->GetActorLocation() - RandomPoint).Size();
-                if (Distance < (PlaceActor->PlaceRadius + RandomRadius))
-                {
-                    bIsValidLocation = false;
-                    break;
-                }
-            }
-        }
+        // 使用导航系统来确保点是可达的
+    	if (!NavSys || !NavSys->GetRandomPointInNavigableRadius(RandomPoint, RandomRadius, NavLocation, nullptr))
+    	{
+    		UE_LOG(LogTASceneSystem, Warning, TEXT("Failed to find a navigable point."));
+    		bIsValidLocation = false;
+    	}
+
+    	if(bIsValidLocation)
+    	{
+    		// 测试新生成的点与现有位点之间的距离
+    		for (ATAPlaceActor* PlaceActor : PlaceActors)
+    		{
+    			if (PlaceActor)
+    			{
+    				float Distance = (PlaceActor->GetActorLocation() - NavLocation.Location).Size();
+    				if (Distance < (PlaceActor->PlaceRadius + RandomRadius))
+    				{
+    					bIsValidLocation = false;
+    					break;
+    				}
+    			}
+    		}
+    	}
 
         if (bIsValidLocation)
         {
-            UE_LOG(LogTASceneSystem, Log, TEXT("位置有效，位置选取重试次数： %d，开始创建并添加新的位点到列表中... "),RetryCount);
+            UE_LOG(LogTASceneSystem, Log, TEXT("位置有效，位置选取重试次数：%d，开始创建并添加新的位点到列表中..."), RetryCount);
             // 创建并添加新的位点到列表中
-            ATAPlaceActor* NewPlaceActor = CreateAndAddPlace(RandomPoint, RandomRadius, EventInfo.LocationName);
+            ATAPlaceActor* NewPlaceActor = CreateAndAddPlace(NavLocation.Location, RandomRadius, EventInfo.LocationName);
             return NewPlaceActor;
         }
         else
         {
             // 如果位置不合适，增加重试计数
             RetryCount++;
-
             // 如果达到最大重试次数，退出循环
             if (RetryCount >= MaxQueryEventLocationRetryCount)
             {
                 UE_LOG(LogTASceneSystem, Error, TEXT("达到最大重试次数%d，查询失败，返回空指针。"), MaxQueryEventLocationRetryCount);
-                // 可以在这里添加适当的处理，比如打印日志或者抛出异常
                 break;
             }
         }
