@@ -20,6 +20,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TA|Targeting")
 	float SearchRadius = 500.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TA|Targeting")
+	bool bEmptyBeforeCycle = false;
+
 	// 轮选下一个目标的函数
 	UFUNCTION(BlueprintCallable, Category="TA|Targeting")
 	void SelectNextTarget();

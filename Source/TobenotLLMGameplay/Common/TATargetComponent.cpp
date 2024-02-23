@@ -132,27 +132,32 @@ void UTATargetComponent::UpdateNearbyTargets()
 // 轮选逻辑的辅助函数
 void UTATargetComponent::CycleToNextTarget()
 {
-	if (NearbyTargets.Num() == 0)
+	int32 CurrentIndex = NearbyTargets.IndexOfByKey(CurrentTarget);
+
+	// 检查是否需要在轮选前置空
+	if (bEmptyBeforeCycle && CurrentIndex == NearbyTargets.Num() - 1)
 	{
-		// 如果没有目标，确保CurrentTarget为空
+		// 先置空当前目标
 		CurrentTarget = nullptr;
+		OnTargetChanged.Broadcast(CurrentTarget);
+		// 下一次调用时将从第一个目标开始
+		return;
+	}
+
+	// 如果没有目标或者当前目标是列表中的最后一个
+	if (CurrentIndex == INDEX_NONE || CurrentIndex == NearbyTargets.Num() - 1)
+	{
+		// 选择列表中的第一个目标
+		CurrentTarget = NearbyTargets.Num() > 0 ? NearbyTargets[0] : nullptr;
 	}
 	else
 	{
-		// 如果当前没有选中的目标，或者已经是列表中的最后一个目标，则选择列表中的第一个目标
-		int32 CurrentIndex = NearbyTargets.IndexOfByKey(CurrentTarget);
-		if (CurrentIndex == INDEX_NONE || CurrentIndex == NearbyTargets.Num() - 1)
-		{
-			CurrentTarget = NearbyTargets[0];
-		}
-		else
-		{
-			// 否则，选择下一个目标
-			CurrentTarget = NearbyTargets[++CurrentIndex];
-		}
-		// 触发目标变更事件
-		OnTargetChanged.Broadcast(CurrentTarget);
+		// 否则选择下一个目标
+		CurrentTarget = NearbyTargets[++CurrentIndex];
 	}
+
+	// 触发目标变更事件
+	OnTargetChanged.Broadcast(CurrentTarget);
 }
 
 // 设置检测目标的计时器
