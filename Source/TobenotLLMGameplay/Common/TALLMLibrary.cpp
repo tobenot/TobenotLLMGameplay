@@ -61,6 +61,12 @@ UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& Ch
 	StringBuilder.Append(TEXT("Sending chat messages:\n"));
 	for (const FChatLog& ChatEntry : ChatSettings.messages)
 	{
+#if UE_BUILD_SHIPPING
+		if(ChatEntry.role == EOAChatRole::SYSTEM)
+		{
+			continue;
+		}
+#endif
 		FString RoleName = UEnum::GetValueAsString(ChatEntry.role);
 		StringBuilder.Append(FString::Printf(TEXT("Role: %s, Content: %s\n"), *RoleName, *ChatEntry.content));
 	}

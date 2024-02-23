@@ -58,7 +58,8 @@ void UTAImageGenerator::OnDownloadComplete(UTexture2DDynamic* Texture)
 				}
 			}
 		}
-		
+
+#if !UE_BUILD_SHIPPING
 		// 下面是存文件
 		// 将纹理转换为2D纹理资源
 		FTexture2DDynamicResource* TextureResource = static_cast<FTexture2DDynamicResource*>(Texture->GetResource());
@@ -130,6 +131,7 @@ void UTAImageGenerator::OnDownloadComplete(UTexture2DDynamic* Texture)
 				}
 			}
 		}
+#endif
 	}
 }
 
