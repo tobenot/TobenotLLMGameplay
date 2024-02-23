@@ -30,7 +30,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category="TAChatBoxWidget")
 	void AddChatMessage(const FString& Message, AActor* Sender, const FString& DynamicParam);
-    
+
+	UFUNCTION(BlueprintCallable, Category="TAChatBoxWidget")
+	void ClearChatMessage();
 protected:
     
 	UPROPERTY(Meta = (BindWidget))

@@ -7,7 +7,14 @@ void UTAChatMessageItemWidget::SetupMessage(const FString& Message, AActor* Send
 	if(MessageTextBlock)
 	{
 		// 构建信息文本，并将它设置到文本块中
-		FString DisplayText = FString::Printf(TEXT("%s: %s"), *Sender->GetName(), *Message);
+		FString DisplayText;
+		if(Sender != nullptr)
+		{
+			DisplayText = FString::Printf(TEXT("%s: %s"), *Sender->GetName(), *Message);
+		}else
+		{
+			DisplayText = *Message;
+		}
 		MessageTextBlock->SetText(FText::FromString(DisplayText));
 	}
 }

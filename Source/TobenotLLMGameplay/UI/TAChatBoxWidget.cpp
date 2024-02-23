@@ -36,3 +36,11 @@ void UTAChatBoxWidget::AddChatMessage(const FString& Message, AActor* Sender, co
 		}
 	}
 }
+
+void UTAChatBoxWidget::ClearChatMessage()
+{
+	if(ChatScrollBox)
+	{
+		ChatScrollBox->ClearChildren();
+	}
+}
