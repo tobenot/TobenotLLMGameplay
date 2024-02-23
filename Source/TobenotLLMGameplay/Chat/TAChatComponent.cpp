@@ -90,11 +90,16 @@ void UTAChatComponent::SendMessageToOpenAI(AActor* OriActor, FString UserMessage
     ProcessMessage(OriActor, UserMessage, CallbackObject, IsSystemMessage);
 }
 
-void UTAChatComponent::ProcessMessage(AActor* OriActor, FString UserMessage, UTAChatCallback* CallbackObject, bool IsSystemMessage)
+void UTAChatComponent::ProcessMessage(AActor* OriActor, const FString& UserMessage, UTAChatCallback* CallbackObject, bool IsSystemMessage)
 {
     if (!OriActor)
     {
         UE_LOG(LogTemp, Warning, TEXT("OriActor is nullptr"));
+        return;
+    }
+    if(!bAcceptMessages)
+    {
+        UE_LOG(LogTemp, Log, TEXT("Reject message from %s"), *OriActor->GetName());
         return;
     }
     
@@ -260,4 +265,9 @@ FTAChatComponentSaveData UTAChatComponent::GetChatHistoryData() const
     FTAChatComponentSaveData ChatHistoryData;
     ChatHistoryData.SavedActorChatHistoryMap = ActorChatHistoryMap;
     return ChatHistoryData;
+}
+
+void UTAChatComponent::SetAcceptMessages(bool bInAcceptMessages)
+{
+    bAcceptMessages = bInAcceptMessages;
 }

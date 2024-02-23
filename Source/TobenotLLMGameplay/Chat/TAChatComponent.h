@@ -95,7 +95,7 @@ private:
 	UFUNCTION()
 	void HandleFailedMessage();
 	
-	void ProcessMessage(AActor* OriActor, FString UserMessage, UTAChatCallback* CallbackObject, bool IsSystemMessage);
+	void ProcessMessage(AActor* OriActor, const FString& UserMessage, UTAChatCallback* CallbackObject, bool IsSystemMessage);
 	void CheckMessageQueue();
 	
 	UPROPERTY()
@@ -124,4 +124,17 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "ChatHistorySave")
 	FTAChatComponentSaveData GetChatHistoryData() const;
+
+public:
+	// 标志位的 Getter 方法
+	UFUNCTION(BlueprintCallable, Category = "Chat")
+	bool GetAcceptMessages() const{return bAcceptMessages;}
+
+	// 标志位的 Setter 方法
+	UFUNCTION(BlueprintCallable, Category = "Chat")
+	void SetAcceptMessages(bool bInAcceptMessages);
+	
+private:
+	// 是否接受消息的标志位
+	bool bAcceptMessages = true;
 };
