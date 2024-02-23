@@ -20,6 +20,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TA|Targeting")
 	float SearchRadius = 500.f;
 
+	// 在一个循环结束之后轮空一次吗？
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TA|Targeting")
 	bool bEmptyBeforeCycle = false;
 

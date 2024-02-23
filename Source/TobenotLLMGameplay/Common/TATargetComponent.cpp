@@ -121,7 +121,8 @@ void UTATargetComponent::UpdateNearbyTargets()
 		CurrentTarget = nullptr;
 		OnTargetChanged.Broadcast(CurrentTarget);
 	}
-	else if (!CurrentTarget && NearbyTargets.Num() > 0)
+	// 能轮空的话，不自动取消目标
+	else if (!bEmptyBeforeCycle && !CurrentTarget && NearbyTargets.Num() > 0)
 	{
 		// 选取第一个实现了接口的Actor作为当前目标
 		CurrentTarget = NearbyTargets[0];
