@@ -59,7 +59,7 @@ void UTAEventSubsystem::Deinitialize()
 	Super::Deinitialize();
 }
 
-void UTAEventSubsystem::Start()
+void UTAEventSubsystem::Start(const int32& GenEventNum)
 {
 	// 创建事件池实例
 	EventPool = NewObject<UTAEventPool>(this, UTAEventPool::StaticClass());
@@ -88,7 +88,7 @@ void UTAEventSubsystem::Start()
 						FString CurrentSceneInfo = SceneSubsystem->QuerySceneMapInfo();
                 
 						// 请求生成事件，传入场景信息
-						EventGenerator->RequestEventGeneration(CurrentSceneInfo);
+						EventGenerator->RequestEventGeneration(CurrentSceneInfo, GenEventNum);
 					}
 				}
 			}else

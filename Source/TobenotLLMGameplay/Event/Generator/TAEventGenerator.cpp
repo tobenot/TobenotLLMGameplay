@@ -11,13 +11,22 @@
 #include "Event/TAEventLogCategory.h"
 #include "Event/Data/TAEventInfo.h"
 
-void UTAEventGenerator::RequestEventGeneration(const FString& SceneInfo)
+void UTAEventGenerator::RequestEventGeneration(const FString& SceneInfo, const int32& Num)
 {
 	InitPrompt();
 	TArray<FChatLog> TempMessagesList;
+	FString NumTag;
+	if(Num>1)
+	{
+		NumTag = NumTag.Replace(TEXT("// Add {Num} events following the same structure"), *FString::FromInt(Num - 1));
+	}else
+	{
+		NumTag = "// only 1 event please";
+	}
 	const FString SystemPrompt = UTALLMLibrary::PromptToStr(PromptGenerateEvent)
 		.Replace(TEXT("{SceneInfo}"), *SceneInfo)
 		.Replace(TEXT("{Language}"), *UTASystemLibrary::GetGameLanguage())
+		.Replace(TEXT("{NumTag}"), *NumTag)
 		;
 	TempMessagesList.Add({EOAChatRole::SYSTEM, SystemPrompt});
 	FChatSettings ChatSettings{

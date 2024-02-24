@@ -26,7 +26,7 @@ public:
 
 	// 使用地理人文信息生成事件
 	UFUNCTION(BlueprintCallable, Category = "Event|Generation")
-	void RequestEventGeneration(const FString& SceneInfo);
+	void RequestEventGeneration(const FString& SceneInfo, const int32& Num);
 	
 protected:
 	FTAPrompt PromptGenerateEvent;
