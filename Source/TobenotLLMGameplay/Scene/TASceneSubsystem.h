@@ -50,4 +50,7 @@ private:
 	bool bHasPopulateMapWithMonsters = false;
 	
 	UClass* GetMonsterClass() const;
+	
+	// 用于跟踪是否已经创建了首个事件位点
+	bool bHasCreatedStartingEvent = false;
 };

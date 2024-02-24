@@ -160,15 +160,20 @@ ATAPlaceActor* UTASceneSubsystem::QueryEventLocationByInfo(const FTAEventInfo& E
     do
     {
         bIsValidLocation = true;
-        constexpr float MinX = 0.0f + 200.f;
-        constexpr float MaxX = 20000.0f- 200.f;
+        constexpr float MinX = 2000.0f + 200.f;
+        float MaxX = 20000.0f- 200.f;
         constexpr float MinY = 0.0f + 200.f;
-        constexpr float MaxY = 5000.0f - 200.f;
+        constexpr float MaxY = 5000.0f - 200.f; 
+    	if (!bHasCreatedStartingEvent)
+    	{
+    		MaxX = 4000.0f; // 定义起始区域的X坐标
+    		bHasCreatedStartingEvent = true; // 更新标志位，表明起始事件已经创建
+    	}
         FVector RandomPoint(FMath::FRandRange(MinX, MaxX), FMath::FRandRange(MinY, MaxY), 0);
 
         constexpr float MinRadius = 1500.0f;
         constexpr float MaxRadius = 3000.0f;
-        float RandomRadius = FMath::RandRange(MinRadius, MaxRadius);
+        const float RandomRadius = FMath::RandRange(MinRadius, MaxRadius);
 
         // 使用导航系统来确保点是可达的
     	if (!NavSys || !NavSys->GetRandomPointInNavigableRadius(RandomPoint, RandomRadius, NavLocation, nullptr))
