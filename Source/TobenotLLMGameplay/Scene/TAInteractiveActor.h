@@ -52,6 +52,8 @@ protected:
 	// ITAAgentInterface中定义的获取系统prompt的函数实现
 	virtual FString GetSystemPrompt() override;
 
+	virtual const FString& GetAgentName() override;
+
 public:
 	UFUNCTION(BlueprintCallable, Category = "TAInteractiveActor")
 	UTAInteractionComponent* GetInteractionComponent() const;

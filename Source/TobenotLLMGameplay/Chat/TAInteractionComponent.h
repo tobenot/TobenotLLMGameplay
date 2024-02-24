@@ -47,4 +47,5 @@ public:
 	FString BelongEventDescription;
 	
 	FString GetFullPrompt();
+	const FString& GetInteractableName(){return InteractableInfo.Name;};
 };
