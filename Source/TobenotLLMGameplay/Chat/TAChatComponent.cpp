@@ -134,14 +134,14 @@ void UTAChatComponent::ProcessMessage(AActor* OriActor, const FString& UserMessa
         ActiveActors.Remove(OriActor);
         if (Success)
         {
+            auto& TempMessagesList = GetChatHistoryWithActor(OriActor);
+            TempMessagesList.Add({EOAChatRole::ASSISTANT, Message.message.content});
             if(CallbackMap.Contains(OriActor))
             {
                 CallbackMap[OriActor]->OnSuccess.Broadcast(Message);
                 CallbackMap[OriActor]->OnSuccessWithSender.Broadcast(Message,OriActor);
             }
             CallbackMap.Remove(OriActor);
-            auto& TempMessagesList = GetChatHistoryWithActor(OriActor);
-            TempMessagesList.Add({EOAChatRole::ASSISTANT, Message.message.content});
         }
         else
         {
