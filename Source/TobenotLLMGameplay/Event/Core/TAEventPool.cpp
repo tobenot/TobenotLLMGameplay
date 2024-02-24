@@ -88,3 +88,8 @@ void UTAEventPool::CheckPlayerProximityToEvents() {
 		}
 	}
 }
+
+bool UTAEventPool::HasAnyEvents() const
+{
+	return AllEventInfo.Num() > 0;
+}

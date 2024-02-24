@@ -100,6 +100,20 @@ void UTAEventSubsystem::Start(const int32& GenEventNum)
 	}
 }
 
+bool UTAEventSubsystem::HasAnyEventsInPool() const
+{
+	// 确认EventPool已经被正确初始化
+	if (EventPool)
+	{
+		return EventPool->HasAnyEvents();
+	}
+	else
+	{
+		// 如果没有初始化事件池，那么返回false
+		return false;
+	}
+}
+
 void UTAEventSubsystem::GenerateImageForEvent(const FTAEventInfo& GeneratedEvent)
 {
 	UTAImageGenerator* ImageGenerator = NewObject<UTAImageGenerator>(this);

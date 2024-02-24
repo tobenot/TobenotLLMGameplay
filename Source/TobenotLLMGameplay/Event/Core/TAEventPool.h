@@ -23,6 +23,9 @@ public:
 	FTAEventInfo& GetEventByID(int32 EventID, bool& bSuccess);
 
 	FTAEventInfo ZeroEvent;
+
+	UFUNCTION(BlueprintCallable, Category = "Event")
+	bool HasAnyEvents() const;
 	
 private:
 	// 所有事件信息的集合，这里是唯一的最持久的保存事件信息的地方。由EventSubsystem管理。请用指针指它

@@ -29,6 +29,9 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
 	virtual void Start(const int32& GenEventNum);
+
+	UFUNCTION(BlueprintCallable, Category = "Event")
+	bool HasAnyEventsInPool() const;
 	
 private:
 	UFUNCTION()
