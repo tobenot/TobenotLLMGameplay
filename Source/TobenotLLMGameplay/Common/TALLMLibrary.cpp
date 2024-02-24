@@ -32,29 +32,63 @@ EOAChatEngineType UTALLMLibrary::GetChatEngineTypeFromQuality(const ELLMChatEngi
 	}
 }
 
-UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& ChatSettings, TFunction<void(const FChatCompletion& Message, const FString& ErrorMessage,  bool Success)> Callback, const UObject* LogObject)
+UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& ChatSettings, TFunction<void(const FChatCompletion& Message, const FString& ErrorMessage, bool Success)> Callback, const UObject* LogObject, const int32 NewRetryCount)
 {
-	// 调用OpenAIChat进行通信
-	UOpenAIChat* Chat = UOpenAIChat::Chat(ChatSettings, [Callback, &Chat, LogObject](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
-	{
-		if (Success)
-		{
-			UE_LOG(LogTemp, Log, TEXT("Reponse success: %s"), *Message.message.content);
-		}else
-		{
-			UE_LOG(LogTemp, Log, TEXT("Reponse failed: %s"), *ErrorMessage);
-		}
-		if(LogObject)
-		{
-			if (UCategoryLogSubsystem* CategoryLogSubsystem = LogObject->GetWorld()->GetSubsystem<UCategoryLogSubsystem>())
-			{
-				const FString ResponseStr = FString::Printf(TEXT("[%s] Assistant Response:\n%s\n"), *LogObject->GetName(),*Message.message.content);
-				CategoryLogSubsystem->WriteLog(TEXT("Chat"), *ResponseStr);
+    // 调用OpenAIChat进行通信，并定义重试逻辑
+    UOpenAIChat* Chat = UOpenAIChat::Chat(ChatSettings, [Callback, NewRetryCount, LogObject, ChatSettings, &Chat](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
+    {
+        if (Success)
+        {
+            // 处理成功的响应
+            UE_LOG(LogTemp, Log, TEXT("Response success: %s"), *Message.message.content);
+        	if(LogObject)
+        	{
+				if (UCategoryLogSubsystem* CategoryLogSubsystem = LogObject->GetWorld()->GetSubsystem<UCategoryLogSubsystem>())
+				{
+					const FString ResponseStr = FString::Printf(TEXT("[%s] Assistant Response:\n%s\n"), *LogObject->GetName(),*Message.message.content);
+					CategoryLogSubsystem->WriteLog(TEXT("Chat"), *ResponseStr);
+				}
 			}
-		}
-		Chat = nullptr;
-		Callback(Message,ErrorMessage,Success);
-	});
+            Callback(Message, ErrorMessage, true);
+			Chat = nullptr;
+        }
+        else
+        {
+        	// 是否还能重试
+            if (NewRetryCount > 0)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("Response failed: %s. Retrying..."), *ErrorMessage);
+
+                // 设置重试延时调用
+                FTimerHandle RetryTimerHandle;
+                // 获取World上下文
+                UWorld* World = GEngine->GetWorldFromContextObject(LogObject, EGetWorldErrorMode::LogAndReturnNull); // 或者用其他方式获取World上下文
+                if (World)
+                {
+                	World->GetTimerManager().SetTimer(RetryTimerHandle, [NewRetryCount, LogObject, ChatSettings, Callback]()
+					{
+						// 重新发送请求，传递新的重试次数
+						SendMessageToOpenAIWithRetry(ChatSettings, Callback, LogObject, NewRetryCount - 1);
+					}, RetryDelay, false);
+                }
+            }
+            else
+            {
+                // 如果重试次数已用尽，执行最初提供的失败回调函数
+                UE_LOG(LogTemp, Error, TEXT("Exhausted all retries! Response failed after retries: %s"), *ErrorMessage);
+            	if(LogObject)
+            	{
+					if (UCategoryLogSubsystem* CategoryLogSubsystem = LogObject->GetWorld()->GetSubsystem<UCategoryLogSubsystem>())
+					{
+						const FString ResponseStr = FString::Printf(TEXT("[%s] Assistant Response exhausted all retries!\n%s\n"), *LogObject->GetName(),*ErrorMessage);
+						CategoryLogSubsystem->WriteLog(TEXT("Chat"), *ResponseStr);
+					}
+				}
+            	Callback(Message, ErrorMessage, false);
+            	Chat = nullptr;
+            }
+        }
+    });
 
 	// 打印ChatSettings的调试信息
 	FStringBuilderBase StringBuilder;
@@ -81,8 +115,9 @@ UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& Ch
 			CategoryLogSubsystem->WriteLog(TEXT("Chat"), LogStr);
 		}
 	}
-	
-	return Chat;
+
+    // 返回Chat实例
+    return Chat;
 }
 
 

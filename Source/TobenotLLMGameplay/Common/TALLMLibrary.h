@@ -32,18 +32,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Chat Engine")
 	static EOAChatEngineType GetChatEngineTypeFromQuality(const ELLMChatEngineQuality Quality);
 	
-	static UOpenAIChat* SendMessageToOpenAIWithRetry(const FChatSettings& ChatSettings, TFunction<void(const FChatCompletion& Message, const FString& ErrorMessage,  bool Success)> Callback, const UObject* LogObject = nullptr);
+	static UOpenAIChat* SendMessageToOpenAIWithRetry(const FChatSettings& ChatSettings, TFunction<void(const FChatCompletion& Message, const FString& ErrorMessage,  bool Success)> Callback, const UObject* LogObject = nullptr, const int32 NewRetryCount = MaxRetryCount);
 	
 	static UOpenAIChat* DownloadImageFromPollinations(const FString& ImagePrompt, const FTAImageDownloadedDelegate & OnDownloadComplete, const FTAImageDownloadedDelegate & OnDownloadFailed);
 	
 	UFUNCTION(BlueprintCallable, Category = "Prompt")
 	static FString PromptToStr(const FTAPrompt& Prompt);
 private:
+	// 最大重试次数和重试间隔定义
 	static constexpr int32 MaxRetryCount = 3;
-	static constexpr float RetryDelay = 2.0f;
-
+	static constexpr float RetryDelay = 3.0f;
+	
 private:
-
 	/** Handles image requests coming from the web */
 	static void HandleImageRequest(FHttpRequestPtr HttpRequest, const FHttpResponsePtr&  HttpResponse, bool bSucceeded, const FTAImageDownloadedDelegate & OnDownloadComplete, const FTAImageDownloadedDelegate & OnDownloadFailed);
 };
