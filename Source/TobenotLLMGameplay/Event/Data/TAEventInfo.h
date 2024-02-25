@@ -68,7 +68,7 @@ public:
 	FString AdventurePoint;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event")
-	FString HumorousPoint;
+	FString PeculiarPoint;
 	// LLM end
 	
 	FString ToString() const;

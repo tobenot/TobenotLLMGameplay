@@ -129,9 +129,9 @@ TArray<FTAEventInfo> UTAEventGenerator::ParseEventsFromJson(const FString& JsonS
 					EventInfo.AdventurePoint = JsonObject->GetStringField(TEXT("AdventurePoint"));
 				}
 				
-				if (JsonObject->HasField(TEXT("HumorousPoint")))
+				if (JsonObject->HasField(TEXT("PeculiarPoint")))
 				{
-					EventInfo.HumorousPoint = JsonObject->GetStringField(TEXT("HumorousPoint"));
+					EventInfo.PeculiarPoint = JsonObject->GetStringField(TEXT("PeculiarPoint"));
 				}
 				
 				// 添加到结果数组中
