@@ -3,10 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Chat/TAInteractionComponent.h"
 #include "UObject/Object.h"
 #include "TAAreaScene.generated.h"
 
-struct FInteractableInfo;
 struct FTAEventInfo;
 class ATAInteractiveActor;
 /**
