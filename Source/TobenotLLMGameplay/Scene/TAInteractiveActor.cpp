@@ -5,6 +5,7 @@
 
 #include "TASettings.h"
 #include "Chat/TAFunctionInvokeComponent.h"
+#include "Chat/Dialogue/TADialogueComponent.h"
 #include "Components/SphereComponent.h"
 
 void ATAInteractiveActor::OnConstruction(const FTransform& Transform)
@@ -54,7 +55,8 @@ ATAInteractiveActor::ATAInteractiveActor()
 	// 初始化ChatComponent
 	ChatComponent = CreateDefaultSubobject<UTAChatComponent>(TEXT("ChatComponent"));
 	ChatComponent->bEnableFunctionInvoke = true;
-    
+	
+	DialogueComponent = CreateDefaultSubobject<UTADialogueComponent>(TEXT("DialogueComponent"));
 	//FunctionInvokeComponent = CreateDefaultSubobject<UTAFunctionInvokeComponent>(TEXT("FunctionInvokeComponent"));
 }
 
@@ -68,7 +70,7 @@ FString ATAInteractiveActor::GetSystemPrompt()
 	return InteractionComponent->GetFullPrompt();
 }
 
-const FString& ATAInteractiveActor::GetAgentName()
+const FString& ATAInteractiveActor::GetAgentName() const
 {
 	return InteractionComponent->GetInteractableName();
 }

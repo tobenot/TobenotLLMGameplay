@@ -25,5 +25,7 @@ public:
 	virtual FString GetSystemPrompt() = 0;
 	
 	UFUNCTION(BlueprintCallable, Category = "TA|Agent")
-	virtual const FString& GetAgentName() = 0;
+	virtual const FString& GetAgentName() const = 0;
+
+	virtual int32 GetAgentSpeakPriority() const;
 };

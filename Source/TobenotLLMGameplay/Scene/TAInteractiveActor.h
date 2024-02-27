@@ -11,6 +11,7 @@
 #include "TobenotLLMGameplay/Save/TAGuidInterface.h"
 #include "TAInteractiveActor.generated.h"
 
+class UTADialogueComponent;
 class USphereComponent;
 class UTAFunctionInvokeComponent;
 /**
@@ -36,6 +37,9 @@ protected:
 	UTAChatComponent* ChatComponent;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UTADialogueComponent* DialogueComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UTAFunctionInvokeComponent* FunctionInvokeComponent ;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
@@ -52,7 +56,9 @@ protected:
 	// ITAAgentInterface中定义的获取系统prompt的函数实现
 	virtual FString GetSystemPrompt() override;
 
-	virtual const FString& GetAgentName() override;
+	virtual const FString& GetAgentName() const override;
+
+	virtual int32 GetAgentSpeakPriority() const override{return 150;}; //交互物先说
 
 public:
 	UFUNCTION(BlueprintCallable, Category = "TAInteractiveActor")
