@@ -3,10 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Chat/TAChatComponent.h"
 #include "GameFramework/SaveGame.h"
 #include "TASaveGame.generated.h"
 
-struct FTAChatComponentSaveData;
 /**
  * 
  */
