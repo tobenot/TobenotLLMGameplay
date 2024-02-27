@@ -171,8 +171,8 @@ ATAPlaceActor* UTASceneSubsystem::QueryEventLocationByInfo(const FTAEventInfo& E
     	}
         FVector RandomPoint(FMath::FRandRange(MinX, MaxX), FMath::FRandRange(MinY, MaxY), 0);
 
-        constexpr float MinRadius = 1500.0f;
-        constexpr float MaxRadius = 3000.0f;
+        constexpr float MinRadius = 1000.0f;
+        constexpr float MaxRadius = 1500.0f;
         const float RandomRadius = FMath::RandRange(MinRadius, MaxRadius);
 
         // 使用导航系统来确保点是可达的
