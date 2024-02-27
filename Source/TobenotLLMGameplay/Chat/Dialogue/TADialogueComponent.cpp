@@ -57,10 +57,10 @@ void UTADialogueComponent::RequestToSpeak()
 	}
 	auto& TempMessagesList = DialogueHistory;
 	// 构造系统提示的ChatLog对象
-	FString SystemPrompt = GetSystemPromptFromOwner() + FString::Printf(
-		TEXT("Now you are in a group conversation with [%s], please speak according to the conversation history in [%s].")
-		, *CurrentDialogueInstance->GetParticipantsNamesStringFromAgents(), *UTASystemLibrary::GetGameLanguage());
-	const FChatLog SystemPromptLog{EOAChatRole::SYSTEM, };
+	const FString SystemPrompt = FString::Printf(
+		TEXT("Now you are in a group conversation with [%s], please speak according to the conversation history.")
+		, *CurrentDialogueInstance->GetParticipantsNamesStringFromAgents()) + GetSystemPromptFromOwner();
+	const FChatLog SystemPromptLog{EOAChatRole::SYSTEM, SystemPrompt};
 
 	/*const FChatLog DialogueLog{EOAChatRole::SYSTEM, FString::Printf(
 		TEXT("Now you are in a group conversation with [%s], please speak according to the conversation history.")
