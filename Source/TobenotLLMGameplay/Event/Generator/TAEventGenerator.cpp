@@ -18,7 +18,8 @@ void UTAEventGenerator::RequestEventGeneration(const FString& SceneInfo, const i
 	FString NumTag;
 	if(Num>1)
 	{
-		NumTag = NumTag.Replace(TEXT("// Add {Num} events following the same structure"), *FString::FromInt(Num - 1));
+		NumTag = "// Add {Num} events following the same structure";
+		NumTag = NumTag.Replace(TEXT("{Num}"), *FString::FromInt(Num - 1));
 	}else
 	{
 		NumTag = "// only 1 event please";
