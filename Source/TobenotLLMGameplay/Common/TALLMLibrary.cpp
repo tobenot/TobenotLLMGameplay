@@ -168,6 +168,8 @@ UOpenAIChat* UTALLMLibrary::DownloadImageFromPollinations(const FString& ImagePr
 					Description.ReplaceInline(TEXT("mushroom"), TEXT("*"));
 					Description.ReplaceInline(TEXT("monster"), TEXT("*"));
 					Description.ReplaceInline(TEXT("fungi"), TEXT("*"));
+					Description.ReplaceInline(TEXT("dance"), TEXT("*"));
+					Description.ReplaceInline(TEXT("battle"), TEXT("*"));
 					
 					// URL编码图片提示词
 					FString EncodedPrompt = FGenericPlatformHttp::UrlEncode(Description);

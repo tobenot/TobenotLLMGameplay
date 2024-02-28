@@ -10,7 +10,8 @@ void UTAChatMessageItemWidget::SetupMessage(const FString& Message, AActor* Send
 		FString DisplayText;
 		if(Sender != nullptr)
 		{
-			DisplayText = FString::Printf(TEXT("%s: %s"), *Sender->GetName(), *Message);
+			//DisplayText = FString::Printf(TEXT("%s: %s"), *Sender->GetName(), *Message);
+			DisplayText = Message;
 		}else
 		{
 			DisplayText = *Message;

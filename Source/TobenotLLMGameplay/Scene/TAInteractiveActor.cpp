@@ -4,8 +4,8 @@
 #include "TAInteractiveActor.h"
 
 #include "TASettings.h"
-#include "Chat/TAFunctionInvokeComponent.h"
-#include "Chat/Dialogue/TADialogueComponent.h"
+#include "TobenotLLMGameplay/Chat/TAFunctionInvokeComponent.h"
+#include "TobenotLLMGameplay/Chat/Dialogue/TADialogueComponent.h"
 #include "Components/SphereComponent.h"
 
 void ATAInteractiveActor::OnConstruction(const FTransform& Transform)
@@ -57,6 +57,7 @@ ATAInteractiveActor::ATAInteractiveActor()
 	ChatComponent->bEnableFunctionInvoke = true;
 	
 	DialogueComponent = CreateDefaultSubobject<UTADialogueComponent>(TEXT("DialogueComponent"));
+	DialogueComponent->bEnableFunctionInvoke = true;
 	//FunctionInvokeComponent = CreateDefaultSubobject<UTAFunctionInvokeComponent>(TEXT("FunctionInvokeComponent"));
 }
 

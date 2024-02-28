@@ -5,6 +5,7 @@
 #include "Chat/Dialogue/TADialogueInstance.h"
 #include "Chat/Dialogue/TADialogueManager.h"
 #include "OpenAIDefinitions.h"
+#include "Chat/TAFunctionInvokeComponent.h"
 #include "Common/TAAgentInterface.h"
 #include "Common/TALLMLibrary.h"
 #include "Common/TASystemLibrary.h"
@@ -29,12 +30,12 @@ void UTADialogueComponent::SetCurrentDialogue(UTADialogueInstance* NewDialogueIn
 	CurrentDialogueInstance = NewDialogueInstance;
 }
 
-void UTADialogueComponent::SendMessageToDialogue(const FString& UserMessage)
+void UTADialogueComponent::SendMessageToDialogue(const FChatCompletion& Message)
 {
 	if (CurrentDialogueInstance != nullptr)
 	{
 		// 添加聊天记录到对话实例
-		CurrentDialogueInstance->ReceiveMessage({EOAChatRole::USER, UserMessage}, GetOwner());
+		CurrentDialogueInstance->ReceiveMessage(Message, GetOwner());
 	}
 	else
 	{
@@ -95,7 +96,11 @@ void UTADialogueComponent::RequestToSpeak()
 	{
 		if (Success)
 		{
-			SendMessageToDialogue(Message.message.content);
+			SendMessageToDialogue(Message);
+			if (bEnableFunctionInvoke)
+			{
+				PerformFunctionInvokeBasedOnResponse(Message.message.content);
+			}
 		}
 		else
 		{
@@ -110,18 +115,29 @@ void UTADialogueComponent::RefuseToSay()
 {
 	if (CurrentDialogueInstance != nullptr)
 	{
-		// 添加聊天记录到对话实例
 		CurrentDialogueInstance->RefuseToSay(GetOwner());
 	}
 }
 
-void UTADialogueComponent::UpdateDialogueHistory(const FChatLog& NewChatLog)
+void UTADialogueComponent::UpdateDialogueHistory(const FChatCompletion& NewChatCompletion)
 {
-	// 将新的聊天记录添加到组件内部的聊天历史记录中
-	DialogueHistory.Add(NewChatLog);
+	DialogueHistory.Add(NewChatCompletion.message);
+	
+	if (bEnableCompressDialogue && NewChatCompletion.totalTokens > 2000)
+	{
+		CompressDialogueHistory();
+	}
 }
 
-void UTADialogueComponent::HandleReceivedMessage(const FChatLog& ReceivedMessage, AActor* Sender)
+void UTADialogueComponent::CompressDialogueHistory()
+{
+	// Implement your compression logic here. As an example, you might:
+	// - Aggregate similar messages
+	// - Remove older messages from the history
+	// - Summarize certain parts of the dialogue
+}
+
+void UTADialogueComponent::HandleReceivedMessage(const FChatCompletion& ReceivedMessage, AActor* Sender)
 {
 	// 更新对话历史记录
 	UpdateDialogueHistory(ReceivedMessage);
@@ -130,7 +146,7 @@ void UTADialogueComponent::HandleReceivedMessage(const FChatLog& ReceivedMessage
 	NotifyUIOfDialogueHistoryUpdate(ReceivedMessage, Sender);
 }
 
-void UTADialogueComponent::NotifyUIOfDialogueHistoryUpdate(const FChatLog& ReceivedMessage, AActor* Sender)
+void UTADialogueComponent::NotifyUIOfDialogueHistoryUpdate(const FChatCompletion& ReceivedMessage, AActor* Sender)
 {
 	OnDialogueReceivedMessage.Broadcast(ReceivedMessage, Sender);
 }
@@ -147,6 +163,29 @@ FString UTADialogueComponent::GetSystemPromptFromOwner() const
 		UE_LOG(LogTemp, Error, TEXT("我的Owner 没有实现 ITAAgentInterface"));
 		return "";
 	}
+}
+
+void UTADialogueComponent::PerformFunctionInvokeBasedOnResponse(const FString& Response)
+{
+	UTAFunctionInvokeComponent* FunctionInvokeComp = GetOwner()->FindComponentByClass<UTAFunctionInvokeComponent>();
+    
+	if(FunctionInvokeComp)
+	{
+		// 如果成功获取到组件，则用获得的响应调用ParseAndTriggerFunctions方法
+		FunctionInvokeComp->ParseAndTriggerFunctions(Response);
+	}
+	else
+	{
+		if (bEnableFunctionInvoke)
+		{
+			UE_LOG(LogTemp, Error, TEXT("bEnableFunctionInvoke is true, but UTAFunctionInvokeComponent not found on the Owner of UTAChatComponent."));
+		}
+	}
+}
+
+void UTADialogueComponent::SetAcceptMessages(bool bInAcceptMessages)
+{
+	bAcceptMessages = bInAcceptMessages;
 }
 
 UTADialogueComponent* UTADialogueComponent::GetTADialogueComponent(AActor* Actor)

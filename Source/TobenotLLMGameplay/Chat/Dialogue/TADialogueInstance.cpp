@@ -2,6 +2,7 @@
 
 #include "TADialogueInstance.h"
 
+#include "OpenAIDefinitions.h"
 #include "TADialogueComponent.h"
 #include "Common/TAAgentInterface.h"
 #include "Engine/World.h"
@@ -43,8 +44,8 @@ void UTADialogueInstance::AddParticipant(AActor* Participant)
 			DialogueState = EDialogueState::Active;
 
 			// Start the timer (e.g., every 5 seconds)
-			GetWorld()->GetTimerManager().SetTimer(DialogueTimerHandle, this, &UTADialogueInstance::CycleParticipants, 5.0f, true);
-			CycleParticipants();
+			GetWorld()->GetTimerManager().SetTimer(DialogueTimerHandle, this, &UTADialogueInstance::CycleParticipants,
+				5.0f, true, 2.0f);
 		}
 	}
 }
@@ -64,10 +65,10 @@ void UTADialogueInstance::TryEnterDialogueState(EDialogueState NewState)
 	DialogueState = NewState;
 }
 
-void UTADialogueInstance::ReceiveMessage(const FChatLog& Message, AActor* Sender)
+void UTADialogueInstance::ReceiveMessage(const FChatCompletion& Message, AActor* Sender)
 {
 	// 收到消息后，将其添加到历史记录并分发给所有参与者
-	AddMessageToHistory(Message,Sender);
+	AddMessageToHistory(Message.message,Sender);
 	DistributeMessage(Message,Sender);
 	DialogueState = EDialogueState::Active;
 }
@@ -78,6 +79,18 @@ void UTADialogueInstance::CycleParticipants()
 	{
 		// 如果对话状态不是激活状态，直接返回
 		return;
+	}
+
+	// 遍历所有参与者以检查他们的会话组件中的接受消息标志
+	for (AActor* Participant : Participants)
+	{
+		UTADialogueComponent* DialogueComponent = Participant ? Participant->FindComponentByClass<UTADialogueComponent>() : nullptr;
+		if (DialogueComponent && !DialogueComponent->GetAcceptMessages())
+		{
+			// 如果有参与者不愿意接受消息，结束对话
+			EndDialogue();
+			return;
+		}
 	}
 
 	// 创建一个数组用于存储带有优先级的参与者
@@ -145,7 +158,7 @@ void UTADialogueInstance::AddMessageToHistory(const FChatLog& Message, AActor* S
 	DialogueHistory.Add(Message);
 }
 
-void UTADialogueInstance::DistributeMessage(const FChatLog& Message, AActor* Sender)
+void UTADialogueInstance::DistributeMessage(const FChatCompletion& Message, AActor* Sender)
 {
 	// 广播消息给参与者
 	for (AActor* Participant : Participants)

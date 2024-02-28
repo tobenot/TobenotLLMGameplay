@@ -7,6 +7,7 @@
 #include "TimerManager.h"
 #include "TADialogueInstance.generated.h"
 
+struct FChatCompletion;
 struct FChatLog;
 // 声明一个枚举，用于描述对话的状态
 UENUM(BlueprintType)
@@ -59,7 +60,7 @@ public:
 
     // 添加消息到历史记录并触发消息分发
     UFUNCTION(BlueprintCallable, Category = "Dialogue Instance")
-    void ReceiveMessage(const FChatLog& Message, AActor* Sender);
+    void ReceiveMessage(const FChatCompletion& Message, AActor* Sender);
 
     UFUNCTION(BlueprintCallable, Category = "Dialogue Instance")
     void RefuseToSay(AActor* Sender);
@@ -79,7 +80,7 @@ public:
 private:
     // 内部方法用于添加消息到历史记录和分发消息给参与者
     void AddMessageToHistory(const FChatLog& Message, AActor* Sender);
-    void DistributeMessage(const FChatLog& Message, AActor* Sender);
+    void DistributeMessage(const FChatCompletion& Message, AActor* Sender);
     	
     FTimerHandle DialogueTimerHandle;
     int32 CurrentParticipantIndex;
