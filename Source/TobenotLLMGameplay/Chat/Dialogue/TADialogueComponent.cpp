@@ -59,8 +59,10 @@ void UTADialogueComponent::RequestToSpeak()
 	auto& TempMessagesList = DialogueHistory;
 	// 构造系统提示的ChatLog对象
 	const FString SystemPrompt = FString::Printf(
-		TEXT("Now you are in a group conversation with [%s], please speak according to the conversation history.")
-		, *CurrentDialogueInstance->GetParticipantsNamesStringFromAgents()) + GetSystemPromptFromOwner();
+		TEXT(
+			"Now you are in a group conversation with [%s],  Your memory summary as [%s], please speak according to the conversation history."
+			)
+		, *CurrentDialogueInstance->GetParticipantsNamesStringFromAgents(), *DialogueHistoryCompressedStr) + GetSystemPromptFromOwner();
 	const FChatLog SystemPromptLog{EOAChatRole::SYSTEM, SystemPrompt};
 
 	/*const FChatLog DialogueLog{EOAChatRole::SYSTEM, FString::Printf(
@@ -122,19 +124,83 @@ void UTADialogueComponent::RefuseToSay()
 void UTADialogueComponent::UpdateDialogueHistory(const FChatCompletion& NewChatCompletion)
 {
 	DialogueHistory.Add(NewChatCompletion.message);
+	FullDialogueHistory.Add(NewChatCompletion.message);
 	
 	if (bEnableCompressDialogue && NewChatCompletion.totalTokens > 2000)
 	{
-		CompressDialogueHistory();
+		RequestDialogueCompression();
 	}
 }
 
-void UTADialogueComponent::CompressDialogueHistory()
+void UTADialogueComponent::RequestDialogueCompression()
 {
 	// Implement your compression logic here. As an example, you might:
 	// - Aggregate similar messages
 	// - Remove older messages from the history
 	// - Summarize certain parts of the dialogue
+	if(bIsCompressingDialogue)
+	{
+		return;
+	}
+	bIsCompressingDialogue = true;
+	LastCompressedIndex = DialogueHistory.Num() - 1;
+	
+	const FString DialogueHistoryString = DialogueHistoryCompressedStr + JoinDialogueHistory();
+
+	// Prepare the chat message to send to OpenAI for dialogue compression
+	TArray<FChatLog> TempMessagesList;
+	const FString FormattedPrompt = UTALLMLibrary::PromptToStr(PromptCompressDialogueHistory);
+	TempMessagesList.Add({EOAChatRole::SYSTEM, FormattedPrompt});
+	TempMessagesList.Add({EOAChatRole::USER, DialogueHistoryString});
+
+	FChatSettings ChatSettings{
+		UTALLMLibrary::GetChatEngineTypeFromQuality(ELLMChatEngineQuality::Fast),
+		TempMessagesList
+	};
+	ChatSettings.jsonFormat = true;
+
+	// Send the request asynchronously
+	UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, 
+	[this](const FChatCompletion& Message, const FString& ErrorMessage, bool bWasSuccessful)
+		{
+		if(bWasSuccessful)
+		{
+			// 在清空当前对话历史之前，保留新的历史记录
+			TArray<FChatLog> NewHistory;
+			if (DialogueHistory.Num() > LastCompressedIndex + 1)
+			{
+				NewHistory.Append(DialogueHistory.GetData() + LastCompressedIndex + 1, DialogueHistory.Num() - LastCompressedIndex - 1);
+			}
+		        
+			DialogueHistory.Empty();
+			DialogueHistoryCompressedStr = Message.message.content;
+		        
+			// 将新历史记录加回到当前对话历史
+			DialogueHistory.Append(NewHistory);
+
+			UE_LOG(LogTemp, Log, TEXT("Dialogue compression successful: %s"), *Message.message.content);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Error, TEXT("Dialogue compression failed: %s"), *ErrorMessage);
+		}
+		bIsCompressingDialogue = false;
+		});
+}
+
+FString UTADialogueComponent::JoinDialogueHistory()
+{
+	FString Result;
+	for (const FChatLog& LogEntry : DialogueHistory)
+	{
+		if(LogEntry.role != EOAChatRole::SYSTEM)
+		{
+			Result += LogEntry.content + TEXT(" ");
+		}
+	}
+	// Trim and remove any excess whitespace if necessary
+	Result = Result.TrimStartAndEnd();
+	return Result;
 }
 
 void UTADialogueComponent::HandleReceivedMessage(const FChatCompletion& ReceivedMessage, AActor* Sender)
@@ -226,3 +292,20 @@ UTADialogueComponent* UTADialogueComponent::GetTADialogueComponent(AActor* Actor
 
 	return DialogueComponent;
 }
+
+const FTAPrompt UTADialogueComponent::PromptCompressDialogueHistory = FTAPrompt{
+	"In the adventure game application, my message list token has exceeded the limit, I need to compress a bit, "
+	"but keep the important memories, especially the more recent dialogue information, "
+	"while unimportant information can be appropriately deleted. "
+	"You do not have to maintain the alternating response format of user and system, "
+	"you only need to output a summary in a descriptive manner. "
+	"Write your summary in English. "
+	"You need to summarize extremely briefly, only retaining the most essential key words and sentences. "
+	"Use the following JSON format for your responses: "
+	"{ "
+	"\"compress_history\": \"...\", "
+	"} "
+	"Please extract the important content from the following message sent by USER."
+	,1
+	,true
+};

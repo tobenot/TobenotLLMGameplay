@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "TobenotLLMGameplay/Common/TAPromptDefinitions.h"
 #include "TADialogueComponent.generated.h"
 
 struct FChatCompletion;
@@ -39,6 +40,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "TADialogueComponent")
 	TArray<FChatLog> GetDialogueHistory() const{return DialogueHistory;};
 	UFUNCTION(BlueprintCallable, Category = "TADialogueComponent")
+	FString GetDialogueHistoryCompressedStr() const{return DialogueHistoryCompressedStr;};
+	UFUNCTION(BlueprintCallable, Category = "TADialogueComponent")
 	void SendMessageToDialogue(const FChatCompletion& Message);
 	UFUNCTION(BlueprintCallable, Category = "TADialogueComponent")
 	void RequestToSpeak();
@@ -61,6 +64,11 @@ private:
 	UPROPERTY()
 	TArray<FChatLog> DialogueHistory;
 
+	UPROPERTY()
+	TArray<FChatLog> FullDialogueHistory;
+	
+	FString DialogueHistoryCompressedStr;
+	
 	// Handles updating the chat history
 	void UpdateDialogueHistory(const FChatCompletion& NewChatLog);
 	
@@ -94,11 +102,17 @@ private:
 	
 public:
 	UFUNCTION(BlueprintCallable, Category = "Chat")
-	void CompressDialogueHistory();
+	void RequestDialogueCompression();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "TADialogueComponent")
 	bool bEnableCompressDialogue = true;
 	
 private:
-	bool bCompressingDialogue = true;
+	bool bIsCompressingDialogue = false;
+	int32 LastCompressedIndex;
+	
+public:
+	static const FTAPrompt PromptCompressDialogueHistory;
+	
+	FString JoinDialogueHistory();
 };
