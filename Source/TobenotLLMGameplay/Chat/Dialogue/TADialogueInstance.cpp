@@ -45,7 +45,7 @@ void UTADialogueInstance::AddParticipant(AActor* Participant)
 
 			// Start the timer (e.g., every 5 seconds)
 			GetWorld()->GetTimerManager().SetTimer(DialogueTimerHandle, this, &UTADialogueInstance::CycleParticipants,
-				5.0f, true, 2.0f);
+				1.0f, true, 2.0f);
 		}
 	}
 }

@@ -60,7 +60,7 @@ void UTADialogueComponent::RequestToSpeak()
 	// 构造系统提示的ChatLog对象
 	const FString SystemPrompt = FString::Printf(
 		TEXT(
-			"Now you are in a group conversation with [%s],  Your memory summary as [%s], please speak according to the conversation history."
+			"Now you are in a group conversation with [%s], You remember the conversation just now and the one before, which summary as [%s], please speak according to the conversation history."
 			)
 		, *CurrentDialogueInstance->GetParticipantsNamesStringFromAgents(), *DialogueHistoryCompressedStr) + GetSystemPromptFromOwner();
 	const FChatLog SystemPromptLog{EOAChatRole::SYSTEM, SystemPrompt};
@@ -126,7 +126,7 @@ void UTADialogueComponent::UpdateDialogueHistory(const FChatCompletion& NewChatC
 	DialogueHistory.Add(NewChatCompletion.message);
 	FullDialogueHistory.Add(NewChatCompletion.message);
 	
-	if (bEnableCompressDialogue && NewChatCompletion.totalTokens > 2000)
+	if (bEnableCompressDialogue && NewChatCompletion.totalTokens > 1600)
 	{
 		RequestDialogueCompression();
 	}
@@ -144,7 +144,11 @@ void UTADialogueComponent::RequestDialogueCompression()
 	}
 	bIsCompressingDialogue = true;
 	LastCompressedIndex = DialogueHistory.Num() - 1;
-	
+	LastCompressedIndex -= 3;
+	if(LastCompressedIndex < 1)
+	{
+		LastCompressedIndex = 1;
+	}
 	const FString DialogueHistoryString = DialogueHistoryCompressedStr + JoinDialogueHistory();
 
 	// Prepare the chat message to send to OpenAI for dialogue compression
