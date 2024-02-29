@@ -125,10 +125,10 @@ TArray<FTAEventInfo> UTAEventGenerator::ParseEventsFromJson(const FString& JsonS
 				// 获取并设置事件权重
 				EventInfo.Weight = EventObject->GetIntegerField(TEXT("Weight"));
 				
-				if (JsonObject->HasField(TEXT("AdventurePoint")))
+				/*if (JsonObject->HasField(TEXT("AdventurePoint")))
 				{
 					EventInfo.AdventurePoint = JsonObject->GetStringField(TEXT("AdventurePoint"));
-				}
+				}*/
 				
 				if (JsonObject->HasField(TEXT("PeculiarPoint")))
 				{

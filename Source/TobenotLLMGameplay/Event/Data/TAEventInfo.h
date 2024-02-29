@@ -64,8 +64,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event")
 	int32 Weight;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event")
-	FString AdventurePoint;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event")
+	//FString AdventurePoint;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event")
 	FString PeculiarPoint;

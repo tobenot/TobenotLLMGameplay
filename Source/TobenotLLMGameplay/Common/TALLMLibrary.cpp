@@ -125,7 +125,7 @@ FString UTALLMLibrary::PromptToStr(const FTAPrompt& Prompt)
 {
 	return FString::Printf(TEXT("Prompt:[%s];%s%s"),
 				*Prompt.PromptTemplate,
-				!Prompt.PromptExample.IsEmpty() ? *FString::Printf(TEXT("Example:[%s];"), *Prompt.PromptExample) : TEXT(""),
+				!Prompt.PromptExample.IsEmpty() ? *FString::Printf(TEXT("Example:%s;"), *Prompt.PromptExample) : TEXT(""),
 				Prompt.bUseJsonFormat ? TEXT("reply in json format;") : TEXT(""));
 }
 
@@ -170,6 +170,7 @@ UOpenAIChat* UTALLMLibrary::DownloadImageFromPollinations(const FString& ImagePr
 					Description.ReplaceInline(TEXT("fungi"), TEXT("*"));
 					Description.ReplaceInline(TEXT("dance"), TEXT("*"));
 					Description.ReplaceInline(TEXT("battle"), TEXT("*"));
+					Description.ReplaceInline(TEXT("eye"), TEXT("*"));
 					
 					// URL编码图片提示词
 					FString EncodedPrompt = FGenericPlatformHttp::UrlEncode(Description);

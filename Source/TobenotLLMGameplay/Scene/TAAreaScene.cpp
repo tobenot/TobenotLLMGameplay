@@ -29,7 +29,8 @@ void UTAAreaScene::LoadAreaScene(const FTAEventInfo& EventInfo)
 			const UTAPromptSetting* DefaultPromptSettings = GetDefault<UTAPromptSetting>(TAPromptSettingClass);
 			if (DefaultPromptSettings)
 			{
-				const FString EventInfoDes = EventInfo.AdventurePoint+EventInfo.PeculiarPoint+EventInfo.Description;
+				//const FString EventInfoDes = EventInfo.AdventurePoint+EventInfo.PeculiarPoint+EventInfo.Description;
+				const FString EventInfoDes = EventInfo.LocationName+EventInfo.PeculiarPoint+EventInfo.Description;
 				SystemPrompt =	UTALLMLibrary::PromptToStr(DefaultPromptSettings->PromptEventGenInteractables)
 					.Replace(TEXT("{EventInfo}"), *EventInfoDes)
 					.Replace(TEXT("{Language}"), *UTASystemLibrary::GetGameLanguage())

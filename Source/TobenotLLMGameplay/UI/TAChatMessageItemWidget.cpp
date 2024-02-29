@@ -14,7 +14,7 @@ void UTAChatMessageItemWidget::SetupMessage(const FString& Message, AActor* Send
 			DisplayText = Message;
 		}else
 		{
-			DisplayText = *Message;
+			DisplayText = Message;
 		}
 		MessageTextBlock->SetText(FText::FromString(DisplayText));
 	}
