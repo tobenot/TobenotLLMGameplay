@@ -5,7 +5,8 @@ This plugin is a compilation of general logic frequently employed by Tobenot for
 ## Key Features
 
 ### Character System:
-- **Chat Component**: Enables dialogue interactions and records chat history.
+- **Dialogue Component**: Multi-person conversation component, dialogue instance management, includes long-term memory (automatic compression method).
+- **Chat Component**: Enables one-to-one dialogue interactions and records chat history.
 - **Target Component**: Detects and designates entities for conversation.
 - **FunctionInvoke Component**: A streamlined function call mechanism that initiates calls without return values.
 - **Interactive Objects**: Elementary data and mechanisms for object interaction.
@@ -20,7 +21,7 @@ This plugin is a compilation of general logic frequently employed by Tobenot for
 - **Interactive Object Production**: Spawns interactive objects upon event initiation.
 
 ### Ancillary Systems:
-- **Identity Register & GUID Archive**: Assigns unique GUIDs to each character actor; currently limited to recording and retrieving chat logs.
+- **Identity Register & GUID Archive**: Assigns unique GUIDs to each character actor; currently limited to recording and retrieving chat logs in Chat Component.
 - **Image Production Module**: AI-assisted image creation.
 - **Networking Module**: Supplies customizable API endpoints and ports.
 - **Language Module**: Configurations for in-game language preferences.
@@ -47,7 +48,8 @@ This plugin is a compilation of general logic frequently employed by Tobenot for
 ## 目前的主要功能
 
 ### 人物系统：
-- **Chat组件**：对话和保存历史的能力
+- **Dialogue组件**：多人会话组件、对话实例管理，包含长记忆（自动压缩方式）。
+- **Chat组件**：一对一对话和保存历史的能力
 - **目标组件**：检测和选择对话目标的能力
 - **FunctionInvoke组件**：只调用不返回的轻量级FunctionCall
 - **交互物**：基础的交互物信息与交互逻辑
@@ -62,7 +64,7 @@ This plugin is a compilation of general logic frequently employed by Tobenot for
 - **交互物生成**：触发事件后生成交互物
 
 ### 外围系统：
-- **身份表、GUID存档系统**：对每个身份的Actor生成唯一GUID，目前只支持对话历史保存恢复
+- **身份表、GUID存档系统**：对每个身份的Actor生成唯一GUID，目前只支持Chat组件的对话历史保存恢复
 - **生图模块**：AI生成图片
 - **网络模块**：提供替换的api网址与端口
 - **语言模块**：游戏语言设置
