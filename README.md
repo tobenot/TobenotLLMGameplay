@@ -27,7 +27,7 @@ This plugin is a compilation of general logic frequently employed by Tobenot for
 - **Language Module**: Configurations for in-game language preferences.
 
 ### API System:
-- **GPT Plugin**: An adaptation of [OpenAI-Api-Unreal](https://github.com/tobenot/OpenAI-Api-Unreal) tailored for native C++ support after considerable enhancements. Submission planned for a later date.
+- **GPT Plugin**: An adaptation of [OpenAI-Api-Unreal](https://github.com/tobenot/OpenAI-Api-Unreal) tailored for native C++ support after considerable enhancements.
 
 ## Installation Procedure
 1. Acquire the plugin repository download.
@@ -70,7 +70,7 @@ This plugin is a compilation of general logic frequently employed by Tobenot for
 - **语言模块**：游戏语言设置
 
 ### API系统：
-- **GPT插件**：Fork了[OpenAI-Api-Unreal](https://github.com/tobenot/OpenAI-Api-Unreal)，做了大量修改，使其原生支持C++。日后有空提交一下。
+- **GPT插件**：Fork了[OpenAI-Api-Unreal](https://github.com/tobenot/OpenAI-Api-Unreal)，做了大量修改，使其原生支持C++。
 
 ## 安装指南
 1. 下载插件仓库
