@@ -109,6 +109,7 @@ UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& Ch
 
 	if(LogObject)
 	{
+		UE_LOG(LogTemp, Log, TEXT("[%s] Send Chat"), *LogObject->GetName());
 		if (UCategoryLogSubsystem* CategoryLogSubsystem = LogObject->GetWorld()->GetSubsystem<UCategoryLogSubsystem>())
 		{
 			const FString LogStr = FString::Printf(TEXT("[%s] %s"), *LogObject->GetName(),*LogContent);
