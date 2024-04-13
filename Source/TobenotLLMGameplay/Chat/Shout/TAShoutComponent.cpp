@@ -65,7 +65,7 @@ void UTAShoutComponent::RequestToSpeak()
 	auto& TempMessagesList = ShoutHistory;
 	// 构造系统提示的ChatLog对象
 	const FString SystemPrompt = GetSystemPromptFromOwner()
-		+ "Output {no_response_needed: true} if the dialogue is not directed at you or the conversation has ended or the task is completed.";
+		+ "Output {\"no_response_needed\": true} if the dialogue is not directed at you or the conversation has ended or the task is completed.";
 	const FChatLog SystemPromptLog{EOAChatRole::SYSTEM, SystemPrompt};
 
 	// 设置系统提示为TempMessagesList的首个元素
@@ -218,7 +218,7 @@ void UTAShoutComponent::HandleShoutReceived(const FChatCompletion& Message, AAct
 	{
 		HandleReceivedMessage(Message, Shouter);
 
-		if (true) // 这里可以有一些硬性条件，比如角色是否死亡，是否能说话
+		if (!IsPlayer) // 这里可以有一些硬性条件，比如角色是否死亡，是否能说话
 		{
 			RequestToSpeak();
 		}
