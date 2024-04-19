@@ -11,6 +11,7 @@ struct FChatCompletion;
 class UTAShoutInstance;
 struct FChatLog;
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnShoutReceivedMessageUpdated, const FChatCompletion&, ReceivedMessage, AActor*, Sender);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnProvidePlayerChoices, const TArray<FString>&, Choices);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class TOBENOTLLMGAMEPLAY_API UTAShoutComponent : public UActorComponent
@@ -20,8 +21,12 @@ class TOBENOTLLMGAMEPLAY_API UTAShoutComponent : public UActorComponent
 public:
 	// 这个委托的sender意思是真正发送ReceivedMessage的人，不是促使它发送ReceivedMessage的人，注意区分
 	UPROPERTY(BlueprintAssignable, Category = "TAShoutComponent")
-	FOnShoutReceivedMessageUpdated OnShoutReceivedMessage; 
-
+	FOnShoutReceivedMessageUpdated OnShoutReceivedMessage;
+	
+	// 委托：提供给玩家的备选回复项目
+	UPROPERTY(BlueprintAssignable, Category = "TAShoutComponent")
+	FOnProvidePlayerChoices OnProvidePlayerChoices;
+	
 	// Constructor for the Shout component
 	UTAShoutComponent();
 
@@ -109,4 +114,9 @@ public:
 	static const FTAPrompt PromptCompressShoutHistory;
 	
 	FString JoinShoutHistory();
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Chat")
+	void RequestChoices();
+	TArray<FString> ParseChoicesFromResponse(const FString& Response);
 };

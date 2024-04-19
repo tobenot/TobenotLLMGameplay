@@ -214,7 +214,7 @@ void UTAShoutComponent::RequestShoutCompression()
 			UE_LOG(LogTemp, Error, TEXT("Shout compression failed: %s"), *ErrorMessage);
 		}
 		bIsCompressingShout = false;
-		});
+		},GetOwner());
 }
 
 FString UTAShoutComponent::JoinShoutHistory()
@@ -247,13 +247,22 @@ void UTAShoutComponent::HandleShoutReceived(const FChatCompletion& Message, AAct
 	{
 		HandleReceivedMessage(Message, Shouter);
 
-		if (!IsPlayer) // 这里可以有一些硬性条件，比如角色是否死亡，是否能说话
+		// 这里可以有一些硬性条件，比如角色是否死亡，是否能说话
+		if(true)
 		{
-			RequestToSpeak();
+			if (IsPlayer) 
+			{
+				// 是玩家，所以请求提供回复选项
+				RequestChoices();
+			}else
+			{
+				// 不是玩家，看看要不要回复
+				RequestToSpeak();
+			}
 		}
 	}
-	
 }
+
 void UTAShoutComponent::HandleReceivedMessage(const FChatCompletion& ReceivedMessage, AActor* Sender)
 {
 	// 更新对话历史记录
@@ -342,6 +351,71 @@ UTAShoutComponent* UTAShoutComponent::GetTAShoutComponent(AActor* Actor)
 	}
 
 	return ShoutComponent;
+}
+
+
+void UTAShoutComponent::RequestChoices()
+{
+	auto& TempMessagesList = ShoutHistory;
+	//使用系统提示创建ChatLog对象
+	const FString SystemPrompt = GetSystemPromptFromOwner()
+		+ "But now your task is different. Now you need to know that the above information is player information. "
+		+ "Please provide several choices for the player's next speech based on the dialogue history. The choices should come in a JSON string array format as shown below: "
+		+ "{\"message\" : [\"You too!\", \"I don't think so.\", \"I love it.\"]}";
+	const FChatLog SystemPromptLog{EOAChatRole::SYSTEM, SystemPrompt};
+
+	// 将刚刚创建的系统提示设置为TempMessagesList的首个元素
+	if (TempMessagesList.Num() > 0)
+	{
+		TempMessagesList[0] = SystemPromptLog;
+	}
+	else
+	{
+		TempMessagesList.Add(SystemPromptLog);
+	}
+
+	// 设置对话请求的配置
+	FChatSettings ChatSettings{
+		UTALLMLibrary::GetChatEngineTypeFromQuality(ELLMChatEngineQuality::Fast),
+		TempMessagesList,
+		true // 使用JSON格式
+	};
+
+	//发送请求
+	CacheChat = UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, [this](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
+	{
+		if (Success)
+		{
+			//按照某种定义的JSON格式解析回复选项
+			TArray<FString> Choices = ParseChoicesFromResponse(Message.message.content);
+            
+			// 委托广播备选回复
+			OnProvidePlayerChoices.Broadcast(Choices);
+		}
+	},GetOwner());
+}
+
+TArray<FString> UTAShoutComponent::ParseChoicesFromResponse(const FString& Response)
+{
+	// 接受的json格式下示例 {"choices" : ["Hello", "How are you", "Nice to meet you"]}
+	TArray<FString> Choices;
+	TSharedPtr<FJsonObject> JsonObject;
+
+	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Response);
+
+	if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
+	{
+		if (JsonObject->HasField("message"))
+		{
+			TArray<TSharedPtr<FJsonValue>> ChoicesJsonArray = JsonObject->GetArrayField("message");
+			for (int32 i = 0; i < ChoicesJsonArray.Num(); i++)
+			{
+				Choices.Add(ChoicesJsonArray[i]->AsString());
+			}
+		}
+	}
+        
+	return Choices;
 }
 
 const FTAPrompt UTAShoutComponent::PromptCompressShoutHistory = FTAPrompt{
