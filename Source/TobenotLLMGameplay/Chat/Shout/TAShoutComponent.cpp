@@ -93,8 +93,8 @@ void UTAShoutComponent::RequestToSpeak()
 	auto& TempMessagesList = ShoutHistory;
 	// 构造系统提示的ChatLog对象
 	const FString SystemPrompt = GetSystemPromptFromOwner()
-		+ "Nearby agents: " + GetNearbyAgentNames() 
-		+ ". Output {\"no_response_needed\": \"No response needed because [Your_Reason_Here]\"} if the dialogue has ended or the task is completed.";
+		+ ". Output {\"no_response_needed\": \"No response needed because [Your_Reason_Here]\"} when the conversation is becoming boring."
+		+ "Nearby agents: " + GetNearbyAgentNames();
 	const FChatLog SystemPromptLog{EOAChatRole::SYSTEM, SystemPrompt};
 
 	// 设置系统提示为TempMessagesList的首个元素
