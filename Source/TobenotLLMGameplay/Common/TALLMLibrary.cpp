@@ -35,22 +35,26 @@ EOAChatEngineType UTALLMLibrary::GetChatEngineTypeFromQuality(const ELLMChatEngi
 UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& ChatSettings, TFunction<void(const FChatCompletion& Message, const FString& ErrorMessage, bool Success)> Callback, const UObject* LogObject, const int32 NewRetryCount)
 {
     // 调用OpenAIChat进行通信，并定义重试逻辑
-    UOpenAIChat* Chat = UOpenAIChat::Chat(ChatSettings, [Callback, NewRetryCount, LogObject, ChatSettings, &Chat](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
+    UOpenAIChat* Chat = UOpenAIChat::Chat(ChatSettings, [Callback, NewRetryCount, LogObject, ChatSettings /*, Chat 这个赋值是在绑定之后，传进来就是个空指针*/]
+    	(const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
     {
         if (Success)
         {
             // 处理成功的响应
-            UE_LOG(LogTemp, Log, TEXT("Response success: %s"), *Message.message.content);
         	if(LogObject)
         	{
+        		UE_LOG(LogTemp, Log, TEXT("[%s] Response success: %s"), *LogObject->GetName(), *Message.message.content);
 				if (UCategoryLogSubsystem* CategoryLogSubsystem = LogObject->GetWorld()->GetSubsystem<UCategoryLogSubsystem>())
 				{
 					const FString ResponseStr = FString::Printf(TEXT("[%s] Assistant Response:\n%s\n"), *LogObject->GetName(),*Message.message.content);
 					CategoryLogSubsystem->WriteLog(TEXT("Chat"), *ResponseStr);
 				}
         		Callback(Message, ErrorMessage, true);
+			}else
+			{
+				UE_LOG(LogTemp, Log, TEXT("Response success: %s"), *Message.message.content);
 			}
-			Chat = nullptr;
+			//Chat = nullptr;
         }
         else
         {
@@ -85,10 +89,12 @@ UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& Ch
 					}
             		Callback(Message, ErrorMessage, false);
 				}
-            	Chat = nullptr;
+            	//Chat = nullptr;
             }
         }
+    	//Chat->RemoveFromRoot();
     });
+	//Chat->AddToRoot();
 
 	// 打印ChatSettings的调试信息
 	FStringBuilderBase StringBuilder;
