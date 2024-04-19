@@ -55,6 +55,34 @@ void UTAShoutComponent::ShoutMessage(const FChatCompletion& Message, float Volum
 	}
 }
 
+FString UTAShoutComponent::GetNearbyAgentNames()
+{
+	FString NearbyAgentNames;
+
+	// 获取声音可以达到的Agent 
+	UTAShoutManager* ShoutManager = GetWorld()->GetSubsystem<UTAShoutManager>();
+	if (ShoutManager)
+	{
+		TArray<UTAShoutComponent*> NearbyAgentComponents = ShoutManager->GetShoutComponentsInRange(GetOwner(), 500.f);
+       
+		// 遍历Agent，获取他们的名字
+		for (UTAShoutComponent* AgentComponent : NearbyAgentComponents)
+		{
+			if (AgentComponent && AgentComponent->GetOwner())
+			{
+				const ITAAgentInterface* AgentInterface = Cast<ITAAgentInterface>(AgentComponent->GetOwner());
+				if (AgentInterface)
+				{
+					NearbyAgentNames += AgentInterface->GetAgentName() + ", ";
+				}
+			}
+		}
+	}
+   
+	// 如果存在列表，移除最后添加的", "，否则返回"No nearby agents."
+	return NearbyAgentNames.IsEmpty() ? "No nearby agents" : NearbyAgentNames.LeftChop(2);
+}
+
 void UTAShoutComponent::RequestToSpeak()
 {
 	IsRequestingMessage = true;
@@ -65,7 +93,8 @@ void UTAShoutComponent::RequestToSpeak()
 	auto& TempMessagesList = ShoutHistory;
 	// 构造系统提示的ChatLog对象
 	const FString SystemPrompt = GetSystemPromptFromOwner()
-		+ "Output {\"no_response_needed\": true} if the dialogue is not directed at you or the conversation has ended or the task is completed.";
+		+ "Nearby agents: " + GetNearbyAgentNames() 
+		+ ". Output {\"no_response_needed\": \"No response needed because [Your_Reason_Here]\"} if the dialogue has ended or the task is completed.";
 	const FChatLog SystemPromptLog{EOAChatRole::SYSTEM, SystemPrompt};
 
 	// 设置系统提示为TempMessagesList的首个元素
@@ -95,7 +124,7 @@ void UTAShoutComponent::RequestToSpeak()
 
 			if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
 			{
-				if (JsonObject->HasField("no_response_needed") && JsonObject->GetBoolField("no_response_needed"))
+				if (JsonObject->HasField("no_response_needed"))
 				{
 					// 如果不需要回应，则不继续喊话
 					return;

@@ -36,6 +36,7 @@ private:
 	UPROPERTY()
 	TArray<UTAShoutComponent*> RegisteredShoutComponents;
 
+public:
 	// Helper function to get all shout components in range of the shouter.
 	TArray<UTAShoutComponent*> GetShoutComponentsInRange(AActor* Shouter, float Range);
 };

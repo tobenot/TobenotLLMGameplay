@@ -41,6 +41,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "TAShoutComponent")
 	void ShoutMessage(const FChatCompletion& Message, float Volume = 100.f);
 	UFUNCTION(BlueprintCallable, Category = "TAShoutComponent")
+	FString GetNearbyAgentNames();
+	UFUNCTION(BlueprintCallable, Category = "TAShoutComponent")
 	void RequestToSpeak();
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TAShoutComponent")
