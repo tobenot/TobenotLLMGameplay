@@ -189,7 +189,7 @@ void UTADialogueComponent::RequestDialogueCompression()
 			UE_LOG(LogTemp, Error, TEXT("Dialogue compression failed: %s"), *ErrorMessage);
 		}
 		bIsCompressingDialogue = false;
-		});
+		},GetOwner());
 }
 
 FString UTADialogueComponent::JoinDialogueHistory()

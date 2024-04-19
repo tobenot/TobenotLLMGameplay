@@ -31,7 +31,7 @@ void UTAImageGenerator::RequestGenerateImage(const FTAEventInfo& EventInfo)
 	// 注意：这里我们直接使用UTASystemLibrary提供的函数和委托类型
 	CacheOpenAIChat = UTALLMLibrary::DownloadImageFromPollinations(
 		EventInfo.LocationName+' '+EventInfo.Description,
-		OnDownloadCompleteDelegate, OnDownloadFailedDelegate);
+		OnDownloadCompleteDelegate, OnDownloadFailedDelegate, this);
 }
 
 void UTAImageGenerator::OnDownloadComplete(UTexture2DDynamic* Texture)

@@ -48,8 +48,8 @@ UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& Ch
 					const FString ResponseStr = FString::Printf(TEXT("[%s] Assistant Response:\n%s\n"), *LogObject->GetName(),*Message.message.content);
 					CategoryLogSubsystem->WriteLog(TEXT("Chat"), *ResponseStr);
 				}
+        		Callback(Message, ErrorMessage, true);
 			}
-            Callback(Message, ErrorMessage, true);
 			Chat = nullptr;
         }
         else
@@ -83,8 +83,8 @@ UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& Ch
 						const FString ResponseStr = FString::Printf(TEXT("[%s] Assistant Response exhausted all retries!\n%s\n"), *LogObject->GetName(),*ErrorMessage);
 						CategoryLogSubsystem->WriteLog(TEXT("Chat"), *ResponseStr);
 					}
+            		Callback(Message, ErrorMessage, false);
 				}
-            	Callback(Message, ErrorMessage, false);
             	Chat = nullptr;
             }
         }
@@ -130,7 +130,7 @@ FString UTALLMLibrary::PromptToStr(const FTAPrompt& Prompt)
 				Prompt.bUseJsonFormat ? TEXT("reply in json format;") : TEXT(""));
 }
 
-UOpenAIChat* UTALLMLibrary::DownloadImageFromPollinations(const FString& ImagePrompt, const FTAImageDownloadedDelegate & OnDownloadComplete, const FTAImageDownloadedDelegate & OnDownloadFailed)
+UOpenAIChat* UTALLMLibrary::DownloadImageFromPollinations(const FString& ImagePrompt, const FTAImageDownloadedDelegate & OnDownloadComplete, const FTAImageDownloadedDelegate & OnDownloadFailed, const UObject* LogObject)
 {
 	TArray<FChatLog> TempMessagesList;
 	const FString SystemPrompt =
@@ -206,7 +206,7 @@ UOpenAIChat* UTALLMLibrary::DownloadImageFromPollinations(const FString& ImagePr
 			OnDownloadFailed.Broadcast(nullptr);
 			UE_LOG(LogTemp, Error, TEXT("Description generation failed. ImagePrompt: %s"), *ImagePrompt);
 		}
-	});
+	}, LogObject);
 }
 
 void UTALLMLibrary::HandleImageRequest(FHttpRequestPtr HttpRequest, const FHttpResponsePtr& HttpResponse, bool bSucceeded, const FTAImageDownloadedDelegate & OnDownloadComplete, const FTAImageDownloadedDelegate & OnDownloadFailed)
