@@ -118,17 +118,10 @@ void UTAShoutComponent::RequestToSpeak()
 	{
 		if (Success)
 		{
-			// 检查返回的Message是否有特定的JSON表示不需要回应
-			TSharedPtr<FJsonObject> JsonObject;
-			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Message.message.content);
-
-			if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
+			if (Message.message.content.Contains(TEXT("no_response_needed")))
 			{
-				if (JsonObject->HasField("no_response_needed"))
-				{
-					// 如果不需要回应，则不继续喊话
-					return;
-				}
+				// 如果不需要回应，则不继续喊话
+				return;
 			}
 
 			ShoutMessage(Message, 100); // 继续喊话
@@ -361,7 +354,8 @@ void UTAShoutComponent::RequestChoices()
 	const FString SystemPrompt = GetSystemPromptFromOwner()
 		+ "But now your task is different. Now you need to know that the above information is player information. "
 		+ "Please provide several choices for the player's next speech based on the dialogue history. The choices should come in a JSON string array format as shown below: "
-		+ "{\"message\" : [\"You too!\", \"I don't think so.\", \"I love it.\"]}";
+		+ "{\"message\" : [\"You too!\", \"I don't think so.\", \"I love it.\"]}."
+		+ "Please stand in the player's shoes, but don't need to output player's character's name before choices.";
 	const FChatLog SystemPromptLog{EOAChatRole::SYSTEM, SystemPrompt};
 
 	// 将刚刚创建的系统提示设置为TempMessagesList的首个元素
@@ -382,7 +376,8 @@ void UTAShoutComponent::RequestChoices()
 	};
 
 	//发送请求
-	CacheChat = UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, [this](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
+	//CacheChat =
+	UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, [this](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
 	{
 		if (Success)
 		{

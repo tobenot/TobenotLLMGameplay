@@ -31,12 +31,14 @@ public:
 	// Function to broadcast a shout to listening components.
 	void BroadcastShout(const FChatCompletion& Message, AActor* Shouter, float Volume);
 
+public:
+	// Helper function to get all shout components in range of the shouter.
+	TArray<UTAShoutComponent*> GetShoutComponentsInRange(AActor* Shouter, float Range);
+	
 private:
 	// Stores references to all registered shout components.
 	UPROPERTY()
 	TArray<UTAShoutComponent*> RegisteredShoutComponents;
-
-public:
-	// Helper function to get all shout components in range of the shouter.
-	TArray<UTAShoutComponent*> GetShoutComponentsInRange(AActor* Shouter, float Range);
+private:
+	bool IsValidAgentName(const FString& Message, AActor* Shouter) const;
 };
