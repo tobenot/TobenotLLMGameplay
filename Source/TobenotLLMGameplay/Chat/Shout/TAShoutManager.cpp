@@ -36,7 +36,7 @@ void UTAShoutManager::BroadcastShout(const FChatCompletion& Message, AActor* Sho
 {
 	TArray<UTAShoutComponent*> ComponentsInRange = GetShoutComponentsInRange(Shouter, Volume * 50.f);
 
-	if(IsValidAgentName(Message, Shouter)){
+	if(IsValidAgentName(Message.message.content, Shouter)){
 		for (UTAShoutComponent* Listener : ComponentsInRange)
 		{
 			if (Listener && Listener->IsActive())
@@ -63,24 +63,36 @@ TArray<UTAShoutComponent*> UTAShoutManager::GetShoutComponentsInRange(AActor* Sh
 
 bool UTAShoutManager::IsValidAgentName(const FString& MessageContent, AActor* Shouter) const
 {
-	const ITAAgentInterface* AgentInterface = Cast<ITAAgentInterface>(Shouter);
-	if (AgentInterface)
+	const FString& MessageKey = TEXT("\"message\": \"");
+	int32 MessageStartIndex = MessageContent.Find(MessageKey);
+	if (MessageStartIndex > 0)
 	{
-		FString AgentName = AgentInterface->GetAgentName();
-		// 截取与AgentName长度相等的消息内容前缀
-		FString Prefix = MessageContent.Left(AgentName.Len()).TrimStartAndEnd();
-		// 忽略大小写地进行比较
-		if (Prefix.Equals(AgentName, ESearchCase::IgnoreCase))
+		// 计算出实际消息内容的起始位置
+		int32 ActualMessageStart = MessageStartIndex + MessageKey.Len();
+
+		const ITAAgentInterface* AgentInterface = Cast<ITAAgentInterface>(Shouter);
+		if (AgentInterface)
 		{
-			return true;
-		}
-		else
-		{
-			UE_LOG(LogTAChat, Warning, TEXT("Invalid Agent name in content: '%s' Expected: '%s'"), *Prefix, *AgentName);
-			return false;
+			FString AgentName = AgentInterface->GetAgentName();
+			// 截取与AgentName等长的字符串，用于比较
+			FString AgentNameInContent = MessageContent.Mid(ActualMessageStart, AgentName.Len()).TrimStartAndEnd();
+			if (AgentNameInContent.Equals(AgentName, ESearchCase::IgnoreCase))
+			{
+				return true;
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Invalid Agent name in content: '%s' Expected: '%s'"), *AgentNameInContent, *AgentName);
+				return false;
+			}
 		}
 	}
-
-	// 如果没有AgentInterface接口，或者Agent名字为空，就假定无需进行Agent名字验证，这条消息有效
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Cannot find key '\"message\": \"' in content: %s"), *MessageContent);
+		return true;
+	}
+    
+	// 如果没有AgentInterface，则默认消息有效
 	return true;
 }
