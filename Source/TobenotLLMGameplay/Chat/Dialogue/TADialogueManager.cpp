@@ -4,6 +4,7 @@
 #include "TADialogueManager.h"
 
 #include "TADialogueComponent.h"
+#include "Chat/TAChatLogCategory.h"
 
 UTADialogueInstance* UTADialogueManager::CreateDialogueInstance(UObject* WorldContext)
 {

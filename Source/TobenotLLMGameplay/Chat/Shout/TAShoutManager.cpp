@@ -4,6 +4,7 @@
 #include "TAShoutComponent.h"
 #include "OpenAIDefinitions.h"
 #include "Common/TAAgentInterface.h"
+#include "Chat/TAChatLogCategory.h"
 
 void UTAShoutManager::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -35,11 +36,13 @@ void UTAShoutManager::BroadcastShout(const FChatCompletion& Message, AActor* Sho
 {
 	TArray<UTAShoutComponent*> ComponentsInRange = GetShoutComponentsInRange(Shouter, Volume * 50.f);
 
-	for (UTAShoutComponent* Listener : ComponentsInRange)
-	{
-		if (Listener && Listener->IsActive())
+	if(IsValidAgentName(Message, Shouter)){
+		for (UTAShoutComponent* Listener : ComponentsInRange)
 		{
-			Listener->HandleShoutReceived(Message, Shouter, Volume);
+			if (Listener && Listener->IsActive())
+			{
+				Listener->HandleShoutReceived(Message, Shouter, Volume);
+			}
 		}
 	}
 }
@@ -73,7 +76,7 @@ bool UTAShoutManager::IsValidAgentName(const FString& MessageContent, AActor* Sh
 		}
 		else
 		{
-			UE_LOG(LogTemp, Warning, TEXT("Invalid Agent name in content: '%s' Expected: '%s'"), *Prefix, *AgentName);
+			UE_LOG(LogTAChat, Warning, TEXT("Invalid Agent name in content: '%s' Expected: '%s'"), *Prefix, *AgentName);
 			return false;
 		}
 	}

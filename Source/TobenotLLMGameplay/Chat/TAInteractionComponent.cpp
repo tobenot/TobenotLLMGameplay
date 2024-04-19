@@ -5,6 +5,7 @@
 
 #include "TobenotLLMGameplay/Common/TALLMLibrary.h"
 #include "TobenotLLMGameplay/Common/TASystemLibrary.h"
+#include "Chat/TAChatLogCategory.h"
 
 UTAInteractionComponent::UTAInteractionComponent()
 {

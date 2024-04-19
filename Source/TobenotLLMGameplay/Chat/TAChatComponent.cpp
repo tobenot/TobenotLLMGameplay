@@ -9,6 +9,7 @@
 #include "Common/TAAgentInterface.h"
 #include "Save/TAGuidInterface.h"
 #include "Common/TALLMLibrary.h"
+#include "Chat/TAChatLogCategory.h"
 
 // Sets default values for this component's properties
 UTAChatComponent::UTAChatComponent()
@@ -72,7 +73,7 @@ void UTAChatComponent::SendMessageToOpenAI(AActor* OriActor, FString UserMessage
 {
     if (!OriActor)
     {
-        UE_LOG(LogTemp, Warning, TEXT("OriActor is nullptr"));
+        UE_LOG(LogTAChat, Warning, TEXT("OriActor is nullptr"));
         return;
     }
 
@@ -82,7 +83,7 @@ void UTAChatComponent::SendMessageToOpenAI(AActor* OriActor, FString UserMessage
         FTAActorMessageQueue& ActorQueue = ActorMessageQueueMap.FindOrAdd(OriActor);
         ActorQueue.MessageQueue.Add(UserMessage);
         ActorQueue.CallbackObject = CallbackObject;
-        UE_LOG(LogTemp, Warning, TEXT("Another message is being processed for this Actor. Your message has been added to the queue."));
+        UE_LOG(LogTAChat, Warning, TEXT("Another message is being processed for this Actor. Your message has been added to the queue."));
         return;
     }
 
@@ -94,12 +95,12 @@ void UTAChatComponent::ProcessMessage(AActor* OriActor, const FString& UserMessa
 {
     if (!OriActor)
     {
-        UE_LOG(LogTemp, Warning, TEXT("OriActor is nullptr"));
+        UE_LOG(LogTAChat, Warning, TEXT("OriActor is nullptr"));
         return;
     }
     if(!bAcceptMessages)
     {
-        UE_LOG(LogTemp, Log, TEXT("Reject message from %s"), *OriActor->GetName());
+        UE_LOG(LogTAChat, Log, TEXT("Reject message from %s"), *OriActor->GetName());
         return;
     }
     
@@ -164,7 +165,7 @@ FString UTAChatComponent::GetSystemPromptFromOwner() const
     }
     else
     {
-        UE_LOG(LogTemp, Error, TEXT("我的Owner 没有实现 ITAAgentInterface"));
+        UE_LOG(LogTAChat, Error, TEXT("我的Owner 没有实现 ITAAgentInterface"));
         return "";
     }
 }
@@ -175,7 +176,7 @@ TArray<FChatLog>& UTAChatComponent::GetChatHistoryWithActor(AActor* OtherActor)
     ITAGuidInterface* GuidInterface = Cast<ITAGuidInterface>(OtherActor);
     if (!GuidInterface)
     {
-        UE_LOG(LogTemp, Error, TEXT("%s 未实现ITAGuidInterface"),*OtherActor->GetName());
+        UE_LOG(LogTAChat, Error, TEXT("%s 未实现ITAGuidInterface"),*OtherActor->GetName());
         ensure(GuidInterface != nullptr);
     }
     FGuid TAGuid = GuidInterface->GetTAGuid();
@@ -191,7 +192,7 @@ void UTAChatComponent::ClearChatHistoryWithActor(AActor* OtherActor)
         ActorChatHistoryMap.Remove(TAGuid);
     }else
     {
-        UE_LOG(LogTemp, Error, TEXT("%s 未实现ITAGuidInterface"),*OtherActor->GetName());
+        UE_LOG(LogTAChat, Error, TEXT("%s 未实现ITAGuidInterface"),*OtherActor->GetName());
     }
     CallbackMap.Remove(OtherActor);
 }
@@ -250,7 +251,7 @@ void UTAChatComponent::PerformFunctionInvokeBasedOnResponse(const FString& Respo
     {
         if (bEnableFunctionInvoke)
         {
-            UE_LOG(LogTemp, Error, TEXT("bEnableFunctionInvoke is true, but UTAFunctionInvokeComponent not found on the Owner of UTAChatComponent."));
+            UE_LOG(LogTAChat, Error, TEXT("bEnableFunctionInvoke is true, but UTAFunctionInvokeComponent not found on the Owner of UTAChatComponent."));
         }
     }
 }

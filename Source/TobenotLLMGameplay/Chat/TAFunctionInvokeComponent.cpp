@@ -2,6 +2,7 @@
 
 
 #include "TAFunctionInvokeComponent.h"
+#include "Chat/TAChatLogCategory.h"
 
 DEFINE_LOG_CATEGORY(LogFunctionInvoke);
 

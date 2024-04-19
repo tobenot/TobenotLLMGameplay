@@ -9,6 +9,7 @@
 #include "Common/TAAgentInterface.h"
 #include "Common/TALLMLibrary.h"
 #include "Common/TASystemLibrary.h"
+#include "Chat/TAChatLogCategory.h"
 
 UTADialogueComponent::UTADialogueComponent()
 {
@@ -40,7 +41,7 @@ void UTADialogueComponent::SendMessageToDialogue(const FChatCompletion& Message)
 	else
 	{
 		// 可以适当提供反馈
-		UE_LOG(LogTemp, Warning, TEXT("No dialogue instance is set or messages are not being accepted."));
+		UE_LOG(LogTAChat, Warning, TEXT("No dialogue instance is set or messages are not being accepted."));
 	}
 }
 
@@ -48,7 +49,7 @@ void UTADialogueComponent::RequestToSpeak()
 {
 	if(!CurrentDialogueInstance)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("No dialogue instance is set"));
+		UE_LOG(LogTAChat, Warning, TEXT("No dialogue instance is set"));
 		return;
 	}
 	IsRequestingMessage = true;
@@ -182,11 +183,11 @@ void UTADialogueComponent::RequestDialogueCompression()
 			// 将新历史记录加回到当前对话历史
 			DialogueHistory.Append(NewHistory);
 
-			UE_LOG(LogTemp, Log, TEXT("Dialogue compression successful: %s"), *Message.message.content);
+			UE_LOG(LogTAChat, Log, TEXT("Dialogue compression successful: %s"), *Message.message.content);
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("Dialogue compression failed: %s"), *ErrorMessage);
+			UE_LOG(LogTAChat, Error, TEXT("Dialogue compression failed: %s"), *ErrorMessage);
 		}
 		bIsCompressingDialogue = false;
 		},GetOwner());
@@ -230,7 +231,7 @@ FString UTADialogueComponent::GetSystemPromptFromOwner() const
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("我的Owner 没有实现 ITAAgentInterface"));
+		UE_LOG(LogTAChat, Error, TEXT("我的Owner 没有实现 ITAAgentInterface"));
 		return "";
 	}
 }
@@ -248,7 +249,7 @@ void UTADialogueComponent::PerformFunctionInvokeBasedOnResponse(const FString& R
 	{
 		if (bEnableFunctionInvoke)
 		{
-			UE_LOG(LogTemp, Error, TEXT("bEnableFunctionInvoke is true, but UTAFunctionInvokeComponent not found on the Owner of UTAChatComponent."));
+			UE_LOG(LogTAChat, Error, TEXT("bEnableFunctionInvoke is true, but UTAFunctionInvokeComponent not found on the Owner of UTAChatComponent."));
 		}
 	}
 }

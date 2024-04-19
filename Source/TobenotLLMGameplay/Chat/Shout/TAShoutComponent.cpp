@@ -7,8 +7,7 @@
 #include "Chat/TAFunctionInvokeComponent.h"
 #include "Common/TAAgentInterface.h"
 #include "Common/TALLMLibrary.h"
-#include "Common/TASystemLibrary.h"
-#include "OpenAIDefinitions.h"
+#include "Chat/TAChatLogCategory.h"
 
 UTAShoutComponent::UTAShoutComponent()
 {
@@ -85,11 +84,12 @@ FString UTAShoutComponent::GetNearbyAgentNames()
 
 void UTAShoutComponent::RequestToSpeak()
 {
-	IsRequestingMessage = true;
 	if(IsPlayer)
 	{
 		return;
 	}
+	IsRequestingMessage = true;
+	UE_LOG(LogTAChat, Log, TEXT("[%s] RequestToSpeak called"), *GetOwner()->GetName());
 	auto& TempMessagesList = ShoutHistory;
 	// 构造系统提示的ChatLog对象
 	const FString SystemPrompt = GetSystemPromptFromOwner()
@@ -116,6 +116,7 @@ void UTAShoutComponent::RequestToSpeak()
 
 	CacheChat = UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, [this](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
 	{
+		UE_LOG(LogTAChat, Log, TEXT("[%s] SendMessageToOpenAIWithRetry Callback"), *GetOwner()->GetName());
 		if (Success)
 		{
 			if (Message.message.content.Contains(TEXT("no_response_needed")))
@@ -200,11 +201,11 @@ void UTAShoutComponent::RequestShoutCompression()
 			// 将新历史记录加回到当前对话历史
 			ShoutHistory.Append(NewHistory);
 
-			UE_LOG(LogTemp, Log, TEXT("Shout compression successful: %s"), *Message.message.content);
+			UE_LOG(LogTAChat, Log, TEXT("Shout compression successful: %s"), *Message.message.content);
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("Shout compression failed: %s"), *ErrorMessage);
+			UE_LOG(LogTAChat, Error, TEXT("Shout compression failed: %s"), *ErrorMessage);
 		}
 		bIsCompressingShout = false;
 		},GetOwner());
@@ -279,7 +280,7 @@ FString UTAShoutComponent::GetSystemPromptFromOwner() const
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("我的Owner 没有实现 ITAAgentInterface"));
+		UE_LOG(LogTAChat, Error, TEXT("我的Owner 没有实现 ITAAgentInterface"));
 		return "";
 	}
 }
@@ -297,7 +298,7 @@ void UTAShoutComponent::PerformFunctionInvokeBasedOnResponse(const FString& Resp
 	{
 		if (bEnableFunctionInvoke)
 		{
-			UE_LOG(LogTemp, Error, TEXT("bEnableFunctionInvoke is true, but UTAFunctionInvokeComponent not found on the Owner of UTAChatComponent."));
+			UE_LOG(LogTAChat, Error, TEXT("bEnableFunctionInvoke is true, but UTAFunctionInvokeComponent not found on the Owner of UTAChatComponent."));
 		}
 	}
 }

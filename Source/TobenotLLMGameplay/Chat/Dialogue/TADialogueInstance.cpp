@@ -6,7 +6,7 @@
 #include "TADialogueComponent.h"
 #include "Common/TAAgentInterface.h"
 #include "Engine/World.h"
-
+#include "Chat/TAChatLogCategory.h"
 
 // 帮助根据说话优先级排序的结构体
 struct FParticipantPriority
@@ -195,12 +195,12 @@ TArray<FString> UTADialogueInstance::GetParticipantNamesFromAgents() const
 			else
 			{
 				// 如果Participant没有实现ITAAgentInterface, 记录错误
-				UE_LOG(LogTemp, Error, TEXT("Participant '%s' does not implement ITAAgentInterface."), *Participant->GetName());
+				UE_LOG(LogTAChat, Error, TEXT("Participant '%s' does not implement ITAAgentInterface."), *Participant->GetName());
 			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("One of the participants is null."));
+			UE_LOG(LogTAChat, Error, TEXT("One of the participants is null."));
 		}
 	}
 
@@ -225,12 +225,12 @@ FString UTADialogueInstance::GetParticipantsNamesStringFromAgents() const
 			}
 			else
 			{
-				UE_LOG(LogTemp, Error, TEXT("Participant '%s' does not implement ITAAgentInterface."), *Participant->GetName());
+				UE_LOG(LogTAChat, Error, TEXT("Participant '%s' does not implement ITAAgentInterface."), *Participant->GetName());
 			}
 		}
 		else
 		{
-			UE_LOG(LogTemp, Error, TEXT("One of the participants is null in DialogueComponent."));
+			UE_LOG(LogTAChat, Error, TEXT("One of the participants is null in DialogueComponent."));
 		}
 	}
 
