@@ -12,7 +12,7 @@
 
 FString UTASceneSubsystem::QuerySceneMapInfo()
 {
-	return "The Mushroom Village on the grassland, where the Mushroom Monsters are hostile.";
+	return "The Mushroom Village on the grassland, where the mushroom monsters are hostile, mushroom villagers may be friendly.";
 }
 
 FString UTASceneSubsystem::QueryLocationInfo(const FVector& Location)
