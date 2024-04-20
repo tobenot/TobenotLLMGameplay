@@ -27,8 +27,21 @@ public:
 	virtual FString SerializeCustomData();
 	
 	virtual void DeserializeCustomData(const FString& SerializedData);
-	
+
+	UFUNCTION(BlueprintCallable, Category = "TAGuid")
+	virtual FName GetIdentityPositionName() const
+	{
+		return IdentityPositionName;
+	}
+
+	UFUNCTION(BlueprintCallable, Category = "TAGuid")
+	virtual void SetIdentityPositionName(FName NewIdentityPositionName)
+	{
+		IdentityPositionName = NewIdentityPositionName;
+	}
+
 private:
-	
 	FGuid TAGuid;
+	
+	FName IdentityPositionName;
 };
