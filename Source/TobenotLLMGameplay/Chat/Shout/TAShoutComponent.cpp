@@ -8,6 +8,7 @@
 #include "Common/TAAgentInterface.h"
 #include "Common/TALLMLibrary.h"
 #include "Chat/TAChatLogCategory.h"
+#include "Save/TAGuidInterface.h"
 
 UTAShoutComponent::UTAShoutComponent()
 {
@@ -58,21 +59,32 @@ FString UTAShoutComponent::GetNearbyAgentNames()
 {
 	FString NearbyAgentNames;
 
-	// 获取声音可以达到的Agent 
+	// 获取声音可以达到的Agent
 	UTAShoutManager* ShoutManager = GetWorld()->GetSubsystem<UTAShoutManager>();
 	if (ShoutManager)
 	{
 		TArray<UTAShoutComponent*> NearbyAgentComponents = ShoutManager->GetShoutComponentsInRange(GetOwner(), 500.f);
        
-		// 遍历Agent，获取他们的名字
+		// 遍历Agent，获取他们的名字以及特定的IdentityPositionName
 		for (UTAShoutComponent* AgentComponent : NearbyAgentComponents)
 		{
 			if (AgentComponent && AgentComponent->GetOwner())
 			{
 				const ITAAgentInterface* AgentInterface = Cast<ITAAgentInterface>(AgentComponent->GetOwner());
-				if (AgentInterface)
+				const ITAGuidInterface* GuidInterface = Cast<ITAGuidInterface>(AgentComponent->GetOwner());
+
+				if (AgentInterface && GuidInterface)
 				{
-					NearbyAgentNames += AgentInterface->GetAgentName() + ", ";
+					FString AgentName = AgentInterface->GetAgentName();
+					const FName& IdentityPositionName = GuidInterface->GetIdentityPositionName();
+                    
+					// 判断IdentityPositionName是否是"player's partner"或"player"
+					if (IdentityPositionName == "player's partner" || IdentityPositionName == "player")
+					{
+						AgentName += " (" + IdentityPositionName.ToString() + ")";
+					}
+                    
+					NearbyAgentNames += AgentName + ", ";
 				}
 			}
 		}
