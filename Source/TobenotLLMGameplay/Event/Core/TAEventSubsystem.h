@@ -11,6 +11,7 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "TAEventSubsystem.generated.h"
 
+struct FTAPresetEventData;
 struct FTAEventInfo;
 class UTAEventPool;
 
@@ -32,6 +33,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Event")
 	bool HasAnyEventsInPool() const;
+	
+public:
+	UFUNCTION()
+	void AddEventToPoolByData(FTAPresetEventData EventData);
 	
 private:
 	UFUNCTION()

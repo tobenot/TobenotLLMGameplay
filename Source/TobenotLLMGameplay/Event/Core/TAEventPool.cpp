@@ -11,12 +11,15 @@
 FTAEventInfo& UTAEventPool::AddEvent(FTAEventInfo EventInfo)
 {
 	FTAEventInfo& EventInfoRef = AllEventInfo.Add_GetRef(EventInfo);
-	EventInfoRef.EventID = AllEventInfo.Num() + 660000;
+	if(EventInfoRef.PresetData.EventID == 0)
+	{
+		EventInfoRef.PresetData.EventID = AllEventInfo.Num() + 660000;
+	}
 	PendingEventInfos.Add(&AllEventInfo.Last());
 
-	if (EventInfo.ActivationType == EEventActivationType::Proximity && !bHasStartedProximityCheck)
+	if (!bHasStartedProximityCheck)
 	{
-		StartProximityCheck();
+		StartTriggerCheck();
 		bHasStartedProximityCheck = true;
 	}
 	
@@ -27,7 +30,7 @@ FTAEventInfo& UTAEventPool::GetEventByID(int32 EventID, bool& bSuccess)
 {
 	for (FTAEventInfo& EventInfoRef : AllEventInfo)
 	{
-		if (EventInfoRef.EventID == EventID)
+		if (EventInfoRef.PresetData.EventID == EventID)
 		{
 			bSuccess = true;
 			return EventInfoRef;
@@ -39,10 +42,10 @@ FTAEventInfo& UTAEventPool::GetEventByID(int32 EventID, bool& bSuccess)
 }
 
 // 开启周期性检查
-void UTAEventPool::StartProximityCheck() {
+void UTAEventPool::StartTriggerCheck() {
 	UE_LOG(LogTAEventSystem, Log, TEXT("StartProximityCheck"));
 	// 配置定时器代理来定时执行检查函数
-	GetWorld()->GetTimerManager().SetTimer(EventTriggerTimerHandle, this, &UTAEventPool::CheckPlayerProximityToEvents, 1.0f, true);
+	GetWorld()->GetTimerManager().SetTimer(EventTriggerTimerHandle, this, &UTAEventPool::CheckAndTriggerEvents, 1.0f, true);
 }
 
 void UTAEventPool::BeginDestroy()
@@ -52,6 +55,39 @@ void UTAEventPool::BeginDestroy()
 		GetWorld()->GetTimerManager().ClearTimer(EventTriggerTimerHandle);
 	}
 	UObject::BeginDestroy();
+}
+
+void UTAEventPool::CheckAndTriggerEvents()
+{
+	// 首先执行原来的接近性检查
+	CheckPlayerProximityToEvents();
+
+	// 接下来遍历处于待触发状态的事件，检查更复杂的条件
+	for (int32 i = PendingEventInfos.Num() - 1; i >= 0; --i) {
+		const auto& EventInfo = PendingEventInfos[i];
+		bool bConditionsMet = true;
+
+		// 检查每个事件的所有Agent条件
+		for (auto& Condition : EventInfo->PresetData.AgentConditions) {
+			if (!CheckAgentCondition(Condition)) {
+				bConditionsMet = false;
+				break; // 如果任何条件失败了，跳过剩余的检查
+			}
+		}
+
+		if (bConditionsMet) {
+			// 若所有条件都满足，则触发事件
+			UE_LOG(LogTAEventSystem, Log, TEXT("CheckAndTriggerEvents, trigger %s") , *EventInfo->PresetData.EventName);
+			UTAEventInstance* NewEventInstance = NewObject<UTAEventInstance>(this, UTAEventInstance::StaticClass());
+			if(NewEventInstance) {
+				// 使用生成的事件信息初始化NewEvent
+				NewEventInstance->EventInfo = *EventInfo;
+				ActiveEvents.Add(NewEventInstance);
+				NewEventInstance->TriggerEvent();
+			}
+			PendingEventInfos.RemoveAt(i);
+		}
+	}
 }
 
 // 定义检查函数
@@ -92,4 +128,10 @@ void UTAEventPool::CheckPlayerProximityToEvents() {
 bool UTAEventPool::HasAnyEvents() const
 {
 	return AllEventInfo.Num() > 0;
+}
+
+bool UTAEventPool::CheckAgentCondition(const FTAAgentCondition& Condition)
+{
+	// 对Agent条件进行检查的逻辑...
+	return true; // 示例代码，默认返回true
 }

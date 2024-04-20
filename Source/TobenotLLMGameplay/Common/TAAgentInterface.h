@@ -28,4 +28,12 @@ public:
 	virtual const FString& GetAgentName() const = 0;
 
 	virtual int32 GetAgentSpeakPriority() const;
+
+	// 增加或更新Agent的欲望
+	UFUNCTION(BlueprintCallable, Category = "TA|Agent")
+	virtual void AddOrUpdateDesire(const FGuid& DesireId, const FString& DesireDescription);
+    
+	// 移除Agent的欲望
+	UFUNCTION(BlueprintCallable, Category = "TA|Agent")
+	virtual void RemoveDesire(const FGuid& DesireId);
 };

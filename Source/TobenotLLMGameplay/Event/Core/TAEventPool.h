@@ -45,11 +45,15 @@ private:
 	FTimerHandle EventTriggerTimerHandle;
     
 	// 此函数用于开启周期性检查
-	void StartProximityCheck();
+	void StartTriggerCheck();
 
 public:
 	// 定义检查功能函数
 	UFUNCTION()
 	void CheckPlayerProximityToEvents();
-	
+
+	UFUNCTION()
+	void CheckAndTriggerEvents();
+
+	bool CheckAgentCondition(const FTAAgentCondition& Condition);
 };

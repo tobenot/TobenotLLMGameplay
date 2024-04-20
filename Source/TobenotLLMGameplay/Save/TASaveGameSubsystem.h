@@ -7,6 +7,7 @@
 #include "TASaveGameSubsystem.generated.h"
 
 
+class ITAAgentInterface;
 class ITAGuidInterface;
 class UTASaveGame;
 /**
@@ -46,12 +47,17 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "TAGuid")
 	FGuid FindNamedTAGuid(FName Name);
+
+	UFUNCTION(BlueprintCallable, Category = "Agent")
+	AActor* FindActorByName(const FName& Name);
 	
 private:
 	bool hasRestoreNameTAGuidMap = false;
 	
 	// 这里定义了Actor定位名和GUID的对应关系
 	TMap<FName, FGuid> NameGuidMap;
+	UPROPERTY()
+	TMap<FGuid, AActor*> GuidActorMap; // 新增的映射关系
 	
 	void SerializeActorData(AActor* Actor, ITAGuidInterface* TAGuidInterface);
 	

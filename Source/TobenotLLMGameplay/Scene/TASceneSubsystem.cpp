@@ -66,7 +66,7 @@ UTAAreaScene* UTASceneSubsystem::CreateAndLoadAreaScene(const FTAEventInfo& Even
 	UTAAreaScene* NewAreaScene = NewObject<UTAAreaScene>(this, UTAAreaScene::StaticClass());
 	if (NewAreaScene)
 	{
-		AreaScenesMap.Add(EventInfo.EventID, NewAreaScene);
+		AreaScenesMap.Add(EventInfo.PresetData.EventID, NewAreaScene);
 		NewAreaScene->LoadAreaScene(EventInfo);
 	}
 	return NewAreaScene; // 返回创建的实例
@@ -203,7 +203,7 @@ ATAPlaceActor* UTASceneSubsystem::QueryEventLocationByInfo(const FTAEventInfo& E
         {
             UE_LOG(LogTASceneSystem, Log, TEXT("位置有效，位置选取重试次数：%d，开始创建并添加新的位点到列表中..."), RetryCount);
             // 创建并添加新的位点到列表中
-            ATAPlaceActor* NewPlaceActor = CreateAndAddPlace(NavLocation.Location, RandomRadius, EventInfo.LocationName);
+            ATAPlaceActor* NewPlaceActor = CreateAndAddPlace(NavLocation.Location, RandomRadius, EventInfo.PresetData.LocationName);
             return NewPlaceActor;
         }
         else

@@ -9,3 +9,11 @@ int32 ITAAgentInterface::GetAgentSpeakPriority() const
 {
 	return 100;
 }
+
+void ITAAgentInterface::AddOrUpdateDesire(const FGuid& DesireId, const FString& DesireDescription)
+{
+}
+
+void ITAAgentInterface::RemoveDesire(const FGuid& DesireId)
+{
+}

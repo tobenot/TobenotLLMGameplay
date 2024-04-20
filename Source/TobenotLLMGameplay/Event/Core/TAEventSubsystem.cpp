@@ -45,8 +45,24 @@ void UTAEventSubsystem::HandleGeneratedEvents(TArray<FTAEventInfo>& GeneratedEve
 		}
 		else
 		{
-			UE_LOG(LogTAEventSystem, Warning, TEXT("无法为EventID %d 找到对应的位点Actor"), EventInfo.EventID);
+			UE_LOG(LogTAEventSystem, Warning, TEXT("无法为EventID %d 找到对应的位点Actor"), EventInfo.PresetData.EventID);
 		}
+	}
+}
+
+void UTAEventSubsystem::AddEventToPoolByData(FTAPresetEventData EventData)
+{
+	UE_LOG(LogTAEventSystem, Log, TEXT("UTAEventSubsystem AddEventToPoolByData %s"), *EventData.EventName);
+	FTAEventInfo EventInfo;
+	EventInfo.PresetData = EventData;
+	EventInfo.ActivationType = EEventActivationType::PlotProgress;
+	if(!EventPool)
+	{
+		EventPool = NewObject<UTAEventPool>(this, UTAEventPool::StaticClass());
+	}
+	if(EventPool)
+	{
+		auto& Info = EventPool->AddEvent(EventInfo);
 	}
 }
 
@@ -61,8 +77,10 @@ void UTAEventSubsystem::Deinitialize()
 
 void UTAEventSubsystem::Start(const int32& GenEventNum)
 {
-	// 创建事件池实例
-	EventPool = NewObject<UTAEventPool>(this, UTAEventPool::StaticClass());
+	if(!EventPool)
+	{
+		EventPool = NewObject<UTAEventPool>(this, UTAEventPool::StaticClass());
+	}
     
 	// 确保事件池创建成功
 	if (EventPool)

@@ -5,7 +5,7 @@
 FString FTAEventInfo::ToString() const
 {
 	FString EventTypeStr;
-	switch (EventType)
+	switch (PresetData.EventType)
 	{
 	case ETAEventType::Combat: EventTypeStr = TEXT("Normal Combat"); break;
 	case ETAEventType::BossFight: EventTypeStr = TEXT("Boss Fight"); break;
@@ -15,10 +15,10 @@ FString FTAEventInfo::ToString() const
 	default: EventTypeStr = TEXT("Unknown"); break;
 	}
 	return FString::Printf(TEXT("{\"EventID\": %d, \"Description\": \"%s\", \"Type\": \"%s\", \"Weight\": %d, \"LocationGuid: %s\"}"),
-		EventID,
-		*Description,
+		PresetData.EventID,
+		*PresetData.Description,
 		*EventTypeStr,
-		Weight
+		PresetData.Weight
 	,	*LocationGuid.ToString()
 	);
 }

@@ -25,12 +25,12 @@ UTAImageGenerator::UTAImageGenerator()
 void UTAImageGenerator::RequestGenerateImage(const FTAEventInfo& EventInfo)
 {
 	// 将当前事件信息保存到这个对象，为了在回调中使用
-	BoundEventID = EventInfo.EventID;
+	BoundEventID = EventInfo.PresetData.EventID;
 
 	// 从 EventInfo 的描述出发，发起下载图片的异步请求
 	// 注意：这里我们直接使用UTASystemLibrary提供的函数和委托类型
 	CacheOpenAIChat = UTALLMLibrary::DownloadImageFromPollinations(
-		EventInfo.LocationName+' '+EventInfo.Description,
+		EventInfo.PresetData.LocationName+' '+EventInfo.PresetData.Description,
 		OnDownloadCompleteDelegate, OnDownloadFailedDelegate, this);
 }
 

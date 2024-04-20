@@ -30,7 +30,7 @@ void UTAAreaScene::LoadAreaScene(const FTAEventInfo& EventInfo)
 			if (DefaultPromptSettings)
 			{
 				//const FString EventInfoDes = EventInfo.AdventurePoint+EventInfo.PeculiarPoint+EventInfo.Description;
-				const FString EventInfoDes = EventInfo.LocationName+EventInfo.PeculiarPoint+EventInfo.Description;
+				const FString EventInfoDes = EventInfo.PresetData.LocationName+EventInfo.PresetData.PeculiarPoint+EventInfo.PresetData.Description;
 				SystemPrompt =	UTALLMLibrary::PromptToStr(DefaultPromptSettings->PromptEventGenInteractables)
 					.Replace(TEXT("{EventInfo}"), *EventInfoDes)
 					.Replace(TEXT("{Language}"), *UTASystemLibrary::GetGameLanguage())
@@ -121,7 +121,7 @@ void UTAAreaScene::LoadAreaScene(const FTAEventInfo& EventInfo)
 									if (InteractionCom)
 									{
 										InteractionCom->InteractableInfo = Interactable;
-										InteractionCom->BelongEventDescription = EventInfo.Description;
+										InteractionCom->BelongEventDescription = EventInfo.PresetData.Description;
 									}
 									InteractiveActors.Add(NewActor);
 								}

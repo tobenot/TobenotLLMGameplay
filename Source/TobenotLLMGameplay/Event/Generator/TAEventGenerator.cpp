@@ -90,17 +90,17 @@ TArray<FTAEventInfo> UTAEventGenerator::ParseEventsFromJson(const FString& JsonS
 				FTAEventInfo EventInfo;
             
 				// 获取并设置地点名称
-				EventInfo.LocationName = EventObject->GetStringField(TEXT("LocationName"));
+				EventInfo.PresetData.LocationName = EventObject->GetStringField(TEXT("LocationName"));
 
 				// 获取并设置事件描述
-				EventInfo.Description = EventObject->GetStringField(TEXT("Description"));
+				EventInfo.PresetData.Description = EventObject->GetStringField(TEXT("Description"));
 
 				int32 EventTypeInt;
 				FString EventTypeStr;
 				if (EventObject->TryGetNumberField(TEXT("EventType"), EventTypeInt))
 				{
 					// 处理数值字段
-					EventInfo.EventType = static_cast<ETAEventType>(EventTypeInt);
+					EventInfo.PresetData.EventType = static_cast<ETAEventType>(EventTypeInt);
 				}else if (EventObject->TryGetStringField(TEXT("EventType"), EventTypeStr))
 				{
 					// 尝试将字符串的第一个字符转换为数字
@@ -108,7 +108,7 @@ TArray<FTAEventInfo> UTAEventGenerator::ParseEventsFromJson(const FString& JsonS
 					if (FChar::IsDigit(FirstChar))
 					{
 						EventTypeInt = FCString::Atoi(*EventTypeStr);
-						EventInfo.EventType = static_cast<ETAEventType>(EventTypeInt);
+						EventInfo.PresetData.EventType = static_cast<ETAEventType>(EventTypeInt);
 					}
 					else
 					{
@@ -123,7 +123,7 @@ TArray<FTAEventInfo> UTAEventGenerator::ParseEventsFromJson(const FString& JsonS
 				}
 
 				// 获取并设置事件权重
-				EventInfo.Weight = EventObject->GetIntegerField(TEXT("Weight"));
+				EventInfo.PresetData.Weight = EventObject->GetIntegerField(TEXT("Weight"));
 				
 				/*if (JsonObject->HasField(TEXT("AdventurePoint")))
 				{
@@ -132,7 +132,7 @@ TArray<FTAEventInfo> UTAEventGenerator::ParseEventsFromJson(const FString& JsonS
 				
 				if (JsonObject->HasField(TEXT("PeculiarPoint")))
 				{
-					EventInfo.PeculiarPoint = JsonObject->GetStringField(TEXT("PeculiarPoint"));
+					EventInfo.PresetData.PeculiarPoint = JsonObject->GetStringField(TEXT("PeculiarPoint"));
 				}
 				
 				// 添加到结果数组中

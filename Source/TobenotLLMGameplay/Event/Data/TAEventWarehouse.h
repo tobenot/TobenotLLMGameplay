@@ -19,6 +19,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Event")
 	TArray<FTAEventInfo> PresetEvents;
 
-	// 读取预设事件到集合
-	void LoadPresetEvents();
+	// 声明一个函数，用于加载数据表并添加事件到事件池
+	UFUNCTION(BlueprintCallable, Category = "Event")
+	void LoadEventsFromDataTable(UDataTable* DataTable);
 };

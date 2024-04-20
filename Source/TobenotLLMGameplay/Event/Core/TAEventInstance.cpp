@@ -2,7 +2,10 @@
 
 
 #include "TAEventInstance.h"
+
+#include "Common/TAAgentInterface.h"
 #include "Event/TAEventLogCategory.h"
+#include "Save/TASaveGameSubsystem.h"
 #include "Scene/TASceneSubsystem.h"
 
 void UTAEventInstance::TriggerEvent()
@@ -40,5 +43,66 @@ void UTAEventInstance::TriggerEvent()
 		return;
 	}
 
-	SceneSubsystem->CreateAndLoadAreaScene(EventInfo);
+	// TODO: 暂时不需要加载生成地图！
+	//SceneSubsystem->CreateAndLoadAreaScene(EventInfo);
+	
+	AssignDesiresToAgent();
+}
+
+void UTAEventInstance::FinishEvent()
+{
+	// TODO: 这个函数还没用到
+	RevokeAgentDesires();
+}
+
+void UTAEventInstance::AssignDesiresToAgent()
+{
+	UWorld* World = GetWorld();
+	if(World)
+	{
+		if (UTASaveGameSubsystem* SaveGameSubsystem = World->GetGameInstance()->GetSubsystem<UTASaveGameSubsystem>())
+		{
+			UE_LOG(LogTAEventSystem, Log, TEXT("事件 [%s] 开始分配欲望"), *EventInfo.PresetData.EventName);
+
+			for (const FTAAgentDesire& Desire : EventInfo.PresetData.AgentDesires)
+			{
+				AActor* FoundActor = SaveGameSubsystem->FindActorByName(Desire.AgentName);
+				if (FoundActor) 
+				{
+					ITAAgentInterface* AgentActor = Cast<ITAAgentInterface>(FoundActor);
+					if (AgentActor)
+					{
+						FGuid DesireGUID = FGuid::NewGuid();
+
+						AgentActor->AddOrUpdateDesire(DesireGUID, Desire.DesireDescription);
+						DesireAgentMap.Add(DesireGUID, FoundActor);
+                    
+						UE_LOG(LogTAEventSystem, Log, TEXT("事件 [%s] 分配给 [%s] 的欲望 ： %s"), *EventInfo.PresetData.EventName, *Desire.AgentName.ToString(), *Desire.DesireDescription);
+					}
+				}
+			}
+		}
+	}
+}
+
+void UTAEventInstance::RevokeAgentDesires()
+{
+	UE_LOG(LogTAEventSystem, Log, TEXT("事件 [%s] 开始撤销欲望"), *EventInfo.PresetData.EventName);
+    
+	for (const auto& Pair : DesireAgentMap)
+	{
+		const FGuid& DesireGUID = Pair.Key;
+		AActor* FoundActor = Pair.Value;
+		if (FoundActor)
+		{
+			ITAAgentInterface* AgentActor = Cast<ITAAgentInterface>(FoundActor);
+			if (AgentActor)
+			{
+				AgentActor->RemoveDesire(DesireGUID);
+				UE_LOG(LogTAEventSystem, Log, TEXT("事件 [%s] 分配给 [%s] 的欲望 已撤销"), *EventInfo.PresetData.EventName, *AgentActor->GetAgentName());
+			}
+		}
+	}
+
+	DesireAgentMap.Empty();
 }

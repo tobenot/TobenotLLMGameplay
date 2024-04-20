@@ -7,6 +7,7 @@
 #include "Event/Data/TAEventInfo.h"
 #include "TAEventInstance.generated.h"
 
+class ITAAgentInterface;
 class UTAAreaScene;
 /**
  * 
@@ -25,6 +26,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Event")
 	void TriggerEvent();
 
+	UFUNCTION(BlueprintCallable, Category = "Event")
+	void FinishEvent();
+	
 private:
 	bool bTriggered = false;
+
+public:
+	// Assigning desires to NPC.
+	UFUNCTION(BlueprintCallable, Category = "Event")
+	void AssignDesiresToAgent();
+
+	// Revoking specific desires from an NPC.
+	UFUNCTION(BlueprintCallable, Category = "Event")
+	void RevokeAgentDesires();
+
+private:
+	// 用于跟踪所有欲望的GUID和与之关联的NPC
+	TMap<FGuid, AActor*> DesireAgentMap;
 };

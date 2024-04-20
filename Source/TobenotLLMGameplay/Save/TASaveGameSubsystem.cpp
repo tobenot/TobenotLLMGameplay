@@ -141,6 +141,7 @@ void UTASaveGameSubsystem::RegisterActorTAGuid(AActor* Actor, FName Name)
 				// 如果NameGuidMap已经包含了这个名字，我们就取出来并设置给Actor
 				FGuid StoredGuid = NameGuidMap[Name];
 				GuidInterface->SetTAGuid(StoredGuid);
+				GuidActorMap.Add(StoredGuid, Actor);
 				// 恢复存档数据给Actor
 				RestoreActorData(Actor, GuidInterface, StoredGuid);
 				UE_LOG(logTASave, Display, TEXT("RegisterActorTAGuid - RestoreActorData"));
@@ -151,9 +152,10 @@ void UTASaveGameSubsystem::RegisterActorTAGuid(AActor* Actor, FName Name)
 				FGuid NewGuid = FGuid::NewGuid();
 				GuidInterface->SetTAGuid(NewGuid);
 				NameGuidMap.Add(Name, NewGuid);
+				GuidActorMap.Add(NewGuid, Actor);
 				UE_LOG(logTASave, Display, TEXT("RegisterActorTAGuid - NewGuid"));
 			}
-			UE_LOG(logTASave, Display, TEXT("RegisterActorTAGuid - Actor: %s , NameGuid: %s， Guid: %s"), *Actor->GetName(), *Name.ToString(), *GuidInterface->GetTAGuid().ToString());
+			UE_LOG(logTASave, Log, TEXT("RegisterActorTAGuid - Actor: %s , NameGuid: %s， Guid: %s"), *Actor->GetName(), *Name.ToString(), *GuidInterface->GetTAGuid().ToString());
 		}else
 		{
 			UE_LOG(logTASave, Display, TEXT("RegisterActorTAGuid - Actor is not ITAGuidInterface"));
@@ -232,4 +234,25 @@ FGuid UTASaveGameSubsystem::FindNamedTAGuid(FName Name)
 		ResultGuid = NameGuidMap[Name];
 	}
 	return ResultGuid;
+}
+
+AActor* UTASaveGameSubsystem::FindActorByName(const FName& Name)
+{
+	FGuid ActorGuid = FindNamedTAGuid(Name);
+	if (!ActorGuid.IsValid())
+	{
+		UE_LOG(logTASave, Warning, TEXT("FindActorByName - No GUID found for name %s."), *Name.ToString());
+		return nullptr;
+	}
+
+	AActor** FoundActor = GuidActorMap.Find(ActorGuid);
+	if (FoundActor)
+	{
+		return *FoundActor;
+	}
+	else
+	{
+		UE_LOG(logTASave, Warning, TEXT("FindActorByName - No Actor found for GUID."));
+		return nullptr;
+	}
 }
