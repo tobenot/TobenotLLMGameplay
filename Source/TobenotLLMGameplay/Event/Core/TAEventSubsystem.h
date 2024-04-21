@@ -21,11 +21,8 @@ class TOBENOTLLMGAMEPLAY_API UTAEventSubsystem : public UWorldSubsystem
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable)
-	UTAEventPool* GetEventPool()
-	{
-		return EventPool;
-	};
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	inline UTAEventPool* GetEventPool();
 	
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	virtual void Deinitialize() override;
@@ -38,6 +35,9 @@ public:
 	UFUNCTION()
 	void AddEventToPoolByData(FTAPresetEventData EventData);
 	
+	UFUNCTION(BlueprintCallable, Category = "Event")
+	void FinishEvent(int32 EventID, int32 OutcomeID);
+	
 private:
 	UFUNCTION()
 	void HandleGeneratedEvents(TArray<FTAEventInfo>& GeneratedEvents);
@@ -45,5 +45,5 @@ private:
 	void GenerateImageForEvent(const FTAEventInfo& GeneratedEvent);
 
 	UPROPERTY()
-	UTAEventPool* EventPool;
+	UTAEventPool* EventPoolRef;
 };

@@ -362,6 +362,9 @@ UTAShoutComponent* UTAShoutComponent::GetTAShoutComponent(AActor* Actor)
 
 void UTAShoutComponent::RequestChoices()
 {
+	// 暂时不要这个功能
+	return;
+	
 	auto& TempMessagesList = ShoutHistory;
 	//使用系统提示创建ChatLog对象
 	const FString SystemPrompt = GetSystemPromptFromOwner()

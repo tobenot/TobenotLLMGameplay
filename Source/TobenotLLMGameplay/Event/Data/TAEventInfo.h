@@ -60,6 +60,20 @@ struct FTAAgentDesire
 	FString DesireDescription;
 };
 
+USTRUCT(BlueprintType)
+struct FTAEventDependency
+{
+	GENERATED_BODY()
+
+	// 前置事件ID
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event Dependency")
+	int32 PrecedingEventID;
+
+	// 前置事件需要达到的结果ID
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event Dependency")
+	int32 RequiredOutcomeID;
+};
+
 // 定义预设事件数据结构体
 USTRUCT(BlueprintType)
 struct TOBENOTLLMGAMEPLAY_API FTAPresetEventData : public FTableRowBase
@@ -95,12 +109,16 @@ struct TOBENOTLLMGAMEPLAY_API FTAPresetEventData : public FTableRowBase
 	FString PeculiarPoint;
 
 	// 关联的Agent触发条件
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event Dependency")
 	TArray<FTAAgentCondition> AgentConditions;
 
 	// 关联的Agent欲望列表
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event")
 	TArray<FTAAgentDesire> AgentDesires;
+
+	// 前置事件和结果的数组
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event Dependency")
+	TArray<FTAEventDependency> PrecedingEvents;
 };
 
 // 更新FTAEventInfo结构体，包含FTAPresetEventData

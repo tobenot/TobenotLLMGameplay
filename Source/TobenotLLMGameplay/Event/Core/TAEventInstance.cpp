@@ -3,6 +3,7 @@
 
 #include "TAEventInstance.h"
 
+#include "TAEventSubsystem.h"
 #include "Common/TAAgentInterface.h"
 #include "Event/TAEventLogCategory.h"
 #include "Save/TASaveGameSubsystem.h"
@@ -49,9 +50,8 @@ void UTAEventInstance::TriggerEvent()
 	AssignDesiresToAgent();
 }
 
-void UTAEventInstance::FinishEvent()
+void UTAEventInstance::OnEventFinished(int32 OutcomeID)
 {
-	// TODO: 这个函数还没用到
 	RevokeAgentDesires();
 }
 
@@ -74,10 +74,13 @@ void UTAEventInstance::AssignDesiresToAgent()
 					{
 						FGuid DesireGUID = FGuid::NewGuid();
 
-						AgentActor->AddOrUpdateDesire(DesireGUID, Desire.DesireDescription);
+						// 这里添加了事件ID和名字到欲望描述
+						FString DesireWithEventID = FString::Printf(TEXT("[EventID:%d] %s"), EventInfo.PresetData.EventID, *Desire.DesireDescription);
+						AgentActor->AddOrUpdateDesire(DesireGUID, DesireWithEventID);
+
 						DesireAgentMap.Add(DesireGUID, FoundActor);
                     
-						UE_LOG(LogTAEventSystem, Log, TEXT("事件 [%s] 分配给 [%s] 的欲望 ： %s"), *EventInfo.PresetData.EventName, *Desire.AgentName.ToString(), *Desire.DesireDescription);
+						UE_LOG(LogTAEventSystem, Log, TEXT("事件 [%s] 分配给 [%s] 的欲望 ： %s"), *EventInfo.PresetData.EventName, *Desire.AgentName.ToString(), *DesireWithEventID);
 					}
 				}
 			}

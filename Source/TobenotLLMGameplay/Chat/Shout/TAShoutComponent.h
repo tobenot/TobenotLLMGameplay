@@ -81,9 +81,9 @@ private:
 	class UOpenAIChat* CacheChat;
 
 public:
-	// 根据大语言模型的响应来执行游戏中的行为，默认关闭，需要继承UTAFunctionInvokeComponent做支持
+	// 根据大语言模型的响应来执行游戏中的行为，需要UTAFunctionInvokeComponent做支持
 	UPROPERTY()
-	bool bEnableFunctionInvoke = false;
+	bool bEnableFunctionInvoke = true;
 	
 	UFUNCTION(BlueprintCallable, Category = "Chat")
 	void PerformFunctionInvokeBasedOnResponse(const FString& Response);

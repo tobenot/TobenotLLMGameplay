@@ -3,6 +3,7 @@
 
 #include "TAFunctionInvokeComponent.h"
 #include "Chat/TAChatLogCategory.h"
+#include "Event/Core/TAEventSubsystem.h"
 
 DEFINE_LOG_CATEGORY(LogFunctionInvoke);
 
@@ -47,6 +48,7 @@ void UTAFunctionInvokeComponent::ParseAndTriggerFunctions(const FString& Respons
         {
             for (const TSharedPtr<FJsonValue>& FuncInvoke : *FuncInvokes)
             {
+                UE_LOG(LogFunctionInvoke, Log, TEXT("FunctionInvoke: Call HandleFunctionInvoke"));
                 HandleFunctionInvoke(FuncInvoke);
             }
         }
@@ -56,6 +58,7 @@ void UTAFunctionInvokeComponent::ParseAndTriggerFunctions(const FString& Respons
             const TSharedPtr<FJsonObject>* FuncInvokeObject;
             if (JsonObject->TryGetObjectField(TEXT("func_invoke"), FuncInvokeObject))
             {
+                UE_LOG(LogFunctionInvoke, Log, TEXT("FunctionInvoke: Call HandleFunctionInvoke"));
                 HandleFunctionInvoke(MakeShareable(new FJsonValueObject(*FuncInvokeObject)));
             }
             else
@@ -82,4 +85,38 @@ void UTAFunctionInvokeComponent::GiveItem(const FString& Depict)
 {
     UE_LOG(LogFunctionInvoke, Warning, TEXT("FunctionInvoke: GiveItemToPlayer! Depict: %s"), *Depict);
     // TODO: 根据Depict实现具体的给予物品逻辑
+}
+
+void UTAFunctionInvokeComponent::FinishEvent(const FString& Depict)
+{
+    // 将Depict字符串解析成JSON对象
+    TSharedPtr<FJsonObject> JsonObject;
+    TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Depict);
+    if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
+    {
+        // 提取eventID
+        int32 ParsedEventID = JsonObject->GetIntegerField(TEXT("eventID"));
+        
+        // 提取outcomeID，如果不存在则默认为0
+        int32 ParsedOutcomeID = JsonObject->HasField(TEXT("outcomeID")) ? JsonObject->GetIntegerField(TEXT("outcomeID")) : 0;
+        
+        UE_LOG(LogFunctionInvoke, Log, TEXT("FunctionInvoke: FinishEvent called with EventID: %d, OutcomeID: %d"), ParsedEventID, ParsedOutcomeID);
+        
+        // 获取事件子系统实例
+        UTAEventSubsystem* EventSubsystem = GetWorld()->GetSubsystem<UTAEventSubsystem>();
+
+        if (EventSubsystem)
+        {
+            // 调用FinishEvent方法
+            EventSubsystem->FinishEvent(ParsedEventID, ParsedOutcomeID);
+        }
+        else
+        {
+            UE_LOG(LogFunctionInvoke, Error, TEXT("FunctionInvoke: Unable to retrieve EventSubsystem."));
+        }
+    }
+    else
+    {
+        UE_LOG(LogFunctionInvoke, Error, TEXT("FunctionInvoke: Failed to deserialize JSON from Depict."));
+    }
 }

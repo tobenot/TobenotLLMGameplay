@@ -27,7 +27,7 @@ public:
 	void TriggerEvent();
 
 	UFUNCTION(BlueprintCallable, Category = "Event")
-	void FinishEvent();
+	void OnEventFinished(int32 OutcomeID);
 	
 private:
 	bool bTriggered = false;
@@ -43,5 +43,6 @@ public:
 
 private:
 	// 用于跟踪所有欲望的GUID和与之关联的NPC
+	UPROPERTY()
 	TMap<FGuid, AActor*> DesireAgentMap;
 };

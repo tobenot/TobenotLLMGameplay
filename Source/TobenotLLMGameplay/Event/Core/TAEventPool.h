@@ -27,6 +27,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Event")
 	bool HasAnyEvents() const;
 	
+	UFUNCTION(BlueprintCallable, Category = "Event")
+	void AddCompletedEvent(int32 EventID, int32 OutcomeID);
+
+	UTAEventInstance* GetEventInstanceByID(int32 EventID);
 private:
 	// 所有事件信息的集合，这里是唯一的最持久的保存事件信息的地方。由EventSubsystem管理。请用指针指它
 	UPROPERTY(VisibleAnywhere, Category = "Event")
@@ -47,6 +51,9 @@ private:
 	// 此函数用于开启周期性检查
 	void StartTriggerCheck();
 
+	UPROPERTY(VisibleAnywhere, Category = "Event")
+	TMap<int32, int32> CompletedEventsOutcomeMap;
+	
 public:
 	// 定义检查功能函数
 	UFUNCTION()
@@ -56,4 +63,6 @@ public:
 	void CheckAndTriggerEvents();
 
 	bool CheckAgentCondition(const FTAAgentCondition& Condition);
+
+	bool IsDependencyMet(const FTAEventDependency& Dependency);
 };

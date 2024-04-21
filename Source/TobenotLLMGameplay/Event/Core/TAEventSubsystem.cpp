@@ -12,6 +12,15 @@
 #include "Save/TAGuidInterface.h"
 #include "Scene/TASceneSubsystem.h"
 
+UTAEventPool* UTAEventSubsystem::GetEventPool()
+{
+	if(!EventPoolRef)
+	{
+		EventPoolRef = NewObject<UTAEventPool>(this, UTAEventPool::StaticClass());
+	}
+	return EventPoolRef;
+}
+
 void UTAEventSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
@@ -36,7 +45,8 @@ void UTAEventSubsystem::HandleGeneratedEvents(TArray<FTAEventInfo>& GeneratedEve
 			// 为事件设置地点GUID
 			EventInfo.LocationGuid = LocationGuid;
 			EventInfo.ActivationType = EEventActivationType::Proximity;
-			
+
+			UTAEventPool* EventPool = GetEventPool();
 			// 将事件和它的地点GUID添加到事件池
 			auto& Info = EventPool->AddEvent(EventInfo);
 
@@ -56,13 +66,22 @@ void UTAEventSubsystem::AddEventToPoolByData(FTAPresetEventData EventData)
 	FTAEventInfo EventInfo;
 	EventInfo.PresetData = EventData;
 	EventInfo.ActivationType = EEventActivationType::PlotProgress;
-	if(!EventPool)
-	{
-		EventPool = NewObject<UTAEventPool>(this, UTAEventPool::StaticClass());
-	}
-	if(EventPool)
+	if(UTAEventPool* EventPool = GetEventPool())
 	{
 		auto& Info = EventPool->AddEvent(EventInfo);
+	}
+}
+
+void UTAEventSubsystem::FinishEvent(int32 EventID, int32 OutcomeID)
+{
+	if (UTAEventPool* EventPool = GetEventPool())
+	{
+		auto Event = EventPool->GetEventInstanceByID(EventID);
+		if(Event)
+		{
+			Event->OnEventFinished(OutcomeID);
+			EventPool->AddCompletedEvent(EventID, OutcomeID);
+		}
 	}
 }
 
@@ -77,13 +96,8 @@ void UTAEventSubsystem::Deinitialize()
 
 void UTAEventSubsystem::Start(const int32& GenEventNum)
 {
-	if(!EventPool)
-	{
-		EventPool = NewObject<UTAEventPool>(this, UTAEventPool::StaticClass());
-	}
-    
 	// 确保事件池创建成功
-	if (EventPool)
+	if (UTAEventPool* EventPool = GetEventPool())
 	{
 		UClass* EventGeneratorClass;
 		const UTASettings* Settings = GetDefault<UTASettings>();
@@ -120,10 +134,9 @@ void UTAEventSubsystem::Start(const int32& GenEventNum)
 
 bool UTAEventSubsystem::HasAnyEventsInPool() const
 {
-	// 确认EventPool已经被正确初始化
-	if (EventPool)
+	if (EventPoolRef)
 	{
-		return EventPool->HasAnyEvents();
+		return EventPoolRef->HasAnyEvents();
 	}
 	else
 	{

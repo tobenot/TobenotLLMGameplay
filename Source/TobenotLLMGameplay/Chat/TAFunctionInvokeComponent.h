@@ -57,4 +57,7 @@ protected:
     
     UFUNCTION()
     virtual void GiveItem(const FString& Depict);
+
+    UFUNCTION()
+    void FinishEvent(const FString& Depict);
 };
