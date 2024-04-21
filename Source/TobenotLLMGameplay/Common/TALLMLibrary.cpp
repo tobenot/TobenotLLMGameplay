@@ -38,7 +38,14 @@ UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& Ch
     UOpenAIChat* Chat = UOpenAIChat::Chat(ChatSettings, [Callback, NewRetryCount, LogObject, ChatSettings /*, Chat 这个赋值是在绑定之后，传进来就是个空指针*/]
     	(const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
     {
-        if (Success)
+    	bool bResponseFormatMet = true;
+    	if(ChatSettings.jsonFormat)
+    	{
+    		TSharedPtr<FJsonObject> JsonObject;
+			TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Message.message.content);
+			bResponseFormatMet = FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid();
+    	}
+        if (Success && bResponseFormatMet)
         {
             // 处理成功的响应
         	if(LogObject)
