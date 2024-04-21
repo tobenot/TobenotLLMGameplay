@@ -157,7 +157,7 @@ void UTAShoutComponent::UpdateShoutHistory(const FChatCompletion& NewChatComplet
 	ShoutHistory.Add(NewChatCompletion.message);
 	FullShoutHistory.Add(NewChatCompletion.message);
 	
-	if (bEnableCompressShout && NewChatCompletion.totalTokens > 1600)
+	if (bEnableCompressShout && NewChatCompletion.totalTokens > 2500)
 	{
 		RequestShoutCompression();
 	}

@@ -35,6 +35,9 @@ void UTAFunctionInvokeComponent::HandleFunctionInvoke(const TSharedPtr<FJsonValu
         {
             UE_LOG(LogFunctionInvoke, Error, TEXT("FunctionInvoke: function %s does not exist. depict: %s."), *FunctionName, *Depict);
         }
+    }else
+    {
+        UE_LOG(LogFunctionInvoke, Error, TEXT("FunctionInvoke: invaild function name or depict."));
     }
 }
 
@@ -89,17 +92,15 @@ void UTAFunctionInvokeComponent::GiveItem(const FString& Depict)
 
 void UTAFunctionInvokeComponent::FinishEvent(const FString& Depict)
 {
-    // 将Depict字符串解析成JSON对象
-    TSharedPtr<FJsonObject> JsonObject;
-    TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Depict);
-    if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
+    // 使用空格作为分隔符来从Depict分解出事件ID和结果ID
+    TArray<FString> TmpArray;
+    Depict.ParseIntoArray(TmpArray, TEXT(" "));
+    
+    if (TmpArray.Num() > 1)
     {
-        // 提取eventID
-        int32 ParsedEventID = JsonObject->GetIntegerField(TEXT("eventID"));
-        
-        // 提取outcomeID，如果不存在则默认为0
-        int32 ParsedOutcomeID = JsonObject->HasField(TEXT("outcomeID")) ? JsonObject->GetIntegerField(TEXT("outcomeID")) : 0;
-        
+        int32 ParsedEventID = FCString::Atoi(*TmpArray[0]);
+        int32 ParsedOutcomeID = FCString::Atoi(*TmpArray[1]);
+
         UE_LOG(LogFunctionInvoke, Log, TEXT("FunctionInvoke: FinishEvent called with EventID: %d, OutcomeID: %d"), ParsedEventID, ParsedOutcomeID);
         
         // 获取事件子系统实例
@@ -117,6 +118,6 @@ void UTAFunctionInvokeComponent::FinishEvent(const FString& Depict)
     }
     else
     {
-        UE_LOG(LogFunctionInvoke, Error, TEXT("FunctionInvoke: Failed to deserialize JSON from Depict."));
+        UE_LOG(LogFunctionInvoke, Error, TEXT("FunctionInvoke: Failed to parse EventID and OutcomeID from Depict."));
     }
 }
