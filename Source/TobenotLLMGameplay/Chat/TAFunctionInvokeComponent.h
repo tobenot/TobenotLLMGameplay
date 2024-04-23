@@ -30,7 +30,7 @@
 
 DECLARE_LOG_CATEGORY_EXTERN(LogFunctionInvoke, Log, All);
 
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class TOBENOTLLMGAMEPLAY_API UTAFunctionInvokeComponent : public UActorComponent
 {
     GENERATED_BODY()

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "TobenotLLMGameplay/Common/TAPromptDefinitions.h"
+#include "OpenAIDefinitions.h"
 #include "TAShoutComponent.generated.h"
 
 struct FChatCompletion;
