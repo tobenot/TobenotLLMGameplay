@@ -15,6 +15,7 @@
 #include "HttpModule.h"
 #include "TextureResource.h"
 #include "RenderingThread.h"
+#include "Chat/TAChatLogCategory.h"
 #include "TobenotToolkit/Debug/CategoryLogSubsystem.h"
 
 EOAChatEngineType UTALLMLibrary::GetChatEngineTypeFromQuality(const ELLMChatEngineQuality Quality)
@@ -50,7 +51,7 @@ UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& Ch
             // 处理成功的响应
         	if(LogObject)
         	{
-        		UE_LOG(LogTemp, Log, TEXT("[%s] Response success: %s"), *LogObject->GetName(), *Message.message.content);
+        		UE_LOG(LogTAChat, Log, TEXT("[%s] Response success: %s"), *LogObject->GetName(), *Message.message.content);
 				if (UCategoryLogSubsystem* CategoryLogSubsystem = LogObject->GetWorld()->GetSubsystem<UCategoryLogSubsystem>())
 				{
 					const FString ResponseStr = FString::Printf(TEXT("[%s] Assistant Response:\n%s\n"), *LogObject->GetName(),*Message.message.content);
@@ -59,16 +60,20 @@ UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& Ch
         		Callback(Message, ErrorMessage, true);
 			}else
 			{
-				UE_LOG(LogTemp, Log, TEXT("Response success: %s"), *Message.message.content);
+				UE_LOG(LogTAChat, Log, TEXT("Response success: %s"), *Message.message.content);
 			}
 			//Chat = nullptr;
         }
-        else
+        else if(ErrorMessage == "Request cancelled")
+        {
+        	UE_LOG(LogTAChat, Log, TEXT("[%s] Response cancelled"), *LogObject->GetName());
+        }
+    	else
         {
         	// 是否还能重试
             if (NewRetryCount > 0)
             {
-                UE_LOG(LogTemp, Warning, TEXT("Response failed: %s. Retrying..."), *ErrorMessage);
+                UE_LOG(LogTAChat, Warning, TEXT("Response failed: %s. Retrying..."), *ErrorMessage);
 
                 // 设置重试延时调用
                 FTimerHandle RetryTimerHandle;
@@ -86,7 +91,7 @@ UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& Ch
             else
             {
                 // 如果重试次数已用尽，执行最初提供的失败回调函数
-                UE_LOG(LogTemp, Error, TEXT("Exhausted all retries! Response failed after retries: %s"), *ErrorMessage);
+                UE_LOG(LogTAChat, Error, TEXT("Exhausted all retries! Response failed after retries: %s"), *ErrorMessage);
             	if(LogObject)
             	{
 					if (UCategoryLogSubsystem* CategoryLogSubsystem = LogObject->GetWorld()->GetSubsystem<UCategoryLogSubsystem>())
@@ -118,11 +123,11 @@ UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& Ch
 		StringBuilder.Append(FString::Printf(TEXT("Role: %s, Content: %s\n"), *RoleName, *ChatEntry.content));
 	}
 	const FString LogContent = StringBuilder.ToString();
-	UE_LOG(LogTemp, Log, TEXT("%s"), *LogContent);
+	UE_LOG(LogTAChat, Log, TEXT("[%s] %s"), *LogObject->GetName(), *LogContent);
 
 	if(LogObject)
 	{
-		UE_LOG(LogTemp, Log, TEXT("[%s] Send Chat"), *LogObject->GetName());
+		UE_LOG(LogTAChat, Log, TEXT("[%s] Send Chat"), *LogObject->GetName());
 		if (UCategoryLogSubsystem* CategoryLogSubsystem = LogObject->GetWorld()->GetSubsystem<UCategoryLogSubsystem>())
 		{
 			const FString LogStr = FString::Printf(TEXT("[%s] %s"), *LogObject->GetName(),*LogContent);
