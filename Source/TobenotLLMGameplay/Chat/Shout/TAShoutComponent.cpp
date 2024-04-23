@@ -7,7 +7,7 @@
 #include "Chat/Shout/TAShoutManager.h"
 #include "OpenAIDefinitions.h"
 #include "Chat/TAFunctionInvokeComponent.h"
-#include "Common/TAAgentInterface.h"
+#include "Agent/TAAgentInterface.h"
 #include "Common/TALLMLibrary.h"
 #include "Chat/TAChatLogCategory.h"
 #include "Save/TAGuidInterface.h"
@@ -59,41 +59,55 @@ void UTAShoutComponent::ShoutMessage(const FChatCompletion& Message, float Volum
 
 FString UTAShoutComponent::GetNearbyAgentNames()
 {
-	FString NearbyAgentNames;
+    FString NearbyAgentNames;
 
-	// 获取声音可以达到的Agent
-	UTAShoutManager* ShoutManager = GetWorld()->GetSubsystem<UTAShoutManager>();
-	if (ShoutManager)
-	{
-		TArray<UTAShoutComponent*> NearbyAgentComponents = ShoutManager->GetShoutComponentsInRange(GetOwner(), 500.f);
+    // 获取当前Agent的名字
+    FString CurrentAgentName;
+    const ITAAgentInterface* CurrentAgentInterface = Cast<ITAAgentInterface>(GetOwner());
+    if (CurrentAgentInterface)
+    {
+        CurrentAgentName = CurrentAgentInterface->GetAgentName();
+    }
+
+    // 获取声音可以达到的Agent
+    UTAShoutManager* ShoutManager = GetWorld()->GetSubsystem<UTAShoutManager>();
+    if (ShoutManager)
+    {
+        TArray<UTAShoutComponent*> NearbyAgentComponents = ShoutManager->GetShoutComponentsInRange(GetOwner(), 500.f);
        
-		// 遍历Agent，获取他们的名字以及特定的IdentityPositionName
-		for (UTAShoutComponent* AgentComponent : NearbyAgentComponents)
-		{
-			if (AgentComponent && AgentComponent->GetOwner())
-			{
-				const ITAAgentInterface* AgentInterface = Cast<ITAAgentInterface>(AgentComponent->GetOwner());
-				const ITAGuidInterface* GuidInterface = Cast<ITAGuidInterface>(AgentComponent->GetOwner());
+        // 遍历Agent，获取他们的名字以及特定的IdentityPositionName
+        for (UTAShoutComponent* AgentComponent : NearbyAgentComponents)
+        {
+            if (AgentComponent && AgentComponent->GetOwner())
+            {
+                const ITAAgentInterface* AgentInterface = Cast<ITAAgentInterface>(AgentComponent->GetOwner());
+                const ITAGuidInterface* GuidInterface = Cast<ITAGuidInterface>(AgentComponent->GetOwner());
 
-				if (AgentInterface && GuidInterface)
-				{
-					FString AgentName = AgentInterface->GetAgentName();
-					const FName& IdentityPositionName = GuidInterface->GetIdentityPositionName();
+                if (AgentInterface && GuidInterface)
+                {
+                    FString AgentName = AgentInterface->GetAgentName();
+                    const FName& IdentityPositionName = GuidInterface->GetIdentityPositionName();
                     
-					// 判断IdentityPositionName是否是"player's partner"或"player"
-					if (IdentityPositionName == "player's partner" || IdentityPositionName == "player")
-					{
-						AgentName += " (" + IdentityPositionName.ToString() + ")";
-					}
+                    // 判断IdentityPositionName是否是"player's partner"或"player"，并在名字后面追加描述
+                    if (IdentityPositionName == "player's partner" || IdentityPositionName == "player")
+                    {
+                        AgentName += " (" + IdentityPositionName.ToString() + ")";
+                    }
+
+                    // 如果AgentName是当前AgentName，则在后面追加"(你)"
+                    if (AgentName == CurrentAgentName)
+                    {
+                        AgentName += " (You)";
+                    }
                     
-					NearbyAgentNames += AgentName + ", ";
-				}
-			}
-		}
-	}
+                    NearbyAgentNames += AgentName + ", ";
+                }
+            }
+        }
+    }
    
-	// 如果存在列表，移除最后添加的", "，否则返回"No nearby agents."
-	return NearbyAgentNames.IsEmpty() ? "No nearby agents" : NearbyAgentNames.LeftChop(2);
+    // 如果存在列表，移除最后添加的", "，否则返回"No nearby agents."
+    return NearbyAgentNames.IsEmpty() ? "No nearby agents" : NearbyAgentNames.LeftChop(2);
 }
 
 void UTAShoutComponent::RequestToSpeak()
