@@ -6,7 +6,7 @@
 #include "Chat/Dialogue/TADialogueManager.h"
 #include "OpenAIDefinitions.h"
 #include "Chat/TAFunctionInvokeComponent.h"
-#include "Common/TAAgentInterface.h"
+#include "Agent/TAAgentInterface.h"
 #include "Common/TALLMLibrary.h"
 #include "Common/TASystemLibrary.h"
 #include "Chat/TAChatLogCategory.h"

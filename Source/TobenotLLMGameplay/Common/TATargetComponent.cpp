@@ -3,7 +3,7 @@
 
 #include "TATargetComponent.h"
 
-#include "TAAgentInterface.h"
+#include "Agent/TAAgentInterface.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogTATarget, Log, All);
 

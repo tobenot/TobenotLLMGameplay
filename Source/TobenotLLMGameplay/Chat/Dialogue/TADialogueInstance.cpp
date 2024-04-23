@@ -4,7 +4,7 @@
 
 #include "OpenAIDefinitions.h"
 #include "TADialogueComponent.h"
-#include "Common/TAAgentInterface.h"
+#include "Agent/TAAgentInterface.h"
 #include "Engine/World.h"
 #include "Chat/TAChatLogCategory.h"
 

@@ -4,7 +4,7 @@
 #include "TAEventInstance.h"
 
 #include "TAEventSubsystem.h"
-#include "Common/TAAgentInterface.h"
+#include "Agent/TAAgentInterface.h"
 #include "Event/TAEventLogCategory.h"
 #include "Save/TASaveGameSubsystem.h"
 #include "Scene/TASceneSubsystem.h"

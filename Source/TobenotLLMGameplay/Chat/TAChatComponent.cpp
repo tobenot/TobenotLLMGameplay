@@ -6,7 +6,7 @@
 #include "OpenAIDefinitions.h"
 #include "TAChatCallback.h"
 #include "TAFunctionInvokeComponent.h"
-#include "Common/TAAgentInterface.h"
+#include "Agent/TAAgentInterface.h"
 #include "Save/TAGuidInterface.h"
 #include "Common/TALLMLibrary.h"
 #include "Chat/TAChatLogCategory.h"

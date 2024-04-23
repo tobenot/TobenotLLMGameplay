@@ -3,7 +3,7 @@
 #include "TAShoutManager.h"
 #include "TAShoutComponent.h"
 #include "OpenAIDefinitions.h"
-#include "Common/TAAgentInterface.h"
+#include "Agent/TAAgentInterface.h"
 #include "Chat/TAChatLogCategory.h"
 
 void UTAShoutManager::Initialize(FSubsystemCollectionBase& Collection)
