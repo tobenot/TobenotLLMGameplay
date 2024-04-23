@@ -2,6 +2,8 @@
 
 
 #include "TAShoutComponent.h"
+
+#include "OpenAIChat.h"
 #include "Chat/Shout/TAShoutManager.h"
 #include "OpenAIDefinitions.h"
 #include "Chat/TAFunctionInvokeComponent.h"
@@ -100,6 +102,11 @@ void UTAShoutComponent::RequestToSpeak()
 	{
 		return;
 	}
+	// 打断之前没说完的话，因为现在有新信息入手了！
+	if(CacheChat)
+	{
+		CacheChat->CancelRequest();
+	}
 	IsRequestingMessage = true;
 	UE_LOG(LogTAChat, Log, TEXT("[%s] RequestToSpeak called"), *GetOwner()->GetName());
 	auto& TempMessagesList = ShoutHistory;
@@ -128,9 +135,9 @@ void UTAShoutComponent::RequestToSpeak()
 
 	CacheChat = UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, [this](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
 	{
-		UE_LOG(LogTAChat, Log, TEXT("[%s] SendMessageToOpenAIWithRetry Callback"), *GetOwner()->GetName());
 		if (Success)
 		{
+			UE_LOG(LogTAChat, Log, TEXT("[%s] SendMessageToOpenAIWithRetry Success"), *GetOwner()->GetName());
 			if (Message.message.content.Contains(TEXT("no_response_needed")))
 			{
 				// 如果不需要回应，则不继续喊话
@@ -145,6 +152,7 @@ void UTAShoutComponent::RequestToSpeak()
 		}
 		else
 		{
+			UE_LOG(LogTAChat, Log, TEXT("[%s] SendMessageToOpenAIWithRetry Fail: %s"), *GetOwner()->GetName(), *ErrorMessage);
 			//RefuseToSay();
 		}
 		IsRequestingMessage = false;
