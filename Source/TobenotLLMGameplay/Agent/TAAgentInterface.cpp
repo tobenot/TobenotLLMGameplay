@@ -17,3 +17,8 @@ void ITAAgentInterface::AddOrUpdateDesire(const FGuid& DesireId, const FString& 
 void ITAAgentInterface::RemoveDesire(const FGuid& DesireId)
 {
 }
+
+bool ITAAgentInterface::IsVoiceover() const
+{
+	return false;
+}

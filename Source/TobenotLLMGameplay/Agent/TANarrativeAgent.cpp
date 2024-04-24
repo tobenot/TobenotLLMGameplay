@@ -15,6 +15,8 @@ ATANarrativeAgent::ATANarrativeAgent()
 
 	AgentComponent = CreateDefaultSubobject<UTAAgentComponent>(TEXT("AgentComponent"));
 	AgentComponent->bEnableScheduleShout = false;
+
+	bIsVoiceover = true;
 }
 
 void ATANarrativeAgent::BeginPlay()
@@ -116,6 +118,11 @@ void ATANarrativeAgent::RemoveDesire(const FGuid& DesireId)
 	{
 		TotalDesire += Elem.Value + TEXT("\n");
 	}
+}
+
+bool ATANarrativeAgent::IsVoiceover() const
+{
+	return bIsVoiceover;
 }
 
 FString ATANarrativeAgent::GenerateSystemPrompt(EPromptType PromptType, const TArray<FString>& Parameters)

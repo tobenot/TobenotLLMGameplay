@@ -38,6 +38,10 @@ struct FNarrativeAgentData : public FTableRowBase
 	// 提示模板使用的参数
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FString> SystemPromptParameters;
+
+	//备注
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FString> Note;
 };
 
 USTRUCT(BlueprintType)
@@ -151,6 +155,9 @@ protected:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Prompts")
 	FString TotalDesire;
 
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "Narrative Agent")
+	bool bIsVoiceover;
+	
 public:
 	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category="Narrative Agent")
 	UDataTable* GetAgentDataTable() const;
@@ -168,7 +175,8 @@ public:
 	// 移除Agent的欲望
 	UFUNCTION(BlueprintCallable, Category = "Narrative Agent")
 	virtual void RemoveDesire(const FGuid& DesireId) override;
-
+	
+	virtual bool IsVoiceover() const;
 private:
 	FString GenerateSystemPrompt(EPromptType PromptType, const TArray<FString>& Parameters);
 
