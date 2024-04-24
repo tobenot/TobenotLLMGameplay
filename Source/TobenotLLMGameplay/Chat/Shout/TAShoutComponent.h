@@ -120,4 +120,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Chat")
 	void RequestChoices();
 	TArray<FString> ParseChoicesFromResponse(const FString& Response);
+
+private:
+	FString LastMessageContent;
 };

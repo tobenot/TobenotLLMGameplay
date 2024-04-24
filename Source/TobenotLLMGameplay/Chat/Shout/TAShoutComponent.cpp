@@ -262,6 +262,11 @@ FString UTAShoutComponent::JoinShoutHistory()
 
 void UTAShoutComponent::HandleShoutReceived(const FChatCompletion& Message, AActor* Shouter, float Volume)
 {
+	if(LastMessageContent == Message.message.content)
+	{
+		return; //重复消息当没收到，不然会引发更大的问题
+	}
+	LastMessageContent = Message.message.content;
 	if (Shouter == GetOwner())
 	{
 		HandleReceivedMessage(Message, Shouter);

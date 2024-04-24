@@ -93,7 +93,7 @@ struct FSimplePromptTemplate
 		}
 		Prompt += "Please use the following JSON template for your response:"
 		"\"Response Template\": {"
-			"\"message\": \"A string that vividly describes the ongoing scene, situation or adventurer's actions. You can use metaphoric or metaphorical phrases for immersion. Remember to keep the narration insightful and intriguing, without showing the direct speech from either the adventurer or the NPCs.\","
+			"\"message\": \"Your message\","
 			"\"func_invoke\": ["
 				"{"
 					"\"name\": \"XXX\","
