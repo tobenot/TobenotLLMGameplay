@@ -45,7 +45,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "TAShoutComponent")
 	FString GetShoutHistoryCompressedStr() const{return ShoutHistoryCompressedStr;};
 	UFUNCTION(BlueprintCallable, Category = "TAShoutComponent")
-	void ShoutMessage(const FChatCompletion& Message, float Volume = 100.f);
+	void ShoutMessage(const FChatCompletion& Message, float Volume = 700.f);
 	UFUNCTION(BlueprintCallable, Category = "TAShoutComponent")
 	FString GetNearbyAgentNames();
 	UFUNCTION(BlueprintCallable, Category = "TAShoutComponent")

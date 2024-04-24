@@ -34,7 +34,7 @@ void UTAShoutManager::UnregisterShoutComponent(UTAShoutComponent* Component)
 
 void UTAShoutManager::BroadcastShout(const FChatCompletion& Message, AActor* Shouter, float Volume)
 {
-	TArray<UTAShoutComponent*> ComponentsInRange = GetShoutComponentsInRange(Shouter, Volume * 50.f);
+	TArray<UTAShoutComponent*> ComponentsInRange = GetShoutComponentsInRange(Shouter, Volume);
 
 	if(IsValidAgentName(Message.message.content, Shouter)){
 		for (UTAShoutComponent* Listener : ComponentsInRange)

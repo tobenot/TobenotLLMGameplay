@@ -158,7 +158,7 @@ void UTAShoutComponent::RequestToSpeak()
 				return;
 			}
 
-			ShoutMessage(Message, 100); // 继续喊话
+			ShoutMessage(Message, 700); // 继续喊话
 			if (bEnableFunctionInvoke)
 			{
 				PerformFunctionInvokeBasedOnResponse(Message.message.content);
@@ -276,7 +276,7 @@ void UTAShoutComponent::HandleShoutReceived(const FChatCompletion& Message, AAct
 	float Distance = Shouter->GetDistanceTo(GetOwner());
     
 	// 假设有一个声音衰减模型来确定是否应该处理喊话
-	if (Volume <= 0 || Distance < Volume * 50.f)//ShouldHandleShout(Distance)) // ShouldHandleShout 为自定义逻辑函数
+	if (Volume <= 0 || Distance < Volume)//ShouldHandleShout(Distance)) // ShouldHandleShout 为自定义逻辑函数
 	{
 		HandleReceivedMessage(Message, Shouter);
 
