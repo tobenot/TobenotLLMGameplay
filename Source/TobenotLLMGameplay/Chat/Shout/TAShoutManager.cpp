@@ -73,11 +73,12 @@ bool UTAShoutManager::IsValidAgentName(const FString& MessageContent, AActor* Sh
 		const ITAAgentInterface* AgentInterface = Cast<ITAAgentInterface>(Shouter);
 		if (AgentInterface)
 		{
+			FString AgentName = AgentInterface->GetAgentName();
 			if(AgentInterface->IsVoiceover())
 			{
+				UE_LOG(LogTemp, Log, TEXT("Is Voiceover, agent [%s], send message without name check."), *AgentName);
 				return true;
 			}
-			FString AgentName = AgentInterface->GetAgentName();
 			// 截取与AgentName等长的字符串，用于比较
 			FString AgentNameInContent = MessageContent.Mid(ActualMessageStart, AgentName.Len()).TrimStartAndEnd();
 			if (AgentNameInContent.Equals(AgentName, ESearchCase::IgnoreCase))
