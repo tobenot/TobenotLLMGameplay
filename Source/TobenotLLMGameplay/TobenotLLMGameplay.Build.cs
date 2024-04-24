@@ -64,7 +64,32 @@ public class TobenotLLMGameplay : ModuleRules
 			}
 			);
 		
-		PrivateIncludePaths.AddRange(new string[] { "TobenotLLMGameplay" });
-		PublicIncludePaths.AddRange(new string[] { "TobenotLLMGameplay" });
+		PublicIncludePaths.AddRange(
+			new string[] {
+				"TobenotLLMGameplay",
+				"TobenotLLMGameplay/Agent",
+				"TobenotLLMGameplay/Chat",
+				"TobenotLLMGameplay/Common",
+				"TobenotLLMGameplay/Event",
+                "TobenotLLMGameplay/Image",
+                "TobenotLLMGameplay/Save",
+                "TobenotLLMGameplay/Scene",
+                "TobenotLLMGameplay/UI",
+			}
+		);
+                
+		PrivateIncludePaths.AddRange(
+			new string[] {
+				"TobenotLLMGameplay",
+				"TobenotLLMGameplay/Agent",
+				"TobenotLLMGameplay/Chat",
+				"TobenotLLMGameplay/Common",
+				"TobenotLLMGameplay/Event",
+				"TobenotLLMGameplay/Image",
+				"TobenotLLMGameplay/Save",
+				"TobenotLLMGameplay/Scene",
+				"TobenotLLMGameplay/UI",
+			}
+		);
 	}
 }
