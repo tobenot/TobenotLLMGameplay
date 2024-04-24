@@ -127,7 +127,7 @@ public:
 	virtual void InitAgentByID(int32 NewAgentID);
 	
 	UFUNCTION(BlueprintImplementableEvent, Category = "Narrative Agent")
-	void InitAgentByID_BP();
+	void InitAgentByID_BP(int32 NewAgentID);
 	
 protected:
 	virtual void BeginPlay();

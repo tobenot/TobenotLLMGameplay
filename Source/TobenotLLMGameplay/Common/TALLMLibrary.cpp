@@ -49,7 +49,7 @@ UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& Ch
         if (Success && bResponseFormatMet)
         {
             // 处理成功的响应
-        	if(LogObject)
+        	if(LogObject && LogObject->IsValidLowLevel())
         	{
         		UE_LOG(LogTAChat, Log, TEXT("[%s] Response success: %s"), *LogObject->GetName(), *Message.message.content);
 				if (UCategoryLogSubsystem* CategoryLogSubsystem = LogObject->GetWorld()->GetSubsystem<UCategoryLogSubsystem>())

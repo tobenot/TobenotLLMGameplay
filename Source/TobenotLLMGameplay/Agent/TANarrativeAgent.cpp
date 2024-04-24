@@ -65,6 +65,8 @@ void ATANarrativeAgent::InitAgentByID(int32 NewAgentID)
 			// 使Agent可以开始说话
 			AgentComponent->bEnableScheduleShout = true;
 
+			InitAgentByID_BP(AgentID);
+			
 			UE_LOG(LogTemp, Log, TEXT("Agent data for ID %d found."), AgentID);
 		}
 		else

@@ -74,6 +74,9 @@ UTAAreaScene* UTASceneSubsystem::CreateAndLoadAreaScene(const FTAEventInfo& Even
 
 void UTASceneSubsystem::PopulateMapWithMonsters(const TArray<FVector>& ForbiddenLocations)
 {
+	UE_LOG(LogTASceneSystem, Error, TEXT("PopulateMapWithMonsters Deprecated"));
+	return;
+	
     // 检查世界是否有效
     if (GetWorld() == nullptr)
     {
