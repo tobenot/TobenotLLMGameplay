@@ -102,7 +102,8 @@ struct FSimplePromptTemplate
 					"//Add additional function invokes to the array as per the narration's requirement."
 				"}"
 			"]"
-		"}. Response message in "
+		"}.Please make sure your response is a valid JSON object, otherwise there will be serious consequences!"
+		" Response message in "
 		+ UTASystemLibrary::GetGameLanguage()
 		;
 		return Prompt;

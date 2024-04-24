@@ -73,7 +73,7 @@ FString UTAShoutComponent::GetNearbyAgentNames()
     UTAShoutManager* ShoutManager = GetWorld()->GetSubsystem<UTAShoutManager>();
     if (ShoutManager)
     {
-        TArray<UTAShoutComponent*> NearbyAgentComponents = ShoutManager->GetShoutComponentsInRange(GetOwner(), 500.f);
+        TArray<UTAShoutComponent*> NearbyAgentComponents = ShoutManager->GetShoutComponentsInRange(GetOwner(), 700.f);
        
         // 遍历Agent，获取他们的名字以及特定的IdentityPositionName
         for (UTAShoutComponent* AgentComponent : NearbyAgentComponents)
@@ -143,9 +143,9 @@ void UTAShoutComponent::RequestToSpeak()
 	// 设置对话请求的配置
 	FChatSettings ChatSettings{
 		UTALLMLibrary::GetChatEngineTypeFromQuality(ELLMChatEngineQuality::Fast),
-		TempMessagesList,
-		true // 使用JSON格式
+		TempMessagesList
 	};
+	ChatSettings.jsonFormat = true;
 
 	CacheChat = UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, [this](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
 	{
