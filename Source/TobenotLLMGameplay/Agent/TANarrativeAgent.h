@@ -6,6 +6,7 @@
 
 #include "CoreMinimal.h"
 #include "TAAgentInterface.h"
+#include "TobenotLLMGameplay/Common/TASystemLibrary.h"
 #include "GameFramework/Actor.h"
 #include "TobenotLLMGameplay/Save/TAGuidInterface.h"
 #include "TANarrativeAgent.generated.h"
@@ -93,7 +94,7 @@ struct FSimplePromptTemplate
 		}
 		Prompt += "Please use the following JSON template for your response:"
 		"\"Response Template\": {"
-			"\"message\": \"Your message\","
+		"\"message\": \"A string that vividly describes the ongoing scene, situation or adventurer's actions. You can use metaphoric or metaphorical phrases for immersion. Remember to keep the narration insightful and intriguing, without showing the direct speech from either the adventurer or the NPCs.\","
 			"\"func_invoke\": ["
 				"{"
 					"\"name\": \"XXX\","
@@ -101,7 +102,8 @@ struct FSimplePromptTemplate
 					"//Add additional function invokes to the array as per the narration's requirement."
 				"}"
 			"]"
-		"}"
+		"}. Response message in "
+		+ UTASystemLibrary::GetGameLanguage()
 		;
 		return Prompt;
 	}
