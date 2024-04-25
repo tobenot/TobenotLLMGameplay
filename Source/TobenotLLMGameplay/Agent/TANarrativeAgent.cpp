@@ -22,13 +22,11 @@ ATANarrativeAgent::ATANarrativeAgent()
 void ATANarrativeAgent::BeginPlay()
 {
 	Super::BeginPlay();
-    
-	// 检查FunctionInvokeCompClass是否被正确设置，然后基于它创建组件
+	
 	if(FunctionInvokeCompClass)
 	{
 		FunctionInvokeComponent = NewObject<UTAFunctionInvokeComponent>(this, FunctionInvokeCompClass);
-		FunctionInvokeComponent->RegisterComponent(); // 如果是手动创建组件，需要注册它
-		// 对FunctionInvokeComp进行其他必要的初始化设置
+		FunctionInvokeComponent->RegisterComponent();
 	}
 
 	if(AgentID > 0)

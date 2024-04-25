@@ -59,6 +59,10 @@ protected:
 	// Begins play for the component
 	virtual void BeginPlay() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	
+public:
+	void UpdateShoutHistory(const FChatCompletion& NewChatLog);
+	
 private:
 	// Chat log history within the component
 	UPROPERTY()
@@ -68,9 +72,6 @@ private:
 	TArray<FChatLog> FullShoutHistory;
 	
 	FString ShoutHistoryCompressedStr;
-	
-	// Handles updating the chat history
-	void UpdateShoutHistory(const FChatCompletion& NewChatLog);
 	
 	// Notifies UI of Shout history update
 	void NotifyUIOfShoutHistoryUpdate(const FChatCompletion& ReceivedMessage, AActor* Sender);

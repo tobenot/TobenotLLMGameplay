@@ -126,7 +126,8 @@ void UTAShoutComponent::RequestToSpeak()
 	auto& TempMessagesList = ShoutHistory;
 	// 构造系统提示的ChatLog对象
 	const FString SystemPrompt = GetSystemPromptFromOwner()
-		+ ". Output {\"no_response_needed\": \"No response needed because [Your_Reason_Here]\"} when the conversation is becoming boring."
+		+ "Your long-term memory: " + ShoutHistoryCompressedStr + "."
+		+ ". Output {\"no_response_needed\": \"No response needed because [Your_Reason_Here]\"} when the conversation is becoming boring or not point at you."
 		+ "Nearby agents: " + GetNearbyAgentNames();
 	const FChatLog SystemPromptLog{EOAChatRole::SYSTEM, SystemPrompt};
 
@@ -140,10 +141,10 @@ void UTAShoutComponent::RequestToSpeak()
 		TempMessagesList.Add(SystemPromptLog);
 	}
 	
-	// 设置对话请求的配置
 	FChatSettings ChatSettings{
 		UTALLMLibrary::GetChatEngineTypeFromQuality(ELLMChatEngineQuality::Fast),
-		TempMessagesList
+		TempMessagesList,
+		0.8
 	};
 	ChatSettings.jsonFormat = true;
 
@@ -212,7 +213,8 @@ void UTAShoutComponent::RequestShoutCompression()
 
 	FChatSettings ChatSettings{
 		UTALLMLibrary::GetChatEngineTypeFromQuality(ELLMChatEngineQuality::Fast),
-		TempMessagesList
+		TempMessagesList,
+		0.8
 	};
 	ChatSettings.jsonFormat = true;
 
@@ -410,13 +412,13 @@ void UTAShoutComponent::RequestChoices()
 	{
 		TempMessagesList.Add(SystemPromptLog);
 	}
-
-	// 设置对话请求的配置
+	
 	FChatSettings ChatSettings{
 		UTALLMLibrary::GetChatEngineTypeFromQuality(ELLMChatEngineQuality::Fast),
 		TempMessagesList,
-		true // 使用JSON格式
+		0.8
 	};
+	ChatSettings.jsonFormat = true;
 
 	//发送请求
 	//CacheChat =
@@ -458,7 +460,7 @@ TArray<FString> UTAShoutComponent::ParseChoicesFromResponse(const FString& Respo
 
 const FTAPrompt UTAShoutComponent::PromptCompressShoutHistory = FTAPrompt{
 	"In the adventure game application, my message list token has exceeded the limit, I need to compress a bit, "
-	"but keep the important memories, especially the more recent Shout information, "
+	"but keep the important memories, especially the more recent information, "
 	"while unimportant information can be appropriately deleted. "
 	"You do not have to maintain the alternating response format of user and system, "
 	"you only need to output a summary in a descriptive manner. "
