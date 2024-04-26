@@ -40,6 +40,10 @@ struct FNarrativeAgentData : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FString> SystemPromptParameters;
 
+	//肖像
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSoftObjectPtr<UTexture> AgentPortrait;
+	
 	//备注
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FString> Note;
@@ -135,10 +139,9 @@ protected:
 	
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Narrative Agent")
 	int32 AgentID;
-	
-	// Agent的名字
-	UPROPERTY(VisibleAnywhere, Category="Narrative Agent")
-	FString AgentName;
+
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category="Narrative Agent")
+	FNarrativeAgentData AgentInfo;
 
 	// 系统提示
 	UPROPERTY(VisibleAnywhere, Category="Narrative Agent")
@@ -147,10 +150,6 @@ protected:
 	// 定位是子类赋值它，比如放调用函数的列表什么的？
 	UPROPERTY(VisibleAnywhere, Category="Narrative Agent")
 	FString AppendSystemPrompt;
-	
-	// 系统提示使用的参数
-	UPROPERTY(VisibleAnywhere, Category="Narrative Agent")
-	TArray<FString> SystemPromptParameters;
 	
 	UPROPERTY()
 	TMap<FGuid, FString> DesireMap;
@@ -179,7 +178,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Narrative Agent")
 	virtual void RemoveDesire(const FGuid& DesireId) override;
 	
+	virtual TSoftObjectPtr<UTexture> GetAgentPortrait() const override;
+
+public:
 	virtual bool IsVoiceover() const;
+
 private:
 	FString GenerateSystemPrompt(EPromptType PromptType, const TArray<FString>& Parameters);
 

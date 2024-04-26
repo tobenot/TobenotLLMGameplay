@@ -39,4 +39,10 @@ public:
 
 	// 目前的作用：如果是旁白的话，UTAShoutManager就不会检查消息前面有没有带着Agent名字
 	virtual bool IsVoiceover() const;
+	
+	UFUNCTION(BlueprintCallable, Category = "TA|Agent")
+	virtual TSoftObjectPtr<UTexture> GetAgentPortrait() const
+	{
+		return TSoftObjectPtr<UTexture>();
+	}
 };

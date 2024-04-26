@@ -7,7 +7,7 @@
 ATANarrativeAgent::ATANarrativeAgent()
 {
 	// 设置默认值
-	AgentName = TEXT("NarrativeAgent");
+	AgentInfo.AgentName = TEXT("NarrativeAgent");
 	SystemPrompt = TEXT("Default System Prompt");
 
 	ShoutComponent = CreateDefaultSubobject<UTAShoutComponent>(TEXT("ShoutComponent"));
@@ -50,16 +50,11 @@ void ATANarrativeAgent::InitAgentByID(int32 NewAgentID)
 		// 如果找到对应行则更新Agent信息
 		if(AgentData)
 		{
-			AgentName = AgentData->AgentName; // 设置Agent名字
+			AgentInfo = *AgentData;
 			SetIdentityPositionName(FName(AgentData->AgentName)); //设置身份名
 			// 根据系统提示模板种类和参数生成系统提示
 			SystemPrompt = GenerateSystemPrompt(AgentData->SystemPromptType, AgentData->SystemPromptParameters);
-        
-			// 保存提示模板使用的参数，以便刷新系统提示时使用
-			SystemPromptParameters = AgentData->SystemPromptParameters;
 
-			// 可以进行其他成员变量的设置，如Desires
-        
 			// 使Agent可以开始说话
 			AgentComponent->bEnableScheduleShout = true;
 
@@ -95,7 +90,7 @@ FString ATANarrativeAgent::GetSystemPrompt()
 
 const FString& ATANarrativeAgent::GetAgentName() const
 {
-	return AgentName;
+	return AgentInfo.AgentName;
 }
 
 void ATANarrativeAgent::AddOrUpdateDesire(const FGuid& DesireId, const FString& DesireDescription)
@@ -118,6 +113,11 @@ void ATANarrativeAgent::RemoveDesire(const FGuid& DesireId)
 	{
 		TotalDesire += Elem.Value + TEXT("\n");
 	}
+}
+
+TSoftObjectPtr<UTexture> ATANarrativeAgent::GetAgentPortrait() const
+{
+	return AgentInfo.AgentPortrait;
 }
 
 bool ATANarrativeAgent::IsVoiceover() const
