@@ -51,10 +51,22 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "TAShoutComponent")
 	void RequestToSpeak();
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UTAShoutComponent")
+	bool IsPartner;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TAShoutComponent")
 	bool IsPlayer;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TAShoutComponent")
 	bool IsRequestingMessage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UTAShoutComponent")
+	float PartnerDelayRequestToSpeakTime = 2.0f;
+	FTimerHandle DelayRequestToSpeakTimerHandle;
+	UPROPERTY(BlueprintReadOnly, Category = "UTAShoutComponent")
+	bool bIsDelayRequestToSpeakTimerFinished;
+
+	UFUNCTION()
+	void ContinueRequestToSpeak();
+	
 protected:
 	// Begins play for the component
 	virtual void BeginPlay() override;

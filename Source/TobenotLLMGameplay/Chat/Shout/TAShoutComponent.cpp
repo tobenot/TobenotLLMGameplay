@@ -37,7 +37,7 @@ void UTAShoutComponent::BeginPlay()
 void UTAShoutComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
-
+	GetWorld()->GetTimerManager().ClearTimer(DelayRequestToSpeakTimerHandle);
 	UTAShoutManager* ShoutManager = GetWorld()->GetSubsystem<UTAShoutManager>();
 	if (ShoutManager)
 	{
@@ -116,6 +116,20 @@ void UTAShoutComponent::RequestToSpeak()
 	{
 		return;
 	}
+	if (IsPartner)
+	{
+		if(!bIsDelayRequestToSpeakTimerFinished)
+		{
+			GetWorld()->GetTimerManager().ClearTimer(DelayRequestToSpeakTimerHandle);
+			GetWorld()->GetTimerManager().SetTimer(
+				DelayRequestToSpeakTimerHandle, this, &UTAShoutComponent::ContinueRequestToSpeak,
+				PartnerDelayRequestToSpeakTime, false);
+			return;
+		}else
+		{
+			bIsDelayRequestToSpeakTimerFinished = false;
+		}
+	}
 	// 打断之前没说完的话，因为现在有新信息入手了！
 	if(CacheChat)
 	{
@@ -173,6 +187,12 @@ void UTAShoutComponent::RequestToSpeak()
 		IsRequestingMessage = false;
 		CacheChat = nullptr;
 	},GetOwner());
+}
+
+void UTAShoutComponent::ContinueRequestToSpeak()
+{
+	bIsDelayRequestToSpeakTimerFinished = true;
+	RequestToSpeak();
 }
 
 void UTAShoutComponent::UpdateShoutHistory(const FChatCompletion& NewChatCompletion)
