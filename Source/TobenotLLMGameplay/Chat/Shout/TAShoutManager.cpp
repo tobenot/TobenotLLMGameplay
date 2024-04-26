@@ -5,6 +5,8 @@
 #include "OpenAIDefinitions.h"
 #include "Agent/TAAgentInterface.h"
 #include "Chat/TAChatLogCategory.h"
+#include "Dom/JsonObject.h"
+#include "Serialization/JsonSerializer.h" 
 
 void UTAShoutManager::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -36,12 +38,46 @@ void UTAShoutManager::BroadcastShout(const FChatCompletion& Message, AActor* Sho
 {
 	TArray<UTAShoutComponent*> ComponentsInRange = GetShoutComponentsInRange(Shouter, Volume);
 
-	if(IsValidAgentName(Message.message.content, Shouter)){
+	// 目前发给其他人的消息只保留message字段
+	FChatCompletion NewMessage;
+	bool bIsNewMessageCreated = false;
+
+	TSharedPtr<FJsonObject> JsonObject;
+	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Message.message.content);
+    
+	// 装载JSON和执行检查
+	if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid() && JsonObject->HasField(TEXT("message")))
+	{
+		FString MessageContent;
+		JsonObject->TryGetStringField(TEXT("message"), MessageContent);
+
+		TSharedPtr<FJsonObject> NewJsonMessage = MakeShareable(new FJsonObject());
+		NewJsonMessage->SetStringField(TEXT("message"), MessageContent);
+		FString NewRawJson;
+		TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&NewRawJson);
+		FJsonSerializer::Serialize(NewJsonMessage.ToSharedRef(), Writer);
+  
+		NewMessage.message.content = NewRawJson;
+		bIsNewMessageCreated = true;
+	}
+
+	if(IsValidAgentName(Message.message.content, Shouter))
+	{
 		for (UTAShoutComponent* Listener : ComponentsInRange)
 		{
 			if (Listener && Listener->IsActive())
 			{
-				Listener->HandleShoutReceived(Message, Shouter, Volume);
+				// 如果接收者不是发送者且新消息已被创建，则发送处理过的消息
+				// 如果接收者是发送者，即使没有message字段，也应发送原始消息
+				if(Listener->GetOwner() == Shouter)
+				{
+					Listener->HandleShoutReceived(Message, Shouter, Volume);
+				}
+				else if(bIsNewMessageCreated)
+				{
+					Listener->HandleShoutReceived(NewMessage, Shouter, Volume);
+				}
+				// 如果没有有效的message字段并且接收者不是发送者，不发送消息
 			}
 		}
 	}
