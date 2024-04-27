@@ -115,7 +115,7 @@ void ATANarrativeAgent::RemoveDesire(const FGuid& DesireId)
 	}
 }
 
-TSoftObjectPtr<UTexture> ATANarrativeAgent::GetAgentPortrait() const
+TSoftObjectPtr<UTexture2D> ATANarrativeAgent::GetAgentPortrait() const
 {
 	return AgentInfo.AgentPortrait;
 }

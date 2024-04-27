@@ -42,7 +42,7 @@ struct FNarrativeAgentData : public FTableRowBase
 
 	//肖像
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TSoftObjectPtr<UTexture> AgentPortrait;
+	TSoftObjectPtr<UTexture2D> AgentPortrait;
 	
 	//备注
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -178,7 +178,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Narrative Agent")
 	virtual void RemoveDesire(const FGuid& DesireId) override;
 	
-	virtual TSoftObjectPtr<UTexture> GetAgentPortrait() const override;
+	virtual TSoftObjectPtr<UTexture2D> GetAgentPortrait() const override;
 
 public:
 	virtual bool IsVoiceover() const;

@@ -41,8 +41,8 @@ public:
 	virtual bool IsVoiceover() const;
 	
 	UFUNCTION(BlueprintCallable, Category = "TA|Agent")
-	virtual TSoftObjectPtr<UTexture> GetAgentPortrait() const
+	virtual TSoftObjectPtr<UTexture2D> GetAgentPortrait() const
 	{
-		return TSoftObjectPtr<UTexture>();
+		return TSoftObjectPtr<UTexture2D>();
 	}
 };
