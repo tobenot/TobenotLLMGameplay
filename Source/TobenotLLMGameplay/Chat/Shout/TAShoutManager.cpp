@@ -39,7 +39,7 @@ void UTAShoutManager::BroadcastShout(const FChatCompletion& Message, AActor* Sho
 	TArray<UTAShoutComponent*> ComponentsInRange = GetShoutComponentsInRange(Shouter, Volume);
 
 	// 目前发给其他人的消息只保留message字段
-	FChatCompletion NewMessage;
+	FChatCompletion NewMessage = Message;
 	bool bIsNewMessageCreated = false;
 
 	TSharedPtr<FJsonObject> JsonObject;

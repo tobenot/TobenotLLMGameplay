@@ -4,6 +4,7 @@
 #include "TAFunctionInvokeComponent.h"
 #include "Chat/TAChatLogCategory.h"
 #include "Event/Core/TAEventSubsystem.h"
+#include "Shout/TAShoutComponent.h"
 
 DEFINE_LOG_CATEGORY(LogFunctionInvoke);
 
@@ -87,7 +88,6 @@ void UTAFunctionInvokeComponent::TriggerBattle(const FString& Depict)
 void UTAFunctionInvokeComponent::GiveItem(const FString& Depict)
 {
     UE_LOG(LogFunctionInvoke, Warning, TEXT("FunctionInvoke: GiveItemToPlayer! Depict: %s"), *Depict);
-    // TODO: 根据Depict实现具体的给予物品逻辑
 }
 
 void UTAFunctionInvokeComponent::FinishEvent(const FString& Depict)
@@ -108,8 +108,8 @@ void UTAFunctionInvokeComponent::FinishEvent(const FString& Depict)
 
         if (EventSubsystem)
         {
-            // 调用FinishEvent方法
             EventSubsystem->FinishEvent(ParsedEventID, ParsedOutcomeID);
+            RequestShoutCompToSpeak("Event finished, you should say one more sentence.");
         }
         else
         {
@@ -119,5 +119,18 @@ void UTAFunctionInvokeComponent::FinishEvent(const FString& Depict)
     else
     {
         UE_LOG(LogFunctionInvoke, Error, TEXT("FunctionInvoke: Failed to parse EventID and OutcomeID from Depict."));
+    }
+}
+
+void UTAFunctionInvokeComponent::RequestShoutCompToSpeak(const FString& Message)
+{
+    UTAShoutComponent* ShoutComponent = GetOwner()->FindComponentByClass<UTAShoutComponent>();
+    if(ShoutComponent)
+    {
+        FChatCompletion ChatCompletion;
+        ChatCompletion.message.role = EOAChatRole::SYSTEM;
+        ChatCompletion.message.content = Message;
+        ShoutComponent->UpdateShoutHistory(ChatCompletion);
+        ShoutComponent->RequestToSpeak();
     }
 }

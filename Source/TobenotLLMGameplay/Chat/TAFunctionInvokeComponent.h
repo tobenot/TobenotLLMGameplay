@@ -59,5 +59,8 @@ protected:
     virtual void GiveItem(const FString& Depict);
 
     UFUNCTION()
-    void FinishEvent(const FString& Depict);
+    virtual void FinishEvent(const FString& Depict);
+
+    UFUNCTION()
+    void RequestShoutCompToSpeak(const FString& Message);
 };
