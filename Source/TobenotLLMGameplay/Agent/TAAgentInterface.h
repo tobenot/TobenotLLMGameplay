@@ -45,4 +45,13 @@ public:
 	{
 		return TSoftObjectPtr<UTexture2D>();
 	}
+
+	UFUNCTION(BlueprintCallable, Category = "TA|Inventory")
+	virtual TMap<FName, int32> QueryInventoryItems() const;
+
+	UFUNCTION(BlueprintCallable, Category = "TA|Inventory")
+	virtual int32 QueryItemAmountByName(FName ItemName) const;
+	
+	UFUNCTION(BlueprintCallable, Category = "TA|Inventory")
+	virtual bool ConsumeInventoryItem(FName ItemName, int32 ConsumeCount);
 };

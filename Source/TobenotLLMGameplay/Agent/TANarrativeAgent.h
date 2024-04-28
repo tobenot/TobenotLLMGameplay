@@ -40,6 +40,10 @@ struct FNarrativeAgentData : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<FString> SystemPromptParameters;
 
+	// 物品信息
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TMap<FName, int32> ItemTable;
+	
 	//肖像
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSoftObjectPtr<UTexture2D> AgentPortrait;
@@ -179,7 +183,9 @@ public:
 	virtual void RemoveDesire(const FGuid& DesireId) override;
 	
 	virtual TSoftObjectPtr<UTexture2D> GetAgentPortrait() const override;
-
+	virtual TMap<FName, int32> QueryInventoryItems() const override;
+	virtual int32 QueryItemAmountByName(FName ItemName) const override;
+	virtual bool ConsumeInventoryItem(FName ItemName, int32 ConsumeCount) override;
 public:
 	virtual bool IsVoiceover() const;
 

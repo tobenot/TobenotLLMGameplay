@@ -22,3 +22,18 @@ bool ITAAgentInterface::IsVoiceover() const
 {
 	return false;
 }
+
+TMap<FName, int32> ITAAgentInterface::QueryInventoryItems() const
+{
+	TMap<FName, int32> InventoryItems;
+	return InventoryItems;
+}
+int32 ITAAgentInterface::QueryItemAmountByName(FName ItemName) const
+{
+	return 0;
+}
+
+bool ITAAgentInterface::ConsumeInventoryItem(FName ItemName, int32 ConsumeCount)
+{
+	return false;
+}

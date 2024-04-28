@@ -120,6 +120,28 @@ TSoftObjectPtr<UTexture2D> ATANarrativeAgent::GetAgentPortrait() const
 	return AgentInfo.AgentPortrait;
 }
 
+TMap<FName, int32> ATANarrativeAgent::QueryInventoryItems() const
+{
+	return AgentInfo.ItemTable;
+}
+
+int32 ATANarrativeAgent::QueryItemAmountByName(FName ItemName) const
+{
+	const int32* FoundAmount = AgentInfo.ItemTable.Find(ItemName);
+	return FoundAmount ? *FoundAmount : 0;
+}
+
+bool ATANarrativeAgent::ConsumeInventoryItem(FName ItemName, int32 ConsumeCount)
+{
+	int32* FoundAmount = AgentInfo.ItemTable.Find(ItemName);
+	if (FoundAmount && *FoundAmount >= ConsumeCount)
+	{
+		*FoundAmount -= ConsumeCount;
+		return true;
+	}
+	return false;
+}
+
 bool ATANarrativeAgent::IsVoiceover() const
 {
 	return bIsVoiceover;
