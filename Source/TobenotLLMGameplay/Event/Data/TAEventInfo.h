@@ -6,7 +6,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Plot/TAPlotManager.h"
 #include "TAEventInfo.generated.h"
+
 
 // 定义事件类型枚举
 UENUM(BlueprintType)
@@ -119,6 +121,10 @@ struct TOBENOTLLMGAMEPLAY_API FTAPresetEventData : public FTableRowBase
 	// 前置事件和结果的数组
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event Dependency")
 	TArray<FTAEventDependency> PrecedingEvents;
+
+	// 前置的事件记录标签组
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event Dependency")
+	TArray<FTATagGroup> PrecedingPlotTagGroups;
 };
 
 // 更新FTAEventInfo结构体，包含FTAPresetEventData
@@ -142,6 +148,9 @@ struct FTAEventInfo
 	FTAPresetEventData PresetData;
 
 	// LLM end
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Event")
+	bool PrecedingPlotTagGroupsConditionMet = false;
     
 	// 事件转换为字符串的函数，用于调试打印输出
 	FString ToString() const;

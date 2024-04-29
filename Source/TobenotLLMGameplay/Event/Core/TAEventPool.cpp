@@ -62,11 +62,22 @@ void UTAEventPool::CheckAndTriggerEvents()
 	// 首先执行原来的接近性检查
 	CheckPlayerProximityToEvents();
 
+	// 检测网状叙事系统前置
+	UTAPlotManager* PlotManager = GetWorld()->GetSubsystem<UTAPlotManager>();
+	if (PlotManager)
+	{
+		PlotManager->CheckEventsTagGroupCondition(PendingEventInfos);
+	}
+
 	// 接下来遍历处于待触发状态的事件，检查更复杂的条件
 	for (int32 i = PendingEventInfos.Num() - 1; i >= 0; --i) {
 		const auto& EventInfo = PendingEventInfos[i];
-		bool bDependencyMet = true; // 默认该事件可以被触发
-
+		bool bDependencyMet = EventInfo->PrecedingPlotTagGroupsConditionMet;
+		if(!bDependencyMet)
+		{
+			continue;
+		}
+		
 		// 检查所有前置事件是否满足条件
 		for (const FTAEventDependency& Dependency : EventInfo->PresetData.PrecedingEvents)
 		{
