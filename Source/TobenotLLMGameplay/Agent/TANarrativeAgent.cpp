@@ -19,6 +19,14 @@ ATANarrativeAgent::ATANarrativeAgent()
 	bIsVoiceover = true;
 }
 
+void ATANarrativeAgent::CheckAndHandleInventoryEmpty()
+{
+	if(AgentInfo.ItemTable.Num() == 0 && AgentInfo.bHideWhenInventoryEmpty)
+	{
+		HideSelf();
+	}
+}
+
 void ATANarrativeAgent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -137,6 +145,11 @@ bool ATANarrativeAgent::ConsumeInventoryItem(FName ItemName, int32 ConsumeCount)
 	if (FoundAmount && *FoundAmount >= ConsumeCount)
 	{
 		*FoundAmount -= ConsumeCount;
+		if(*FoundAmount == 0)
+		{
+			AgentInfo.ItemTable.Remove(ItemName);
+		}
+		CheckAndHandleInventoryEmpty();
 		return true;
 	}
 	return false;

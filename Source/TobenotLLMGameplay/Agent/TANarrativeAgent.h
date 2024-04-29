@@ -44,6 +44,10 @@ struct FNarrativeAgentData : public FTableRowBase
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TMap<FName, int32> ItemTable;
 	
+	// 物品栏空后是否隐藏自己，比如拾取物
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bHideWhenInventoryEmpty;
+	
 	//肖像
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TSoftObjectPtr<UTexture2D> AgentPortrait;
@@ -137,6 +141,11 @@ public:
 	
 	UFUNCTION(BlueprintImplementableEvent, Category = "Narrative Agent")
 	void InitAgentByID_BP(int32 NewAgentID);
+	
+	UFUNCTION(BlueprintImplementableEvent, Category = "Narrative Agent")
+	void HideSelf();
+
+	void CheckAndHandleInventoryEmpty();
 	
 protected:
 	virtual void BeginPlay();
