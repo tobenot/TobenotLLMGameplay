@@ -311,6 +311,7 @@ const FTAPrompt UTAPlotManager::PromptCompressShoutHistory = FTAPrompt{
 
 // 这个不能热更
 const FTAPrompt UTAPlotManager::PromptTagEvent = FTAPrompt{
+	TEXT(
 	"Please analyze the narrative content of the provided game event and generate a structured set of tags."
 	"These tags should sequentially reflect the key initiator (person/object), the specific action taken, and the individual/object affected or the specific item involved."
 	"Your task is to format the response as a JSON array, with each element representing a distinct event or action sequence and an associated set of tags."
@@ -322,30 +323,19 @@ const FTAPrompt UTAPlotManager::PromptTagEvent = FTAPrompt{
 	"       \"tags\": [\"Initiator (person full name/object)\", \"Specific action (accept mission, using prop)\", \"Related object (mission name), specific item (prop name) or individual (someone's full name) \"]"
 	"   }"
 	"Please record what actually happened, for example, if A only asked B to do something and B didn't actually do it, then you should not record B doing it. Instead, you should record \"A\", \"asking to do something\", \"B\"."
-		"Example 1:"
-		"{"
-		"\"event\": \"John Smith has accepted the quest from Sarah Johnson.\","
-		"\"tags\": [\"John Smith\", \"accept mission\", \"The Hidden Treasure of the Silent Woods\"]"
-		"}"
-		"Example 2:"
-		"{"
-		"\"event\": \"Using the mystical Lantern of Lore, Sarah Johnson revealed the secret entrance in the ancient ruins.\","
-		"\"tags\": [\"Sarah Johnson\", \"using\", \"Lantern of Lore\"]"
-		"}"
-		"Example 3:"
-		"{"
-		"\"event\": \"The enchanted sword Excaliburn was stolen by the thief Martin Black from the royal armory.\","
-		"\"tags\": [\"Martin Black\", \"stole\", \"Excaliburn\"]"
-		"}"
-		"Example 4:"
-		"{"
-		"\"event\": \"Sarah Johnson attack John Smith.\","
-		"\"tags\": [\"Sarah Johnson\", \"attack\", \"John Smith\"]"
-		"}"
+		"例子 1："
+		"{""\"event\": \"约翰·史密斯接受了莎拉·约翰逊的任务。\",""\"tags\": [\"约翰·史密斯\", \"接受任务\", \"寂静森林中隐藏的宝藏\"]""}"
+		"例子 2："
+		"{""\"event\": \"莎拉·约翰逊使用神秘的博学灯笼，揭示了古代遗迹中的秘密入口。\",""\"tags\": [\"莎拉·约翰逊\", \"使用\", \"博学灯笼\"]""}"
+		"例子 3："
+		"{""\"event\": \"小偷马丁·布莱克从皇家军械库偷走了魔剑埃克斯卡利伯。\",""\"tags\": [\"马丁·布莱克\", \"偷窃\", \"埃克斯卡利伯\"]""}"
+		"例子 4："
+		"{""\"event\": \"莎拉·约翰逊攻击约翰·史密斯。\",""\"tags\": [\"莎拉·约翰逊\", \"攻击\", \"约翰·史密斯\"]""}"
 	"Please focus only on the last message as it represents the newly occurring event. You have already processed what happened before. Showing them now is only for maintaining the context without loss."
-	"Please respond All in Chinese, as it matches our system requirements."
-	"DO NOT respond tags in English!"
-	"Proceed with the extraction and tagging as directed for the last event of following game event:",
+	"Kindly reply content solely in Chinese to comply with our system protocols."
+	"Avoid using English tags when responding!"
+	"Proceed with the extraction and tagging as directed for the last event of following game event:"
+	),
 	1,
 	true
 };
