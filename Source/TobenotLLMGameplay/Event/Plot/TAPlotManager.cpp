@@ -47,13 +47,13 @@ void UTAPlotManager::CheckEventsTagGroupCondition(TArray<FTAEventInfo*> Events)
         if(EventInfo->PrecedingPlotTagGroupsConditionMet)
         {
             // 跳过已满足条件的事件
-        	UE_LOG(LogTemp, Warning, TEXT("事件 '%s' 在之前的检测中已经满足网状叙事前置"), *EventInfo->PresetData.EventName);
+        	UE_LOG(LogTAEventSystem, Warning, TEXT("事件 '%s' 在之前的检测中已经满足网状叙事前置"), *EventInfo->PresetData.EventName);
             continue;
         }
     	if(!EventInfo->PresetData.PrecedingPlotTagGroups.Num())
     	{
     		// 无前置，直接满足
-    		UE_LOG(LogTemp, Warning, TEXT("事件 '%s' 无网状叙事前置，直接满足条件"), *EventInfo->PresetData.EventName);
+    		UE_LOG(LogTAEventSystem, Warning, TEXT("事件 '%s' 无网状叙事前置，直接满足条件"), *EventInfo->PresetData.EventName);
     		EventInfo->PrecedingPlotTagGroupsConditionMet = true;
     		continue;
     	}
@@ -61,86 +61,86 @@ void UTAPlotManager::CheckEventsTagGroupCondition(TArray<FTAEventInfo*> Events)
         bool bAllGroupConditionsMet = true;
         
         for (const FTATagGroup& PresetGroup : EventInfo->PresetData.PrecedingPlotTagGroups)
-        {
-            bool bCurrentGroupConditionMet = true;
-            // 用于有序匹配的最后发现的索引
-            int32 LastFoundIndex = -1;
-            
-            for (const FName& PresetTag : PresetGroup.Tags)
-            {
-                FHighDimensionalVector PresetTagEmbedding;
-                if(EmbeddingSystem->GetTagEmbedding(PresetTag, PresetTagEmbedding))
-                {
-                    // 为预设标签找到了词嵌，打印它的名字
-                    UE_LOG(LogTemp, Warning, TEXT("预设标签 '%s' 的嵌入向量找到"), *PresetTag.ToString());
-                    bool bMatchingTagFound = false;
+		{
+		    bool bCurrentGroupConditionMet = false;
 
-                    // 现在在我们的剧情标签组中寻找匹配的标签
-                    for (int32 PlotIndex = LastFoundIndex + 1; PlotIndex < PlotTagGroups.Num(); ++PlotIndex)
-                    {
-                        const FTATagGroup& PlotGroup = PlotTagGroups[PlotIndex];
-                        for (const FName& PlotTag : PlotGroup.Tags)
-                        {
-                            FHighDimensionalVector PlotTagEmbedding;
-                            if (EmbeddingSystem->GetTagEmbedding(PlotTag, PlotTagEmbedding))
-                            {
-                            	float Similarity = UTAEmbeddingSystem::CalculateCosineSimilarity(PresetTagEmbedding, PlotTagEmbedding);
-                            	UE_LOG(LogTemp, Warning,
-                            		TEXT("剧情标签 '%s' 的嵌入向量找到 与当前的预设前置'%s'余弦相似度为：%f"),
-                            		*PlotTag.ToString(), *PresetTag.ToString(), Similarity);
+		    for (const FTATagGroup& PlotGroup : PlotTagGroups)
+		    {
+		        // 初始化标志位和索引，用于遍历每个前置紧接标签
+		        bool bGroupMatchFound = true; // 假设在这个PlotGroup中可以找到完整的PresetGroup
+		        int32 LastFoundIndex = -1;
 
-                            	if (Similarity > 0.7f)
-                            	{
-                            		// 找到匹配的标签，更新索引以进行有序检查，并退出内部循环
-                            		LastFoundIndex = PlotIndex;
-                            		bMatchingTagFound = true;
-                            		UE_LOG(LogTemp, Warning, TEXT("找到匹配标签: '%s', 余弦相似度：%f"), *PlotTag.ToString(), Similarity);
-                            		break;
-                            	}
-                            }
-                        }
-                        if (bMatchingTagFound)
-                        {
-                            // 如果找到匹配的标签，退出外部循环
-                            break;
-                        }
-                    }
-                    if(!bMatchingTagFound)
-                    {
-                        // 我们没有找到与预设标签匹配的剧情标签
-                        bCurrentGroupConditionMet = false;
-                        UE_LOG(LogTemp, Warning, TEXT("未找到匹配的剧情标签: '%s'"), *PresetTag.ToString());
-                        break;
-                    }
-                }
-                else
-                {
-                    // 预设标签的嵌入尚未计算，因此无法满足组条件
-                    bCurrentGroupConditionMet = false;
-                    UE_LOG(LogTemp, Warning, TEXT("预设标签 '%s' 的嵌入向量尚未找到"), *PresetTag.ToString());
-                    break;
-                }
-            }
-            if (!bCurrentGroupConditionMet)
-            {
-                // 组条件不满足
-                bAllGroupConditionsMet = false;
-                UE_LOG(LogTemp, Warning, TEXT("标签组条件未满足，无法触发事件"));
-                break; // 如果一个组条件不符，提前退出以提高效率
-            }
-        }
+		        for (const FName& PresetTag : PresetGroup.Tags)
+		        {
+		            FHighDimensionalVector PresetTagEmbedding;
+		            if (!EmbeddingSystem->GetTagEmbedding(PresetTag, PresetTagEmbedding))
+		            {
+		                bGroupMatchFound = false;
+		                UE_LOG(LogTAEventSystem, Warning, TEXT("预设标签 '%s' 的嵌入向量尚未找到，无法匹配"), *PresetTag.ToString());
+		                break; // 跳出当前PresetTag循环，因为嵌入未找到
+		            }
+
+		            bool bMatchingTagFound = false;
+		            // 从上一次找到的索引之后开始搜索
+		            for (int32 PlotTagIndex = LastFoundIndex + 1; PlotTagIndex < PlotGroup.Tags.Num(); ++PlotTagIndex)
+		            {
+		                const FName& PlotTag = PlotGroup.Tags[PlotTagIndex];
+		                FHighDimensionalVector PlotTagEmbedding;
+		                if(EmbeddingSystem->GetTagEmbedding(PlotTag, PlotTagEmbedding))
+		                {
+		                    float Similarity = UTAEmbeddingSystem::CalculateCosineSimilarity(PresetTagEmbedding, PlotTagEmbedding);
+		                	UE_LOG(LogTAEventSystem, Warning,
+								TEXT("当前的预设前置 '%s' 与剧情标签 '%s' 的嵌入向量余弦相似度为：%f"),
+								*PresetTag.ToString(), *PlotTag.ToString(), Similarity);
+		                	
+		                    if (Similarity > 0.7f)
+		                    {
+		                        bMatchingTagFound = true;
+		                        LastFoundIndex = PlotTagIndex - 1; // 更新最后找到匹配的索引位置，当前的继续匹配也行
+		                        break; // 找到匹配的标签，退出PlotGroup中标签的循环
+		                    }
+		                }
+		            }
+
+		            if(!bMatchingTagFound)
+		            {
+		                bGroupMatchFound = false; // 当前PresetTag在PlotGroup中没有找到匹配项
+		                break; // 跳出PresetGroup中标签的循环
+		            }
+		        }
+
+		        if(bGroupMatchFound)
+		        {
+		            bCurrentGroupConditionMet = true; // 在这个PlotGroup中找到了完整的PresetGroup按顺序匹配
+		            break; // 找到一个满足条件的PlotGroup，跳出PlotGroup的循环
+		        }
+		    }
+
+		    if (!bCurrentGroupConditionMet)
+		    {
+		        bAllGroupConditionsMet = false; // 当前事件中有一个PresetGroup没有匹配成功
+		        break; // 提前跳出PresetGroup的循环
+		    }
+		}
+
         // 设置事件实例的条件满足标志
         EventInfo->PrecedingPlotTagGroupsConditionMet = bAllGroupConditionsMet;
-        UE_LOG(LogTemp, Warning, TEXT("事件 '%s' 的前置标签组条件是否满足: %s"), *EventInfo->PresetData.EventName, bAllGroupConditionsMet ? TEXT("是") : TEXT("否"));
+        UE_LOG(LogTAEventSystem, Warning, TEXT("事件 '%s' 的前置标签组条件是否满足: %s"), *EventInfo->PresetData.EventName, bAllGroupConditionsMet ? TEXT("是") : TEXT("否"));
     }
 }
 
 void UTAPlotManager::ParseNewEventToTagGroups()
 {
-	TArray<FChatLog> TempMessagesList = ShoutHistory;
+	if(!ShoutHistory.Num())
+	{
+		return;
+	}
+	/*TArray<FChatLog> TempMessagesList = ShoutHistory;
 	const FString FormattedPrompt = UTALLMLibrary::PromptToStr(PromptTagEvent);
-	TempMessagesList.Add({EOAChatRole::SYSTEM, FormattedPrompt});
-
+	TempMessagesList.Insert({EOAChatRole::SYSTEM, FormattedPrompt}, 0);*/
+	TArray<FChatLog> TempMessagesList = ShoutHistory;
+	TempMessagesList.Insert({EOAChatRole::SYSTEM, UTALLMLibrary::PromptToStr(PromptTagEvent)}, 0);
+	
 	FChatSettings ChatSettings{
 		UTALLMLibrary::GetChatEngineTypeFromQuality(ELLMChatEngineQuality::Fast),
 		TempMessagesList,
@@ -178,13 +178,13 @@ void UTAPlotManager::ParseNewEventToTagGroups()
 				}
 				else
 				{
-					UE_LOG(LogTemp, Warning, TEXT("解析JSON失败: %s"), *Message.message.content);
+					UE_LOG(LogTAEventSystem, Warning, TEXT("解析JSON失败: %s"), *Message.message.content);
 				}
 			}
 			else
 			{
 				 //打印错误信息
-				 UE_LOG(LogTemp, Error, TEXT("请求失败: %s"), *ErrorMessage);
+				 UE_LOG(LogTAEventSystem, Error, TEXT("请求失败: %s"), *ErrorMessage);
 			}
 		},GetWorld());
 }
@@ -197,6 +197,13 @@ bool UTAPlotManager::GetTagEmbeddingsFromSystem(const FName& Tag, FHighDimension
 
 void UTAPlotManager::ProcessShoutInGame(const FChatCompletion& Message, AActor* Shouter, float Volume)
 {
+	ShoutHistory.Add(Message.message);
+	if(ShoutHistory.Num() > 5)
+	{
+		ShoutHistory.RemoveAt(0);
+	}
+	ParseNewEventToTagGroups();
+	return;
 	// 存储接收到的消息，在FullShoutHistory中始终保留完整记录
 	FullShoutHistory.Add(Message.message);
 
@@ -204,7 +211,7 @@ void UTAPlotManager::ProcessShoutInGame(const FChatCompletion& Message, AActor* 
 	ShoutHistory.Add(Message.message);
   
 	// 触发消息压缩逻辑（如果适用）
-	if (bEnableCompressShout && ShoutHistory.Num() > 2200)
+	if (bEnableCompressShout && Message.totalTokens > 2200)
 	{
 		RequestShoutCompression();
 	}
@@ -305,30 +312,43 @@ const FTAPrompt UTAPlotManager::PromptCompressShoutHistory = FTAPrompt{
 	,true
 };
 
+// 这个不能热更
 const FTAPrompt UTAPlotManager::PromptTagEvent = FTAPrompt{
-	"Based on the narrative content of the game event provided below, we require an analysis that produces a structured set of tags. "
-	"These tags should reflect key elements and actions within the event in a sequenced manner. "
-	"Your task is to format the response as a JSON array of objects, where each object represents a distinct event or action sequence with a set of associated tags. "
-	"Each object should have an 'event' key representing a event description, and a 'tags' key containing an array of tag strings in sequential order. "
-	"If there are multiple events or outcomes within the given event description, create a separate object for each. "
-	"Each tag group strung together can express the meaning of the result (following the principle of the initiator (i.e., the active party or the trigger) followed by the result (i.e., effect or status change))."
-	"One tag group only represents one thing."
-	//"When use someone's name as a tag, use full name please."
-	"You just need to focus on the last message as it is the newly occurring incident, and what happened before you have already handled, showing it to you is only to maintain the context without loss."
-	"You can use more game-like tags, such as \"accepting quests\". You do not need to break down illogical things into tags, such as pure landscape descriptions."
-	"Please respond in Chinese, because our matching system only works in Chinese."
-	"The response should be in the following JSON format: "
-	"["
+	"Please analyze the narrative content of the provided game event and generate a structured set of tags."
+	"These tags should sequentially reflect the key initiator (person/object), the specific action taken, and the individual/object affected or the specific item involved."
+	"Your task is to format the response as a JSON array, with each element representing a distinct event or action sequence and an associated set of tags."
+	"Each element should contain an 'event' key to describe the event, and a 'tags' key with an array of tag strings arranged in the order of \"initiator (person/object)\", \"specific action\", \"affected individual/object or specific item involved\"."
+	"The response should be in the following JSON format:"
+	"If there is a significant event:"
 	"   {"
-	"       \"event\": \"The warrior swings his sword at the evil dragon, causing damage, the dragon is injured\", "
-	"       \"tags\": [\"warrior\", \"attack\", \"evil dragon\", \"injured\"]"
-	"   },"
-	"   {"
-	"       \"event\": \"The warrior accept the mission to find the gem\", "
-	"       \"tags\": [\"warrior\", \"accept mission\", \"find the gem\"]"
+	"       \"event\": \"Event description\", "
+	"       \"tags\": [\"Initiator (person full name/object)\", \"Specific action (accept mission, using prop)\", \"Related object (mission name), specific item (prop name) or individual (someone's full name) \"]"
 	"   }"
-	"]"
-	"Please proceed with the extraction and tagging for the following game event:",
+	"Please record what actually happened, for example, if A only asked B to do something and B didn't actually do it, then you should not record B doing it. Instead, you should record \"A\", \"asking to do something\", \"B\"."
+		"Example 1:"
+		"{"
+		"\"event\": \"John Smith has accepted the quest from Sarah Johnson.\","
+		"\"tags\": [\"John Smith\", \"accept mission\", \"The Hidden Treasure of the Silent Woods\"]"
+		"}"
+		"Example 2:"
+		"{"
+		"\"event\": \"Using the mystical Lantern of Lore, Sarah Johnson revealed the secret entrance in the ancient ruins.\","
+		"\"tags\": [\"Sarah Johnson\", \"using\", \"Lantern of Lore\"]"
+		"}"
+		"Example 3:"
+		"{"
+		"\"event\": \"The enchanted sword Excaliburn was stolen by the thief Martin Black from the royal armory.\","
+		"\"tags\": [\"Martin Black\", \"stole\", \"Excaliburn\"]"
+		"}"
+		"Example 4:"
+		"{"
+		"\"event\": \"Sarah Johnson attack John Smith.\","
+		"\"tags\": [\"Sarah Johnson\", \"attack\", \"John Smith\"]"
+		"}"
+	"Please focus only on the last message as it represents the newly occurring event. You have already processed what happened before. Showing them now is only for maintaining the context without loss."
+	"Please respond All in Chinese, as it matches our system requirements."
+	"DO NOT respond tags in English!"
+	"Proceed with the extraction and tagging as directed for the last event of following game event:",
 	1,
 	true
 };

@@ -81,14 +81,14 @@ void UTAShoutManager::BroadcastShout(const FChatCompletion& Message, AActor* Sho
 				// 如果没有有效的message字段并且接收者不是发送者，不发送消息
 			}
 		}
-	}
 
-	// 网状叙事系统监听所有完整消息先
-	UWorld* World = GetWorld();
-	UTAPlotManager* PlotManager = World->GetSubsystem<UTAPlotManager>();
-	if(PlotManager)
-	{
-		PlotManager->ProcessShoutInGame(Message, Shouter, Volume);
+		// 网状叙事系统监听所有完整消息先
+		UWorld* World = GetWorld();
+		UTAPlotManager* PlotManager = World->GetSubsystem<UTAPlotManager>();
+		if(PlotManager)
+		{
+			PlotManager->ProcessShoutInGame(Message, Shouter, Volume);
+		}
 	}
 }
 
