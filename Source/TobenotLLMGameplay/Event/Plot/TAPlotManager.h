@@ -23,10 +23,11 @@ struct FTATagGroup
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Plot Tags")
     TArray<FName> Tags;
 
-    // Constructor
-    FTATagGroup() {}
+    // can use for logic/cache, 在事件配置里，false表示或，true表示与，一个事件要满足前置，必须全部与组匹配，且如果有或组的话，至少有一个或组匹配
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Plot Tags")
+    bool Flag = false;
 
-    // Additional fields and methods can be added here as necessary
+    FTATagGroup() {}
 };
 
 /**

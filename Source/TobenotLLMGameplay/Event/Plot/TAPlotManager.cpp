@@ -1,4 +1,4 @@
-// Copyright (c) 2024 tobenot, See LICENSE in the project root for license information.
+﻿// Copyright (c) 2024 tobenot, See LICENSE in the project root for license information.
 
 
 #include "TAPlotManager.h"
@@ -33,99 +33,96 @@ void UTAPlotManager::ReportEventTagGroups(const FTATagGroup& EventTagGroups)
 	PlotTagGroups.Add(EventTagGroups);
 }
 
+// 获取 第一个事件的前置标签组 数组 的长度
+// Events[0]->PresetData.PrecedingPlotTagGroups.Num()
+// 这个是布尔值
+// Events[0]->PrecedingPlotTagGroupsConditionMet = false
 void UTAPlotManager::CheckEventsTagGroupCondition(TArray<FTAEventInfo*> Events)
 {
-	// 获取 第一个事件的前置标签组 数组 的长度
-	// Events[0]->PresetData.PrecedingPlotTagGroups.Num()
-	// 这个是布尔值
-	// Events[0]->PrecedingPlotTagGroupsConditionMet = false
-	
-    // 获取词嵌管理器
-	UTAEmbeddingSystem* EmbeddingSystem = GetWorld()->GetGameInstance()->GetSubsystem<UTAEmbeddingSystem>();
+    UTAEmbeddingSystem* EmbeddingSystem = GetWorld()->GetGameInstance()->GetSubsystem<UTAEmbeddingSystem>();
+
     for (FTAEventInfo* EventInfo : Events)
     {
-        if(EventInfo->PrecedingPlotTagGroupsConditionMet)
+        // 如果事件的前置标签组条件已经被满足，跳过这个事件
+        if(EventInfo->PrecedingPlotTagGroupsConditionMet) 
         {
-            // 跳过已满足条件的事件
-        	UE_LOG(LogTAEventSystem, Warning, TEXT("事件 '%s' 在之前的检测中已经满足网状叙事前置"), *EventInfo->PresetData.EventName);
             continue;
         }
-    	if(!EventInfo->PresetData.PrecedingPlotTagGroups.Num())
-    	{
-    		// 无前置，直接满足
-    		UE_LOG(LogTAEventSystem, Warning, TEXT("事件 '%s' 无网状叙事前置，直接满足条件"), *EventInfo->PresetData.EventName);
-    		EventInfo->PrecedingPlotTagGroupsConditionMet = true;
-    		continue;
-    	}
-        
-        bool bAllGroupConditionsMet = true;
-        
+
+        // 如果没有前置标签组, 则直接标记为条件满足
+        if(EventInfo->PresetData.PrecedingPlotTagGroups.Num() == 0) 
+        {
+            EventInfo->PrecedingPlotTagGroupsConditionMet = true;
+            continue;
+        }
+
+        bool bOrGroupConditionMet = false; // 至少一个组满足（OR逻辑）
+    	bool bHasOrGroup = false;
+        bool bAllAndGroupConditionsMet = true; // 所有组都必须满足（AND逻辑）
+
+        // 遍历所有前置标签组
         for (const FTATagGroup& PresetGroup : EventInfo->PresetData.PrecedingPlotTagGroups)
-		{
-		    bool bCurrentGroupConditionMet = false;
+        {
+            bool bCurrentGroupConditionMet = true;
+            
+            // 为当前组内的每个标签找到匹配
+            for (const FName& PresetTag : PresetGroup.Tags)
+            {
+                bool bTagFound = false; //当前标签是否找到至少一个匹配
+                FHighDimensionalVector PresetTagEmbedding;
+                // 获取标签嵌入向量
+                if (EmbeddingSystem->GetTagEmbedding(PresetTag, PresetTagEmbedding))
+                {
+                    // 遍历剧情标签组以查找匹配
+                    for (const FTATagGroup& PlotGroup : PlotTagGroups)
+                    {
+                        for (const FName& PlotTag : PlotGroup.Tags)
+                        {
+                            FHighDimensionalVector PlotTagEmbedding;
+                            if (EmbeddingSystem->GetTagEmbedding(PlotTag, PlotTagEmbedding))
+                            {
+                                float Similarity = UTAEmbeddingSystem::CalculateCosineSimilarity(PresetTagEmbedding, PlotTagEmbedding);
+                            	UE_LOG(LogTAEventSystem, Warning,
+									TEXT("当前的预设前置 '%s' 与剧情标签 '%s' 的嵌入向量余弦相似度为：%f"),
+									*PresetTag.ToString(), *PlotTag.ToString(), Similarity);
+                            	if (Similarity > 0.65)
+                                {
+                                    bTagFound = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (bTagFound) break; // 找到匹配后跳出循环
+                    }
+                }
 
-		    for (const FTATagGroup& PlotGroup : PlotTagGroups)
-		    {
-		        // 初始化标志位和索引，用于遍历每个前置紧接标签
-		        bool bGroupMatchFound = true; // 假设在这个PlotGroup中可以找到完整的PresetGroup
-		        int32 LastFoundIndex = -1;
+                if (!bTagFound)
+                {
+                    bCurrentGroupConditionMet = false; // 当前组中有标签未找到匹配
+                    UE_LOG(LogTAEventSystem, Warning, TEXT("前置标签 '%s' 未满足条件"), *PresetTag.ToString());
+                    break;
+                }
+            }
 
-		        for (const FName& PresetTag : PresetGroup.Tags)
-		        {
-		            FHighDimensionalVector PresetTagEmbedding;
-		            if (!EmbeddingSystem->GetTagEmbedding(PresetTag, PresetTagEmbedding))
-		            {
-		                bGroupMatchFound = false;
-		                UE_LOG(LogTAEventSystem, Warning, TEXT("预设标签 '%s' 的嵌入向量尚未找到，无法匹配"), *PresetTag.ToString());
-		                break; // 跳出当前PresetTag循环，因为嵌入未找到
-		            }
+            // 根据Flag处理与或关系
+            if(PresetGroup.Flag) // 如果是AND逻辑
+            {
+                bAllAndGroupConditionsMet &= bCurrentGroupConditionMet;
+            }
+            else if(!PresetGroup.Flag)
+            {
+            	bHasOrGroup = true;
+            	if(bCurrentGroupConditionMet) // 如果是OR逻辑且当前组条件满足
+            	{
+            		bOrGroupConditionMet = true;
+            		break; // OR逻辑下，只要有一个组满足即可
+            	}
+            }
+        }
 
-		            bool bMatchingTagFound = false;
-		            // 从上一次找到的索引之后开始搜索
-		            for (int32 PlotTagIndex = LastFoundIndex + 1; PlotTagIndex < PlotGroup.Tags.Num(); ++PlotTagIndex)
-		            {
-		                const FName& PlotTag = PlotGroup.Tags[PlotTagIndex];
-		                FHighDimensionalVector PlotTagEmbedding;
-		                if(EmbeddingSystem->GetTagEmbedding(PlotTag, PlotTagEmbedding))
-		                {
-		                    float Similarity = UTAEmbeddingSystem::CalculateCosineSimilarity(PresetTagEmbedding, PlotTagEmbedding);
-		                	UE_LOG(LogTAEventSystem, Warning,
-								TEXT("当前的预设前置 '%s' 与剧情标签 '%s' 的嵌入向量余弦相似度为：%f"),
-								*PresetTag.ToString(), *PlotTag.ToString(), Similarity);
-		                	
-		                    if (Similarity > 0.7f)
-		                    {
-		                        bMatchingTagFound = true;
-		                        LastFoundIndex = PlotTagIndex - 1; // 更新最后找到匹配的索引位置，当前的继续匹配也行
-		                        break; // 找到匹配的标签，退出PlotGroup中标签的循环
-		                    }
-		                }
-		            }
-
-		            if(!bMatchingTagFound)
-		            {
-		                bGroupMatchFound = false; // 当前PresetTag在PlotGroup中没有找到匹配项
-		                break; // 跳出PresetGroup中标签的循环
-		            }
-		        }
-
-		        if(bGroupMatchFound)
-		        {
-		            bCurrentGroupConditionMet = true; // 在这个PlotGroup中找到了完整的PresetGroup按顺序匹配
-		            break; // 找到一个满足条件的PlotGroup，跳出PlotGroup的循环
-		        }
-		    }
-
-		    if (!bCurrentGroupConditionMet)
-		    {
-		        bAllGroupConditionsMet = false; // 当前事件中有一个PresetGroup没有匹配成功
-		        break; // 提前跳出PresetGroup的循环
-		    }
-		}
-
-        // 设置事件实例的条件满足标志
-        EventInfo->PrecedingPlotTagGroupsConditionMet = bAllGroupConditionsMet;
-        UE_LOG(LogTAEventSystem, Warning, TEXT("事件 '%s' 的前置标签组条件是否满足: %s"), *EventInfo->PresetData.EventName, bAllGroupConditionsMet ? TEXT("是") : TEXT("否"));
+        // 检查是否所有AND组都满足，以及是否至少有一个OR组满足
+        EventInfo->PrecedingPlotTagGroupsConditionMet = bAllAndGroupConditionsMet && (bOrGroupConditionMet || !bHasOrGroup);
+        UE_LOG(LogTAEventSystem, Warning, TEXT("事件 '%s' 的前置标签组条件是否满足: %s"), *EventInfo->PresetData.EventName, EventInfo->PrecedingPlotTagGroupsConditionMet ? TEXT("是") : TEXT("否"));
     }
 }
 
