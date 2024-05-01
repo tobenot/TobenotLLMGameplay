@@ -59,7 +59,10 @@ void ATANarrativeAgent::InitAgentByID(int32 NewAgentID)
 		if(AgentData)
 		{
 			AgentInfo = *AgentData;
-			SetIdentityPositionName(FName(AgentData->AgentName)); //设置身份名
+			
+			SetIdentityPositionName(FName(AgentData->AgentName));
+			RegisterActorTAGuid(this, GetIdentityPositionName());
+			
 			// 根据系统提示模板种类和参数生成系统提示
 			SystemPrompt = GenerateSystemPrompt(AgentData->SystemPromptType, AgentData->SystemPromptParameters);
 
@@ -91,7 +94,7 @@ FString ATANarrativeAgent::GetSystemPrompt()
 {
 	if (!TotalDesire.IsEmpty())
 	{
-		return FString::Printf(TEXT("%s. %s. Your Near Information is:[%s]"), *SystemPrompt, *TotalDesire);
+		return FString::Printf(TEXT("%s. Your Near Information is:[%s]"), *SystemPrompt, *TotalDesire);
 	}
 	return SystemPrompt + AppendSystemPrompt;
 }
