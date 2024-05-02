@@ -35,6 +35,8 @@ public:
 	static UOpenAIChat* SendMessageToOpenAIWithRetry(const FChatSettings& ChatSettings, TFunction<void(const FChatCompletion& Message, const FString& ErrorMessage,  bool Success)> Callback, const UObject* LogObject, const int32 NewRetryCount = MaxRetryCount);
 	
 	static UOpenAIChat* DownloadImageFromPollinations(const FString& ImagePrompt, const FTAImageDownloadedDelegate & OnDownloadComplete, const FTAImageDownloadedDelegate & OnDownloadFailed, const UObject* LogObject);
+
+	static TSharedRef<IHttpRequest> DownloadImageFromPollinationsPure(const FString& PureDescription, const FTAImageDownloadedDelegate & OnDownloadComplete, const FTAImageDownloadedDelegate & OnDownloadFailed, const UObject* LogObject);
 	
 	UFUNCTION(BlueprintCallable, Category = "Prompt")
 	static FString PromptToStr(const FTAPrompt& Prompt);

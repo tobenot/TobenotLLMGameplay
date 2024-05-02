@@ -7,10 +7,11 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "Event/Data/TAEventInfo.h"
-#include "Common/TALLMLibrary.h"
+#include "TobenotLLMGameplay/Common/TALLMLibrary.h"
 #include "TAImageGenerator.generated.h"
 
+class UOpenAIChat;
+struct FTAEventInfo;
 class UTAChatCallback;
 
 UCLASS()
@@ -26,16 +27,20 @@ public:
 	// 请求生成图片
 	UFUNCTION(BlueprintCallable, Category = "Image|Generation")
 	void RequestGenerateImage(const FTAEventInfo& EventInfo);
-
+	
+	UFUNCTION(BlueprintCallable, Category = "Image|Generation")
+	void RequestGeneratePureImage(const FString& PureDescription);
+	
 	UFUNCTION()
 	void OnDownloadComplete(UTexture2DDynamic* Texture);
 	UFUNCTION()
 	void OnDownloadFailed(UTexture2DDynamic* Texture);
 	
-private:
+public:
 	FTAImageDownloadedDelegate OnDownloadCompleteDelegate;
 	FTAImageDownloadedDelegate OnDownloadFailedDelegate;
-
+	
+private:
 	UPROPERTY()
 	UOpenAIChat* CacheOpenAIChat;
 };

@@ -61,6 +61,9 @@ public:
 	// 当前选中的目标
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "TA|Targeting")
 	AActor* CurrentTarget = nullptr;
+
+	UFUNCTION(BlueprintCallable, Category="TA|Targeting")
+	void SetCurrentTarget(AActor* NewTarget){CurrentTarget = NewTarget;}
 	
 private:
 	// 更新附近目标列表的函数

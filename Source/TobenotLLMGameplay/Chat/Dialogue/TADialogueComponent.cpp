@@ -71,30 +71,16 @@ void UTADialogueComponent::RequestToSpeak()
 		, *CurrentDialogueInstance->GetParticipantsNamesStringFromAgents())};*/
 	
 	// 设置系统提示为TempMessagesList的首个元素
-	if (TempMessagesList.Num() > 0)
-	{
-		TempMessagesList[0] = SystemPromptLog;
-	}
-	else
-	{
-		TempMessagesList.Add(SystemPromptLog);
-	}
-	/*if (TempMessagesList.Num() > 1)
-	{
-		TempMessagesList[1] = DialogueLog;
-	}
-	else
-	{
-		TempMessagesList.Add(DialogueLog);
-	}*/
+	TempMessagesList.Insert(SystemPromptLog,0);
 	
 	// 设置对话请求的配置
 	FChatSettings ChatSettings{
 		UTALLMLibrary::GetChatEngineTypeFromQuality(ELLMChatEngineQuality::Fast),
 		TempMessagesList,
-		true // 使用JSON格式
+		0.8,
 	};
-
+	ChatSettings.jsonFormat = true;
+	
 	CacheChat = UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, [this](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
 	{
 		if (Success)
@@ -127,7 +113,7 @@ void UTADialogueComponent::UpdateDialogueHistory(const FChatCompletion& NewChatC
 	DialogueHistory.Add(NewChatCompletion.message);
 	FullDialogueHistory.Add(NewChatCompletion.message);
 	
-	if (bEnableCompressDialogue && NewChatCompletion.totalTokens > 1600)
+	if (bEnableCompressDialogue && NewChatCompletion.totalTokens > 2400)
 	{
 		RequestDialogueCompression();
 	}

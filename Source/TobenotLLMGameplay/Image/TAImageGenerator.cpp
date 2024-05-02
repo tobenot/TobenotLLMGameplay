@@ -14,6 +14,7 @@
 #include "Event/Core/TAEventSubsystem.h"
 #include "Scene/TAPlaceActor.h"
 #include "Save/TAGuidSubsystem.h"
+#include "Event/Data/TAEventInfo.h"
 
 UTAImageGenerator::UTAImageGenerator()
 {
@@ -34,26 +35,37 @@ void UTAImageGenerator::RequestGenerateImage(const FTAEventInfo& EventInfo)
 		OnDownloadCompleteDelegate, OnDownloadFailedDelegate, this);
 }
 
+// 请求生成图片的实现
+void UTAImageGenerator::RequestGeneratePureImage(const FString& PureDescription)
+{
+	UTALLMLibrary::DownloadImageFromPollinationsPure(
+		PureDescription,
+		OnDownloadCompleteDelegate, OnDownloadFailedDelegate, this);
+}
+
 void UTAImageGenerator::OnDownloadComplete(UTexture2DDynamic* Texture)
 {
 	if (Texture != nullptr)
 	{
-		// 设置到位点上
-		UTAEventSubsystem* EventSubsystem = GetWorld()->GetSubsystem<UTAEventSubsystem>();
-		if (EventSubsystem)
+		if(BoundEventID)
 		{
-			auto Pool = EventSubsystem->GetEventPool();
-			if(Pool)
+			// 设置到位点上
+			UTAEventSubsystem* EventSubsystem = GetWorld()->GetSubsystem<UTAEventSubsystem>();
+			if (EventSubsystem)
 			{
-				bool bFlag;
-				FTAEventInfo& BoundEventInfo = Pool->GetEventByID(BoundEventID,bFlag);
-				if(bFlag)
+				auto Pool = EventSubsystem->GetEventPool();
+				if(Pool)
 				{
-					UTAGuidSubsystem* GuidSubsystem = GetWorld()->GetSubsystem<UTAGuidSubsystem>();
-					if(GuidSubsystem)
+					bool bFlag;
+					FTAEventInfo& BoundEventInfo = Pool->GetEventByID(BoundEventID,bFlag);
+					if(bFlag)
 					{
-						ATAPlaceActor* PlaceActor = Cast<ATAPlaceActor>(GuidSubsystem->GetActorByGUID(BoundEventInfo.LocationGuid));
-						PlaceActor->SetPlaceTexture(Texture);
+						UTAGuidSubsystem* GuidSubsystem = GetWorld()->GetSubsystem<UTAGuidSubsystem>();
+						if(GuidSubsystem)
+						{
+							ATAPlaceActor* PlaceActor = Cast<ATAPlaceActor>(GuidSubsystem->GetActorByGUID(BoundEventInfo.LocationGuid));
+							PlaceActor->SetPlaceTexture(Texture);
+						}
 					}
 				}
 			}

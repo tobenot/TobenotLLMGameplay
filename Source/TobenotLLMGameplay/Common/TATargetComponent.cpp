@@ -17,7 +17,9 @@ UTATargetComponent::UTATargetComponent()
 void UTATargetComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	// 现在不更新目标了
+	return;
 	UpdateNearbyTargets();
 	StartTargetCheckTimer();
 }

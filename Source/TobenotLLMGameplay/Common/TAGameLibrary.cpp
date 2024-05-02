@@ -31,8 +31,8 @@ TSoftObjectPtr<UTexture2D> UTAGameLibrary::GetRandomTextureFromCategory(const UD
 			continue;
 		}
 
-		// is valid 是加载好了 重载的bool也是这个意思
-		if (TempRow->Texture.ToSoftObjectPath().IsNull())
+		// 软指针的 is valid 是加载好了 重载的bool也是这个意思
+		if (!TempRow->Texture.ToSoftObjectPath().IsValid())
 		{
 			// 输出日志，指出Texture无效
 			//UE_LOG(LogTemp, Warning, TEXT("Texture is not valid."));

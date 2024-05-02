@@ -77,22 +77,25 @@ UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& Ch
 
                 // 设置重试延时调用
                 FTimerHandle RetryTimerHandle;
-                // 获取World上下文
-                UWorld* World = GEngine->GetWorldFromContextObject(LogObject, EGetWorldErrorMode::LogAndReturnNull); // 或者用其他方式获取World上下文
-                if (World)
-                {
-                	World->GetTimerManager().SetTimer(RetryTimerHandle, [NewRetryCount, LogObject, ChatSettings, Callback]()
+            	if(LogObject->IsValidLowLevel())
+            	{
+            		// 获取World上下文
+					UWorld* World = GEngine->GetWorldFromContextObject(LogObject, EGetWorldErrorMode::LogAndReturnNull); // 或者用其他方式获取World上下文
+					if (World)
 					{
-						// 重新发送请求，传递新的重试次数
-						SendMessageToOpenAIWithRetry(ChatSettings, Callback, LogObject, NewRetryCount - 1);
-					}, RetryDelay, false);
-                }
+						World->GetTimerManager().SetTimer(RetryTimerHandle, [NewRetryCount, LogObject, ChatSettings, Callback]()
+						{
+							// 重新发送请求，传递新的重试次数
+							SendMessageToOpenAIWithRetry(ChatSettings, Callback, LogObject, NewRetryCount - 1);
+						}, RetryDelay, false);
+					}
+            	}
             }
             else
             {
                 // 如果重试次数已用尽，执行最初提供的失败回调函数
                 UE_LOG(LogTAChat, Error, TEXT("Exhausted all retries! Response failed after retries: %s"), *ErrorMessage);
-            	if(LogObject)
+            	if(LogObject->IsValidLowLevel())
             	{
 					if (UCategoryLogSubsystem* CategoryLogSubsystem = LogObject->GetWorld()->GetSubsystem<UCategoryLogSubsystem>())
 					{
@@ -168,7 +171,7 @@ UOpenAIChat* UTALLMLibrary::DownloadImageFromPollinations(const FString& ImagePr
 	ChatSettings.jsonFormat = true;
 	
 	// 异步发送消息
-	return UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, [OnDownloadFailed,OnDownloadComplete,ImagePrompt](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
+	return UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, [OnDownloadFailed,OnDownloadComplete,ImagePrompt,LogObject](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
 	{
 		if (Success)
 		{
@@ -180,34 +183,7 @@ UOpenAIChat* UTALLMLibrary::DownloadImageFromPollinations(const FString& ImagePr
 				FString Description;
 				if (JsonObject->TryGetStringField(TEXT("description"), Description))
 				{
-					// 全小写，因为网址里面大小写是不区分的
-					Description.ToLowerInline();
-					
-					// 简易的替换屏蔽词，它们生成出来的图片不好看
-					Description.ReplaceInline(TEXT("mushroom"), TEXT("*"));
-					Description.ReplaceInline(TEXT("monster"), TEXT("*"));
-					Description.ReplaceInline(TEXT("fungi"), TEXT("*"));
-					Description.ReplaceInline(TEXT("dance"), TEXT("*"));
-					Description.ReplaceInline(TEXT("battle"), TEXT("*"));
-					Description.ReplaceInline(TEXT("eye"), TEXT("*"));
-					
-					// URL编码图片提示词
-					FString EncodedPrompt = FGenericPlatformHttp::UrlEncode(Description);
-		    
-					// 构建Pollinations的图片请求URL
-					FString RequestUrl = FString::Printf(TEXT("https://image.pollinations.ai/prompt/%s"), *EncodedPrompt);
-					
-					UE_LOG(LogTemp, Log, TEXT("RequestUrl: %s"), *RequestUrl);
-					
-					// 创建HTTP请求实例
-					TSharedRef<IHttpRequest> HttpRequest = FHttpModule::Get().CreateRequest();
-					HttpRequest->OnProcessRequestComplete().BindLambda([OnDownloadComplete, OnDownloadFailed](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
-					{
-						HandleImageRequest(Request,Response,bWasSuccessful,OnDownloadComplete,OnDownloadFailed);
-					});
-					HttpRequest->SetURL(RequestUrl);
-					HttpRequest->SetVerb("GET");
-					HttpRequest->ProcessRequest();
+					DownloadImageFromPollinationsPure(Description, OnDownloadComplete, OnDownloadFailed, LogObject);
 				}else
 				{
 					OnDownloadFailed.Broadcast(nullptr);
@@ -225,6 +201,42 @@ UOpenAIChat* UTALLMLibrary::DownloadImageFromPollinations(const FString& ImagePr
 			UE_LOG(LogTemp, Error, TEXT("Description generation failed. ImagePrompt: %s"), *ImagePrompt);
 		}
 	}, LogObject);
+}
+
+TSharedRef<IHttpRequest> UTALLMLibrary::DownloadImageFromPollinationsPure(const FString& PureDescription,
+	const FTAImageDownloadedDelegate& OnDownloadComplete, const FTAImageDownloadedDelegate& OnDownloadFailed,
+	const UObject* LogObject)
+{
+	FString Description = PureDescription;
+	// 全小写，因为网址里面大小写是不区分的
+	Description.ToLowerInline();
+					
+	// 简易的替换屏蔽词，它们生成出来的图片不好看
+	Description.ReplaceInline(TEXT("mushroom"), TEXT("*"));
+	Description.ReplaceInline(TEXT("monster"), TEXT("*"));
+	Description.ReplaceInline(TEXT("fungi"), TEXT("*"));
+	Description.ReplaceInline(TEXT("dance"), TEXT("*"));
+	Description.ReplaceInline(TEXT("battle"), TEXT("*"));
+	Description.ReplaceInline(TEXT("eye"), TEXT("*"));
+					
+	// URL编码图片提示词
+	FString EncodedPrompt = FGenericPlatformHttp::UrlEncode(Description);
+		    
+	// 构建Pollinations的图片请求URL
+	FString RequestUrl = FString::Printf(TEXT("https://image.pollinations.ai/prompt/%s"), *EncodedPrompt);
+					
+	UE_LOG(LogTemp, Log, TEXT("RequestUrl: %s"), *RequestUrl);
+					
+	// 创建HTTP请求实例
+	TSharedRef<IHttpRequest> HttpRequest = FHttpModule::Get().CreateRequest();
+	HttpRequest->OnProcessRequestComplete().BindLambda([OnDownloadComplete, OnDownloadFailed](FHttpRequestPtr Request, FHttpResponsePtr Response, bool bWasSuccessful)
+	{
+		HandleImageRequest(Request,Response,bWasSuccessful,OnDownloadComplete,OnDownloadFailed);
+	});
+	HttpRequest->SetURL(RequestUrl);
+	HttpRequest->SetVerb("GET");
+	HttpRequest->ProcessRequest();
+	return HttpRequest;
 }
 
 void UTALLMLibrary::HandleImageRequest(FHttpRequestPtr HttpRequest, const FHttpResponsePtr& HttpResponse, bool bSucceeded, const FTAImageDownloadedDelegate & OnDownloadComplete, const FTAImageDownloadedDelegate & OnDownloadFailed)
