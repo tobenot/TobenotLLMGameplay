@@ -108,15 +108,17 @@ UOpenAIEmbedding* UTAEmbeddingSystem::SendEmbeddingToOpenAIWithRetry(const FEmbe
 
                 // 设置重试延时调用
                 FTimerHandle RetryTimerHandle;
-                // 获取World上下文
-                UWorld* World = GEngine->GetWorldFromContextObject(LogObject, EGetWorldErrorMode::LogAndReturnNull); // 或者用其他方式获取World上下文
-                if (World)
+                if(LogObject)
                 {
-                	World->GetTimerManager().SetTimer(RetryTimerHandle, [this, NewRetryCount, LogObject, EmbeddingSettings, Callback]()
+                	UWorld* World = GEngine->GetWorldFromContextObject(LogObject, EGetWorldErrorMode::LogAndReturnNull); // 或者用其他方式获取World上下文
+					if (World)
 					{
-						// 重新发送请求，传递新的重试次数
-						SendEmbeddingToOpenAIWithRetry(EmbeddingSettings, Callback, LogObject, NewRetryCount - 1);
-					}, RetryDelaySeconds, false);
+						World->GetTimerManager().SetTimer(RetryTimerHandle, [this, NewRetryCount, LogObject, EmbeddingSettings, Callback]()
+						{
+							// 重新发送请求，传递新的重试次数
+							SendEmbeddingToOpenAIWithRetry(EmbeddingSettings, Callback, LogObject, NewRetryCount - 1);
+						}, RetryDelaySeconds, false);
+					}
                 }
             }
             else

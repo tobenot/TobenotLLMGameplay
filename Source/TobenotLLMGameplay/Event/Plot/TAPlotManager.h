@@ -66,7 +66,7 @@ public:
 
     // TAPlotManager提供发起检测的接口，让别的系统定时调用。
     // Checks for event prerequisites and triggers them if satisfied
-    void CheckEventsTagGroupCondition(TArray<FTAEventInfo*> Events);
+    void CheckEventsTagGroupCondition(TArray<FTAEventInfo>& Events);
 
 protected:
     UPROPERTY()
