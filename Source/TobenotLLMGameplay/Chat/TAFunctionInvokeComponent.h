@@ -29,6 +29,7 @@
 #include "TAFunctionInvokeComponent.generated.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(LogFunctionInvoke, Log, All);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSpecialEventDelegate, const FString&, Depict);
 
 UCLASS(Blueprintable, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class TOBENOTLLMGAMEPLAY_API UTAFunctionInvokeComponent : public UActorComponent
@@ -36,9 +37,11 @@ class TOBENOTLLMGAMEPLAY_API UTAFunctionInvokeComponent : public UActorComponent
     GENERATED_BODY()
     
 public:	
-    // Constructors and other Unreal methods omitted for brevity...
-    
     UTAFunctionInvokeComponent();
+    
+    // 理解成一些剧情特殊事件，要单独开发机制的那种，让Agent蓝图去绑定这个组件的这个委托
+    UPROPERTY(BlueprintAssignable)
+    FSpecialEventDelegate OnSpecialEvent;
 
     // 解析func_invoke并调用相应的函数
     UFUNCTION(BlueprintCallable, Category = "FunctionInvoke")
@@ -60,6 +63,9 @@ protected:
 
     UFUNCTION()
     virtual void FinishEvent(const FString& Depict);
+
+    UFUNCTION()
+    virtual void SpecialEvent(const FString& Depict);
 
     UFUNCTION()
     void RequestShoutCompToSpeak(const FString& Message);

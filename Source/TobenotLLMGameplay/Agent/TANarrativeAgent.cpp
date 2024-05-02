@@ -35,6 +35,7 @@ void ATANarrativeAgent::BeginPlay()
 	{
 		FunctionInvokeComponent = NewObject<UTAFunctionInvokeComponent>(this, FunctionInvokeCompClass);
 		FunctionInvokeComponent->RegisterComponent();
+		OnFunctionInvokeComponentCreated(FunctionInvokeComponent);
 	}
 
 	if(AgentID > 0)
@@ -92,7 +93,7 @@ UDataTable* ATANarrativeAgent::GetAgentDataTable_Implementation() const
 
 FString ATANarrativeAgent::GetSystemPrompt()
 {
-	if (!TotalDesire.IsEmpty())
+	if (!TotalDesire.IsEmpty())	
 	{
 		return FString::Printf(TEXT("%s. Your Near Information is:[%s]"), *SystemPrompt, *TotalDesire);
 	}

@@ -122,6 +122,11 @@ void UTAFunctionInvokeComponent::FinishEvent(const FString& Depict)
     }
 }
 
+void UTAFunctionInvokeComponent::SpecialEvent(const FString& Depict)
+{
+    OnSpecialEvent.Broadcast(Depict);
+}
+
 void UTAFunctionInvokeComponent::RequestShoutCompToSpeak(const FString& Message)
 {
     UTAShoutComponent* ShoutComponent = GetOwner()->FindComponentByClass<UTAShoutComponent>();

@@ -142,9 +142,12 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, Category = "Narrative Agent")
 	void InitAgentByID_BP(int32 NewAgentID);
 	
-	UFUNCTION(BlueprintImplementableEvent, Category = "Narrative Agent")
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Narrative Agent")
 	void HideSelf();
 
+	UFUNCTION(BlueprintImplementableEvent, Category = "Narrative Agent|Function Invoke")
+	void OnFunctionInvokeComponentCreated(UTAFunctionInvokeComponent* CreatedComponent);
+	
 	void CheckAndHandleInventoryEmpty();
 	
 protected:
