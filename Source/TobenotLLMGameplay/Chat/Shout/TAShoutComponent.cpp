@@ -129,9 +129,6 @@ void UTAShoutComponent::RequestToSpeak()
 		}
 		return;
 	}
-
-	// 如果通过了间隔时间检查，或为同伴说话的延迟，则继续后续的RequestToSpeak操作
-	LastRequestToSpeakTimestamp = GetWorld()->GetTimeSeconds(); // 更新时间戳
 	
 	if (IsPartner)
 	{
@@ -147,6 +144,10 @@ void UTAShoutComponent::RequestToSpeak()
 			bIsDelayRequestToSpeakTimerFinished = false;
 		}
 	}
+	
+	// 如果通过了间隔时间检查和说话的延迟，则继续后续的RequestToSpeak操作
+	LastRequestToSpeakTimestamp = GetWorld()->GetTimeSeconds(); // 更新时间戳
+	
 	// 打断之前没说完的话，因为现在有新信息入手了！
 	if(CacheChat)
 	{
