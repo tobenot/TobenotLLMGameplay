@@ -60,6 +60,10 @@ struct FTAAgentDesire
 	// 欲望描述和对话内容
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Desire")
 	FString DesireDescription;
+
+	// 获得这个欲望后是否马上想说话
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Desire")
+	bool ImmediatelyWantToSpeak = false;
 };
 
 USTRUCT(BlueprintType)

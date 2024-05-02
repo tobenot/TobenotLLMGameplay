@@ -15,7 +15,7 @@ FTAEventInfo& UTAEventPool::AddEvent(FTAEventInfo EventInfo)
 	{
 		EventInfoRef.PresetData.EventID = AllEventInfo.Num() + 660000;
 	}
-	PendingEventInfos.Add(&AllEventInfo.Last());
+	PendingEventInfos.Add(AllEventInfo.Last());
 
 	if (!bHasStartedProximityCheck)
 	{
@@ -72,14 +72,14 @@ void UTAEventPool::CheckAndTriggerEvents()
 	// 接下来遍历处于待触发状态的事件，检查更复杂的条件
 	for (int32 i = PendingEventInfos.Num() - 1; i >= 0; --i) {
 		const auto& EventInfo = PendingEventInfos[i];
-		bool bDependencyMet = EventInfo->PrecedingPlotTagGroupsConditionMet;
+		bool bDependencyMet = EventInfo.PrecedingPlotTagGroupsConditionMet;
 		if(!bDependencyMet)
 		{
 			continue;
 		}
 		
 		// 检查所有前置事件是否满足条件
-		for (const FTAEventDependency& Dependency : EventInfo->PresetData.PrecedingEvents)
+		for (const FTAEventDependency& Dependency : EventInfo.PresetData.PrecedingEvents)
 		{
 			if (!IsDependencyMet(Dependency))
 			{
@@ -93,7 +93,7 @@ void UTAEventPool::CheckAndTriggerEvents()
 			bool bConditionsMet = true;
 
 			// 检查每个事件的所有Agent条件
-			for (auto& Condition : EventInfo->PresetData.AgentConditions) {
+			for (auto& Condition : EventInfo.PresetData.AgentConditions) {
 				if (!CheckAgentCondition(Condition)) {
 					bConditionsMet = false;
 					break; // 如果任何条件失败了，跳过剩余的检查
@@ -102,11 +102,11 @@ void UTAEventPool::CheckAndTriggerEvents()
 
 			if (bConditionsMet) {
 				// 若所有条件都满足，则触发事件
-				UE_LOG(LogTAEventSystem, Log, TEXT("CheckAndTriggerEvents, trigger %s") , *EventInfo->PresetData.EventName);
+				UE_LOG(LogTAEventSystem, Log, TEXT("CheckAndTriggerEvents, trigger %s") , *EventInfo.PresetData.EventName);
 				UTAEventInstance* NewEventInstance = NewObject<UTAEventInstance>(this, UTAEventInstance::StaticClass());
 				if(NewEventInstance) {
 					// 使用生成的事件信息初始化NewEvent
-					NewEventInstance->EventInfo = *EventInfo;
+					NewEventInstance->EventInfo = EventInfo;
 					ActiveEvents.Add(NewEventInstance);
 					NewEventInstance->TriggerEvent();
 				}
@@ -130,7 +130,7 @@ void UTAEventPool::CheckPlayerProximityToEvents() {
 			// 获取位点Actor
 			UTAGuidSubsystem* GuidSubsystem = GetWorld()->GetSubsystem<UTAGuidSubsystem>();
 			if(GuidSubsystem) {
-				const ATAPlaceActor* PlaceActor = Cast<ATAPlaceActor>(GuidSubsystem->GetActorByGUID(EventInfo->LocationGuid));
+				const ATAPlaceActor* PlaceActor = Cast<ATAPlaceActor>(GuidSubsystem->GetActorByGUID(EventInfo.LocationGuid));
                 
 				// 检查玩家是否在位点附近
 				if(PlaceActor && FVector::Dist(PlayerLocation, PlaceActor->GetActorLocation()) <= PlaceActor->PlaceRadius) {
@@ -139,7 +139,7 @@ void UTAEventPool::CheckPlayerProximityToEvents() {
 					UTAEventInstance* NewEventInstance = NewObject<UTAEventInstance>(this, UTAEventInstance::StaticClass());
 					if(NewEventInstance) {
 						// 使用生成的事件信息初始化NewEvent
-						NewEventInstance->EventInfo = *EventInfo;
+						NewEventInstance->EventInfo = EventInfo;
 						ActiveEvents.Add(NewEventInstance);
 						NewEventInstance->TriggerEvent();
 					}					

@@ -40,7 +40,8 @@ private:
 	UPROPERTY(VisibleAnywhere, Category = "Event")
 	TArray<UTAEventInstance*> ActiveEvents;
 
-	TArray<FTAEventInfo*> PendingEventInfos;
+	UPROPERTY()
+	TArray<FTAEventInfo> PendingEventInfos;
 	// 傻眼了吧孩子，这个结构体指针不能暴露给蓝图
 private:
 	bool bHasStartedProximityCheck = false;

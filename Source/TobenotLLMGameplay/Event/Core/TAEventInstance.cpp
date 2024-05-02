@@ -8,6 +8,7 @@
 #include "Event/TAEventLogCategory.h"
 #include "Save/TASaveGameSubsystem.h"
 #include "Scene/TASceneSubsystem.h"
+#include "Shout/TAShoutComponent.h"
 
 void UTAEventInstance::TriggerEvent()
 {
@@ -77,7 +78,16 @@ void UTAEventInstance::AssignDesiresToAgent()
 						// 这里添加了事件ID和名字到欲望描述
 						FString DesireWithEventID = FString::Printf(TEXT("[EventID:%d] %s"), EventInfo.PresetData.EventID, *Desire.DesireDescription);
 						AgentActor->AddOrUpdateDesire(DesireGUID, DesireWithEventID);
-
+						
+						if(Desire.ImmediatelyWantToSpeak)
+						{
+							UTAShoutComponent* ShoutComponent = FoundActor->FindComponentByClass<UTAShoutComponent>();
+							if(ShoutComponent)
+							{
+								ShoutComponent->RequestToSpeak();
+							}
+						}
+						
 						DesireAgentMap.Add(DesireGUID, FoundActor);
                     
 						UE_LOG(LogTAEventSystem, Log, TEXT("事件 [%s] 分配给 [%s] 的欲望 ： %s"), *EventInfo.PresetData.EventName, *Desire.AgentName.ToString(), *DesireWithEventID);
