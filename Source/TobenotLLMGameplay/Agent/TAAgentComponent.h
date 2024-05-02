@@ -32,7 +32,12 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Agent")
 	float MaxTimeBetweenShouts;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Agent")
+	float MinTimeBetweenRetryShouts;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Agent")
+	float MaxTimeBetweenRetryShouts;
 private:
 	// 内部追踪下一次应该喊话的时间
 	float TimeToNextShout;

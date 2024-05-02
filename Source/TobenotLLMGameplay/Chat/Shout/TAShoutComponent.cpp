@@ -116,6 +116,23 @@ void UTAShoutComponent::RequestToSpeak()
 	{
 		return;
 	}
+
+	float CurrentTime = GetWorld()->GetTimeSeconds();
+	// 检查是否已经通过间隔限制时间
+	if (CurrentTime - LastRequestToSpeakTimestamp < RequestToSpeakInterval)
+	{
+		// 如果未到间隔时间且未设置计时器，则设置计时器等待剩余时间
+		if(!GetWorld()->GetTimerManager().IsTimerActive(DelayRequestToSpeakTimerHandle))
+		{
+			float DelayTime = RequestToSpeakInterval - (CurrentTime - LastRequestToSpeakTimestamp);
+			GetWorld()->GetTimerManager().SetTimer(DelayRequestToSpeakTimerHandle, this, &UTAShoutComponent::RequestToSpeak, DelayTime, false);
+		}
+		return;
+	}
+
+	// 如果通过了间隔时间检查，或为同伴说话的延迟，则继续后续的RequestToSpeak操作
+	LastRequestToSpeakTimestamp = GetWorld()->GetTimeSeconds(); // 更新时间戳
+	
 	if (IsPartner)
 	{
 		if(!bIsDelayRequestToSpeakTimerFinished)

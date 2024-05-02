@@ -7,15 +7,20 @@ UTAAgentComponent::UTAAgentComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	bEnableScheduleShout = true;
+    
 	// 默认喊话时间间隔范围
-	MinTimeBetweenShouts = 10.f;
+	MinTimeBetweenShouts = 15.f;
 	MaxTimeBetweenShouts = 30.f;
+
+	// 没有响应时重试喊话的默认时间间隔范围
+	MinTimeBetweenRetryShouts = 0.5f;
+	MaxTimeBetweenRetryShouts = 2.0f;
 }
 
 void UTAAgentComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	ScheduleNextShout();
+	TimeToNextShout = MaxTimeBetweenRetryShouts;
 }
 
 void UTAAgentComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -33,7 +38,6 @@ void UTAAgentComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 			if(TimeToNextShout <= 0)
 			{
 				RequestSpeak();
-				ScheduleNextShout();
 			}
 		}
 	}
@@ -58,11 +62,13 @@ void UTAAgentComponent::RequestSpeak()
 		{
 			ShoutComponent->RequestToSpeak();
 		}
+		ScheduleNextShout();
 	}
 	else
 	{
-		// 如果没有其他接收者，则不发言
-		// 例如，你可以在这里记录一条日志或执行一些其他逻辑
+		// 如果没有其他接收者，则立即计划一个短时的下次喊话。
+		// 因为这样子可以营造出玩家一走过去，Agent马上说话的情形。
+		TimeToNextShout = FMath::RandRange(MinTimeBetweenRetryShouts, MaxTimeBetweenRetryShouts);
 	}
 }
 
