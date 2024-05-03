@@ -97,6 +97,10 @@ TArray<UTAShoutComponent*> UTAShoutManager::GetShoutComponentsInRange(AActor* Sh
 	TArray<UTAShoutComponent*> ComponentsInRange;
 	for (const auto& Comp : RegisteredShoutComponents)
 	{
+		if(!Comp->IsActive())
+		{
+			continue;
+		}
 		const AActor* ListenerActor = Comp->GetOwner();
 		if (ListenerActor && Shouter && (ListenerActor->GetDistanceTo(Shouter) <= Range))
 		{
