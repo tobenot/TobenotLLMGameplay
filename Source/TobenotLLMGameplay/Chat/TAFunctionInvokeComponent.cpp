@@ -136,6 +136,6 @@ void UTAFunctionInvokeComponent::RequestShoutCompToSpeak(const FString& Message)
         ChatCompletion.message.role = EOAChatRole::SYSTEM;
         ChatCompletion.message.content = Message;
         ShoutComponent->UpdateShoutHistory(ChatCompletion);
-        ShoutComponent->RequestToSpeak();
+        ShoutComponent->RequestToSpeakCheckSurrounding();
     }
 }

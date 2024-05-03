@@ -50,6 +50,8 @@ public:
 	FString GetNearbyAgentNames();
 	UFUNCTION(BlueprintCallable, Category = "TAShoutComponent")
 	void RequestToSpeak();
+	UFUNCTION(BlueprintCallable, Category = "TAShoutComponent")
+	void RequestToSpeakCheckSurrounding();
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UTAShoutComponent")
 	bool IsPartner;

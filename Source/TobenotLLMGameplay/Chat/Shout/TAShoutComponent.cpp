@@ -496,6 +496,18 @@ TArray<FString> UTAShoutComponent::ParseChoicesFromResponse(const FString& Respo
 	return Choices;
 }
 
+void UTAShoutComponent::RequestToSpeakCheckSurrounding()
+{
+	UTAShoutManager* ShoutManager = GetWorld()->GetSubsystem<UTAShoutManager>();
+	if (!ShoutManager) return;
+	float ShoutRange = 700.f;
+	TArray<UTAShoutComponent*> NearbyShoutComponents = ShoutManager->GetShoutComponentsInRange(GetOwner(), ShoutRange);
+	if (NearbyShoutComponents.Num() > 1 || (NearbyShoutComponents.Num() == 1 && NearbyShoutComponents[0] != this))
+	{
+		RequestToSpeak();
+	}
+}
+
 const FTAPrompt UTAShoutComponent::PromptCompressShoutHistory = FTAPrompt{
 	"In the adventure game application, my message list token has exceeded the limit, I need to compress a bit, "
 	"but keep the important memories, especially the more recent information, "
