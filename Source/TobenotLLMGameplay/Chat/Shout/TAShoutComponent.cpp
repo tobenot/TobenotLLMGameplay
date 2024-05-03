@@ -159,24 +159,23 @@ void UTAShoutComponent::RequestToSpeak()
 	// 构造系统提示的ChatLog对象
 	const FString SystemPrompt = GetSystemPromptFromOwner()
 		+ "Your long-term memory: " + ShoutHistoryCompressedStr + "."
-		+ ". Output {\"no_response_needed\": \"No response needed because [Your_Reason_Here]\"} when the conversation is becoming boring or not point at you."
+		+ ". Output {\"no_response_needed\": \"No response needed because [Your_Reason_Here]\"} when the conversation is becoming boring or not point at you, note that others may not call you by your full name."
 		+ "Nearby agents: " + GetNearbyAgentNames();
 	const FChatLog SystemPromptLog{EOAChatRole::SYSTEM, SystemPrompt};
 
-	// 设置系统提示为TempMessagesList的首个元素
-	if (TempMessagesList.Num() > 0)
+	if(!TempMessagesList.Num() || TempMessagesList[0].role != EOAChatRole::SYSTEM)
+	{
+		TempMessagesList.Insert(SystemPromptLog,0);
+	}
+	else if(TempMessagesList[0].role == EOAChatRole::SYSTEM)
 	{
 		TempMessagesList[0] = SystemPromptLog;
-	}
-	else
-	{
-		TempMessagesList.Add(SystemPromptLog);
 	}
 	
 	FChatSettings ChatSettings{
 		UTALLMLibrary::GetChatEngineTypeFromQuality(ELLMChatEngineQuality::Fast),
 		TempMessagesList,
-		0.8
+		0
 	};
 	ChatSettings.jsonFormat = true;
 

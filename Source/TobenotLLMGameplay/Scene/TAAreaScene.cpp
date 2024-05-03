@@ -47,7 +47,8 @@ void UTAAreaScene::LoadAreaScene(const FTAEventInfo& EventInfo)
 	TempMessagesList.Add({EOAChatRole::SYSTEM, SystemPrompt});
 	FChatSettings ChatSettings{
 		UTALLMLibrary::GetChatEngineTypeFromQuality(ELLMChatEngineQuality::Fast),
-		TempMessagesList
+		TempMessagesList,
+		0
 	};
 	ChatSettings.jsonFormat = true;
 	

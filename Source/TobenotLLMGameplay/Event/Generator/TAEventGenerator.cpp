@@ -32,7 +32,8 @@ void UTAEventGenerator::RequestEventGeneration(const FString& SceneInfo, const i
 	TempMessagesList.Add({EOAChatRole::SYSTEM, SystemPrompt});
 	FChatSettings ChatSettings{
 		UTALLMLibrary::GetChatEngineTypeFromQuality(ELLMChatEngineQuality::Fast),
-		TempMessagesList
+		TempMessagesList,
+		0
 	};
 	ChatSettings.jsonFormat = true;
 

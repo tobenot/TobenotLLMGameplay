@@ -114,15 +114,15 @@ void UTAChatComponent::ProcessMessage(AActor* OriActor, const FString& UserMessa
     const FChatLog SystemPromptLog{EOAChatRole::SYSTEM, GetSystemPromptFromOwner()};
     
     // 设置系统提示为TempMessagesList的首个元素
-    if (TempMessagesList.Num() > 0)
+    if(!TempMessagesList.Num() || TempMessagesList[0].role != EOAChatRole::SYSTEM)
+    {
+        TempMessagesList.Insert(SystemPromptLog,0);
+    }
+    else if(TempMessagesList[0].role == EOAChatRole::SYSTEM)
     {
         TempMessagesList[0] = SystemPromptLog;
     }
-    else
-    {
-        TempMessagesList.Add(SystemPromptLog);
-    }
-
+    
     // 构造用户消息的ChatLog对象并添加到TempMessagesList
     TempMessagesList.Add({EOAChatRole::USER, UserMessage});
     

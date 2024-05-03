@@ -71,7 +71,14 @@ void UTADialogueComponent::RequestToSpeak()
 		, *CurrentDialogueInstance->GetParticipantsNamesStringFromAgents())};*/
 	
 	// 设置系统提示为TempMessagesList的首个元素
-	TempMessagesList.Insert(SystemPromptLog,0);
+	if(!TempMessagesList.Num() || TempMessagesList[0].role != EOAChatRole::SYSTEM)
+	{
+		TempMessagesList.Insert(SystemPromptLog,0);
+	}
+	else if(TempMessagesList[0].role == EOAChatRole::SYSTEM)
+	{
+		TempMessagesList[0] = SystemPromptLog;
+	}
 	
 	// 设置对话请求的配置
 	FChatSettings ChatSettings{
