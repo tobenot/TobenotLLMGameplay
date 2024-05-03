@@ -65,6 +65,7 @@ void UTAAreaScene::LoadAreaScene(const FTAEventInfo& EventInfo)
 				InteractablesArray.Empty();
 				if (JsonObject->TryGetArrayField(TEXT("Interactables"), InteractablesArrayJson))
 				{
+					// 遍历JSON数组并处理每个交互物
 					// 遍历JSON数组
 					for (int32 Index = 0; Index < InteractablesArrayJson->Num(); ++Index)
 					{
@@ -82,7 +83,29 @@ void UTAAreaScene::LoadAreaScene(const FTAEventInfo& EventInfo)
 							InteractablesArray.Add(InteractableInfo);
 						}
 					}
+				}
+				else
+				{
+					// 创建结构体实例并填充数据
+					FInteractableInfo InteractableInfo;
+					if (JsonObject->HasField(TEXT("Name")))
+					{
+						InteractableInfo.Name = JsonObject->GetStringField(TEXT("Name"));
+					}
+					if (JsonObject->HasField(TEXT("UniqueFeature")))
+					{
+						InteractableInfo.UniqueFeature = JsonObject->GetStringField(TEXT("UniqueFeature"));
+					}
+					if (JsonObject->HasField(TEXT("Objective")))
+					{
+						InteractableInfo.Objective = JsonObject->GetStringField(TEXT("Objective"));
+					}
 
+					// 将填充好的结构体添加到数组中
+					InteractablesArray.Add(InteractableInfo);
+				}
+				if (InteractablesArray.Num()>0)
+				{
 					UClass* InteractiveActorClass = nullptr;
 					const UTASettings* Settings = GetDefault<UTASettings>();
 					if (Settings)
@@ -131,6 +154,9 @@ void UTAAreaScene::LoadAreaScene(const FTAEventInfo& EventInfo)
 							UE_LOG(LogTASceneSystem, Error, TEXT("LoadAreaScene 未绑定位点，生成交互物失败"));
 						}
 					}
+				}else
+				{
+					UE_LOG(LogTASceneSystem, Error, TEXT("未解析到数组或者非数组形式的交互物数据"));
 				}
 			}
 		}

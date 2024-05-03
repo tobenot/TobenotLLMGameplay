@@ -160,6 +160,30 @@ void UTADialogueInstance::AddMessageToHistory(const FChatLog& Message, AActor* S
 
 void UTADialogueInstance::DistributeMessage(const FChatCompletion& Message, AActor* Sender)
 {
+	// 其他人只收的到message字段
+	// 定义传递给DistributeMessage函数的新消息
+	FChatCompletion NewMessage = Message;
+	bool bIsNewMessageCreated = false;
+
+	TSharedPtr<FJsonObject> JsonObject;
+	TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(Message.message.content);
+
+	// 装载JSON和执行检查
+	if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid() && JsonObject->HasField(TEXT("message")))
+	{
+		FString MessageContent;
+		JsonObject->TryGetStringField(TEXT("message"), MessageContent);
+
+		TSharedPtr<FJsonObject> NewJsonMessage = MakeShareable(new FJsonObject());
+		NewJsonMessage->SetStringField(TEXT("message"), MessageContent);
+		FString NewRawJson;
+		TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&NewRawJson);
+		FJsonSerializer::Serialize(NewJsonMessage.ToSharedRef(), Writer);
+
+		NewMessage.message.content = NewRawJson;
+		bIsNewMessageCreated = true;
+	}
+
 	// 广播消息给参与者
 	for (AActor* Participant : Participants)
 	{
@@ -167,7 +191,17 @@ void UTADialogueInstance::DistributeMessage(const FChatCompletion& Message, AAct
 		if (ChatComponent)
 		{
 			// 参与者通过其会话组件来处理接收到的消息
-			ChatComponent->HandleReceivedMessage(Message, Sender);
+			// 如果接收者不是发送者且新消息已被创建，则发送处理过的消息
+			// 如果接收者是发送者，即使没有message字段，也应发送原始消息
+			if(Participant == Sender)
+			{
+				ChatComponent->HandleReceivedMessage(Message, Sender);
+			}
+			else if(bIsNewMessageCreated)
+			{
+				ChatComponent->HandleReceivedMessage(NewMessage, Sender);
+			}
+			// 如果没有有效的message字段并且接收者不是发送者，不发送消息
 		}
 	}
 }

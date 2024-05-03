@@ -44,10 +44,12 @@ void UTAEventInstance::TriggerEvent()
 		UE_LOG(LogTAEventSystem, Error, TEXT("TriggerEvent 无法获取SceneSubsystem"));
 		return;
 	}
-
-	// TODO: 暂时不需要加载生成地图！
-	//SceneSubsystem->CreateAndLoadAreaScene(EventInfo);
 	
+	if(EventInfo.ActivationType == EEventActivationType::Proximity)
+	{
+		SceneSubsystem->CreateAndLoadAreaScene(EventInfo);
+	}
+
 	AssignDesiresToAgent();
 }
 
@@ -84,7 +86,7 @@ void UTAEventInstance::AssignDesiresToAgent()
 							UTAShoutComponent* ShoutComponent = FoundActor->FindComponentByClass<UTAShoutComponent>();
 							if(ShoutComponent)
 							{
-								ShoutComponent->RequestToSpeak();
+								ShoutComponent->RequestToSpeakCheckSurrounding();
 							}
 						}
 						

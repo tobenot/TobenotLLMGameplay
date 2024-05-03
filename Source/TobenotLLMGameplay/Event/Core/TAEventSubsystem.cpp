@@ -145,11 +145,85 @@ bool UTAEventSubsystem::HasAnyEventsInPool() const
 	}
 }
 
+void UTAEventSubsystem::GenerateEventByDescriptionInLocation(const FString& Description, const FVector& InLocation)
+{
+	if (UTAEventPool* EventPool = GetEventPool())
+	{
+		UClass* EventGeneratorClass;
+		const UTASettings* Settings = GetDefault<UTASettings>();
+		if (Settings)
+		{
+			FString ClassPath = Settings->EventGeneratorClass.ToString();
+			EventGeneratorClass = LoadClass<UTAEventGenerator>(nullptr, *ClassPath);
+			if (EventGeneratorClass != nullptr)
+			{
+				// 创建事件生成器实例
+				UTAEventGenerator* EventGenerator = NewObject<UTAEventGenerator>(this, EventGeneratorClass);
+				if (EventGenerator)
+				{
+					EventGenerator->OnEventGenerationSuccessInLocation.AddDynamic(this, &UTAEventSubsystem::HandleGeneratedEventsByDescriptionInLocation);
+			
+					UTASceneSubsystem* SceneSubsystem = GetWorld()->GetSubsystem<UTASceneSubsystem>();
+					if (SceneSubsystem)
+					{
+						FString CurrentSceneInfo = SceneSubsystem->QuerySceneMapInfo();
+						
+						EventGenerator->RequestEventGenerationByDescription(CurrentSceneInfo, Description, InLocation);
+					}
+				}
+			}else
+			{
+				UE_LOG(LogTAEventSystem, Error, TEXT("EventGeneratorClass 未配置，你可以在项目设置里找到设置位置，建议自己继承一个事件生成器类UTAEventGenerator"));
+			}
+		}
+		
+	}
+}
+
 void UTAEventSubsystem::GenerateImageForEvent(const FTAEventInfo& GeneratedEvent)
 {
 	UTAImageGenerator* ImageGenerator = NewObject<UTAImageGenerator>(this);
 	if (ImageGenerator)
 	{
 		ImageGenerator->RequestGenerateImage(GeneratedEvent);
+	}
+}
+
+
+void UTAEventSubsystem::HandleGeneratedEventsByDescriptionInLocation(TArray<FTAEventInfo>& GeneratedEvents, const FVector& InLocation)
+{
+	UTASceneSubsystem* SceneSubsystem = GetWorld()->GetSubsystem<UTASceneSubsystem>();
+	if (!SceneSubsystem)
+	{
+		UE_LOG(LogTAEventSystem, Error, TEXT("TriggerEvent 无法获取SceneSubsystem"));
+		return;
+	}
+
+	if(GeneratedEvents.Num()>0)
+	{
+		auto EventInfo = GeneratedEvents[0];
+		ATAPlaceActor* PlaceActor = SceneSubsystem->CreatePlaceActorAtLocation(InLocation, 512, EventInfo.PresetData.LocationName);
+		if (PlaceActor)
+		{
+			// 获取位点Actor的Guid
+			ITAGuidInterface* GuidInterface = Cast<ITAGuidInterface>(PlaceActor);
+			FGuid LocationGuid = GuidInterface->GetTAGuid();
+
+			// 为事件设置地点GUID
+			EventInfo.LocationGuid = LocationGuid;
+			EventInfo.ActivationType = EEventActivationType::Proximity;
+			EventInfo.PresetData.EventID = 0;
+			
+			UTAEventPool* EventPool = GetEventPool();
+			// 将事件和它的地点GUID添加到事件池
+			auto& Info = EventPool->AddEvent(EventInfo);
+
+			// 如果有必要，生成事件对应的图像或者其他资源
+			GenerateImageForEvent(Info);
+		}
+		else
+		{
+			UE_LOG(LogTAEventSystem, Warning, TEXT("无法为EventID %d 找到对应的位点Actor"), EventInfo.PresetData.EventID);
+		}
 	}
 }

@@ -246,3 +246,27 @@ UClass* UTASceneSubsystem::GetMonsterClass() const
 
 	return MonsterClass;
 }
+
+ATAPlaceActor* UTASceneSubsystem::CreatePlaceActorAtLocation(const FVector& NewLocation, float NewRadius, const FString& NewName)
+{
+	if (GetWorld())
+	{
+		ATAPlaceActor* NewPlaceActor = CreateAndAddPlace(NewLocation, NewRadius, NewName);
+		if (NewPlaceActor)
+		{
+			// 位点创建成功，可以在这里执行任何额外的初始化逻辑
+			UE_LOG(LogTASceneSystem, Log, TEXT("位点Actor在坐标 %s 创建成功。"), *NewLocation.ToString());
+			return NewPlaceActor;
+		}
+		else
+		{
+			// 处理创建失败的情况
+			UE_LOG(LogTASceneSystem, Warning, TEXT("位点Actor创建失败。"));
+		}
+	}
+	else
+	{
+		UE_LOG(LogTASceneSystem, Error, TEXT("无法获取世界上下文（UWorld*），位点Actor创建失败。"));
+	}
+	return nullptr;
+}

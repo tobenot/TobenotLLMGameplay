@@ -30,6 +30,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Event")
 	bool HasAnyEventsInPool() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Event")
+	void GenerateEventByDescriptionInLocation(const FString& Description, const FVector& InLocation);
 	
 public:
 	UFUNCTION()
@@ -41,6 +44,9 @@ public:
 private:
 	UFUNCTION()
 	void HandleGeneratedEvents(TArray<FTAEventInfo>& GeneratedEvents);
+
+	UFUNCTION()
+	void HandleGeneratedEventsByDescriptionInLocation(TArray<FTAEventInfo>& GeneratedEvents, const FVector& InLocation);
 
 	void GenerateImageForEvent(const FTAEventInfo& GeneratedEvent);
 

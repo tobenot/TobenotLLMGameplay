@@ -38,6 +38,9 @@ public:
 
 	// 创建并返回一个UTAAreaScene实例的函数，同时加载区域地图
 	UTAAreaScene* CreateAndLoadAreaScene(const FTAEventInfo& EventInfo);
+
+	UFUNCTION(BlueprintCallable, Category = "Scene")
+	ATAPlaceActor* CreatePlaceActorAtLocation(const FVector& NewLocation, float NewRadius, const FString& NewName);
 private:
 	// 存储所有位点Actors的引用的列表
 	UPROPERTY()

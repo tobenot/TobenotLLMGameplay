@@ -57,13 +57,59 @@ void UTAEventGenerator::RequestEventGeneration(const FString& SceneInfo, const i
 	},this);
 }
 
+void UTAEventGenerator::RequestEventGenerationByDescription(const FString& SceneInfo, const FString& Description, const FVector& InLocation)
+{
+	InitPrompt();
+	IsInLocation = true;
+	GenerateInLocation = InLocation;
+	TArray<FChatLog> TempMessagesList;
+	FString NumTag = "// only 1 event please";
+	const FString SystemPrompt = UTALLMLibrary::PromptToStr(PromptGenerateEventByDescription)
+		.Replace(TEXT("{SceneInfo}"), *SceneInfo)
+		.Replace(TEXT("{Language}"), *UTASystemLibrary::GetGameLanguage())
+		.Replace(TEXT("{NumTag}"), *NumTag)
+		.Replace(TEXT("{Theme}"), *Description)
+		;
+	TempMessagesList.Add({EOAChatRole::SYSTEM, SystemPrompt});
+	FChatSettings ChatSettings{
+		UTALLMLibrary::GetChatEngineTypeFromQuality(ELLMChatEngineQuality::Fast),
+		TempMessagesList
+	};
+	ChatSettings.jsonFormat = true;
+
+	// 创建回调对象并注册成功和失败委托
+	UTAChatCallback* CallbackObject = NewObject<UTAChatCallback>();
+	CacheCallbackObject = CallbackObject;
+	CallbackObject->OnSuccess.AddDynamic(this, &UTAEventGenerator::OnChatSuccess);
+	CallbackObject->OnFailure.AddDynamic(this, &UTAEventGenerator::OnChatFailure);
+    
+	// 异步发送消息
+	CacheChat = UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, [this](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
+	{
+		if (Success)
+		{
+			CacheCallbackObject->OnSuccess.Broadcast(Message);
+		}
+		else
+		{
+			CacheCallbackObject->OnFailure.Broadcast();
+		}
+		CacheChat = nullptr;
+	},this);
+}
+
 void UTAEventGenerator::OnChatSuccess(FChatCompletion ChatCompletion)
 {
 	// 解析返回的消息
 	TArray<FTAEventInfo> GeneratedEvents = ParseEventsFromJson(ChatCompletion.message.content);
-    
-	// 触发成功事件
-	OnEventGenerationSuccess.Broadcast(GeneratedEvents);
+
+	if(IsInLocation)
+	{
+		OnEventGenerationSuccessInLocation.Broadcast(GeneratedEvents, GenerateInLocation);
+	}else
+	{
+		OnEventGenerationSuccess.Broadcast(GeneratedEvents);
+	}
 }
 
 void UTAEventGenerator::OnChatFailure()
@@ -79,65 +125,22 @@ TArray<FTAEventInfo> UTAEventGenerator::ParseEventsFromJson(const FString& JsonS
 
 	if (FJsonSerializer::Deserialize(Reader, JsonObject) && JsonObject.IsValid())
 	{
-		// 获取事件数组
-		TArray<TSharedPtr<FJsonValue>> EventsArray = JsonObject->GetArrayField(TEXT("Events"));
-
-		for (int32 Index = 0; Index < EventsArray.Num(); Index++)
+		// 检查是否有"Events"数组字段
+		if (JsonObject->HasField(TEXT("Events")))
 		{
-			TSharedPtr<FJsonObject> EventObject = EventsArray[Index]->AsObject();
-			if (EventObject.IsValid())
+			// 获取事件数组
+			TArray<TSharedPtr<FJsonValue>> EventsArray = JsonObject->GetArrayField(TEXT("Events"));
+
+			for (int32 Index = 0; Index < EventsArray.Num(); Index++)
 			{
-				FTAEventInfo EventInfo;
-            
-				// 获取并设置地点名称
-				EventInfo.PresetData.LocationName = EventObject->GetStringField(TEXT("LocationName"));
-
-				// 获取并设置事件描述
-				EventInfo.PresetData.Description = EventObject->GetStringField(TEXT("Description"));
-
-				int32 EventTypeInt;
-				FString EventTypeStr;
-				if (EventObject->TryGetNumberField(TEXT("EventType"), EventTypeInt))
-				{
-					// 处理数值字段
-					EventInfo.PresetData.EventType = static_cast<ETAEventType>(EventTypeInt);
-				}else if (EventObject->TryGetStringField(TEXT("EventType"), EventTypeStr))
-				{
-					// 尝试将字符串的第一个字符转换为数字
-					TCHAR FirstChar = EventTypeStr[0];
-					if (FChar::IsDigit(FirstChar))
-					{
-						EventTypeInt = FCString::Atoi(*EventTypeStr);
-						EventInfo.PresetData.EventType = static_cast<ETAEventType>(EventTypeInt);
-					}
-					else
-					{
-						// 处理非数字开始的字符串或其他情况
-						UE_LOG(LogTAEventSystem, Error, TEXT("无效的事件类型格式 %s"), *EventTypeStr);
-					}
-				}
-				else
-				{
-					// 处理既不是字符串也不是数字的情况
-					UE_LOG(LogTAEventSystem, Error, TEXT("无EventType字段"));
-				}
-
-				// 获取并设置事件权重
-				EventInfo.PresetData.Weight = EventObject->GetIntegerField(TEXT("Weight"));
-				
-				/*if (JsonObject->HasField(TEXT("AdventurePoint")))
-				{
-					EventInfo.AdventurePoint = JsonObject->GetStringField(TEXT("AdventurePoint"));
-				}*/
-				
-				if (JsonObject->HasField(TEXT("PeculiarPoint")))
-				{
-					EventInfo.PresetData.PeculiarPoint = JsonObject->GetStringField(TEXT("PeculiarPoint"));
-				}
-				
-				// 添加到结果数组中
-				ParsedEvents.Add(EventInfo);
+				TSharedPtr<FJsonObject> EventObject = EventsArray[Index]->AsObject();
+				ProcessEventObject(EventObject, ParsedEvents);
 			}
+		}
+		else
+		{
+			// 直接解析整个JSON对象
+			ProcessEventObject(JsonObject, ParsedEvents);
 		}
 	}
 	else
@@ -146,4 +149,60 @@ TArray<FTAEventInfo> UTAEventGenerator::ParseEventsFromJson(const FString& JsonS
 	}
 
 	return ParsedEvents;
+}
+
+void UTAEventGenerator::ProcessEventObject(const TSharedPtr<FJsonObject>& EventObject, TArray<FTAEventInfo>& ParsedEvents)
+{
+	if (EventObject.IsValid())
+	{
+		FTAEventInfo EventInfo;
+
+		// 获取并设置地点名称
+		EventInfo.PresetData.LocationName = EventObject->GetStringField(TEXT("LocationName"));
+
+		// 获取并设置事件描述
+		EventInfo.PresetData.Description = EventObject->GetStringField(TEXT("Description"));
+
+		int32 EventTypeInt;
+		FString EventTypeStr;
+		if (EventObject->TryGetNumberField(TEXT("EventType"), EventTypeInt))
+		{
+			// 处理数值字段
+			EventInfo.PresetData.EventType = static_cast<ETAEventType>(EventTypeInt);
+		}else if (EventObject->TryGetStringField(TEXT("EventType"), EventTypeStr))
+		{
+			// 尝试将字符串的第一个字符转换为数字
+			TCHAR FirstChar = EventTypeStr[0];
+			if (FChar::IsDigit(FirstChar))
+			{
+				EventTypeInt = FCString::Atoi(*EventTypeStr);
+				EventInfo.PresetData.EventType = static_cast<ETAEventType>(EventTypeInt);
+			}
+			else
+			{
+				// 处理非数字开始的字符串或其他情况
+				UE_LOG(LogTAEventSystem, Error, TEXT("无效的事件类型格式 %s"), *EventTypeStr);
+			}
+		}
+		else
+		{
+			// 处理既不是字符串也不是数字的情况
+			UE_LOG(LogTAEventSystem, Error, TEXT("无EventType字段"));
+		}
+
+		// 获取并设置事件权重
+		EventInfo.PresetData.Weight = EventObject->GetIntegerField(TEXT("Weight"));
+				
+		/*if (EventObject->HasField(TEXT("AdventurePoint")))
+		{
+			EventInfo.AdventurePoint = EventObject->GetStringField(TEXT("AdventurePoint"));
+		}*/
+				
+		if (EventObject->HasField(TEXT("PeculiarPoint")))
+		{
+			EventInfo.PresetData.PeculiarPoint = EventObject->GetStringField(TEXT("PeculiarPoint"));
+		}
+		
+		ParsedEvents.Add(EventInfo);
+	}
 }
