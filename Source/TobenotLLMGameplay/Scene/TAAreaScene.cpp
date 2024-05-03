@@ -132,7 +132,7 @@ void UTAAreaScene::LoadAreaScene(const FTAEventInfo& EventInfo)
 							// 生成交互物
 							for (const FInteractableInfo& Interactable : InteractablesArray)
 							{
-								FVector NewLocation = Location + FMath::VRand() * 1000;
+								FVector NewLocation = Location + FMath::VRand() * 200;
 								NewLocation.Z = Location.Z;
 								FRotator NewRotation = Rotation + FRotator(0, (FMath::FRand() - 0.5) * 180, 0);
 

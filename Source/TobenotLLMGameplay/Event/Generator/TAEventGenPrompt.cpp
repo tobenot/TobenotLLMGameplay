@@ -32,7 +32,7 @@ void UTAEventGenerator::InitPrompt()
 			"{"
 				"\"AdventurePoints\": [English] As an adventure game,"
 				"\"LocationName\":  Please provide in [{Language}]. A more precise geographical location used to describe the occurrence of the event. "
-				"\"Description\": A detailed narrative of the event."
+				"\"Description\": A detailed narrative of the event. This not show to player, you can put some development notes here."
 				"\"EventType\": A number denoting the type of event, options ranging from 0Combat, 1BossFight, 2Exploration, 3Story, to 4Other,"
 				"\"Weight\": a numerical value (0-99) indicating the probability of the event's occurrence"
 			"},"

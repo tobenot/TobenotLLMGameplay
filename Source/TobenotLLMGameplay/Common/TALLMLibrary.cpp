@@ -111,25 +111,27 @@ UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& Ch
     });
 	//Chat->AddToRoot();
 
-	// 打印ChatSettings的调试信息
-	FStringBuilderBase StringBuilder;
-	StringBuilder.Append(TEXT("Sending chat messages:\n"));
-	for (const FChatLog& ChatEntry : ChatSettings.messages)
-	{
-#if UE_BUILD_SHIPPING
-		if(ChatEntry.role == EOAChatRole::SYSTEM)
-		{
-			continue;
-		}
-#endif
-		FString RoleName = UEnum::GetValueAsString(ChatEntry.role);
-		StringBuilder.Append(FString::Printf(TEXT("Role: %s, Content: %s\n"), *RoleName, *ChatEntry.content));
-	}
-	const FString LogContent = StringBuilder.ToString();
-	UE_LOG(LogTAChat, Log, TEXT("[%s] %s"), *LogObject->GetName(), *LogContent);
-
 	if(LogObject)
 	{
+		
+		// 打印ChatSettings的调试信息
+		FStringBuilderBase StringBuilder;
+		StringBuilder.Append(TEXT("Sending chat messages:\n"));
+		for (const FChatLog& ChatEntry : ChatSettings.messages)
+		{
+#if UE_BUILD_SHIPPING
+			if(ChatEntry.role == EOAChatRole::SYSTEM)
+			{
+				continue;
+			}
+#endif
+			FString RoleName = UEnum::GetValueAsString(ChatEntry.role);
+			StringBuilder.Append(FString::Printf(TEXT("Role: %s, Content: %s\n"), *RoleName, *ChatEntry.content));
+		}
+		const FString LogContent = StringBuilder.ToString();
+		UE_LOG(LogTAChat, Log, TEXT("[%s] %s"), *LogObject->GetName(), *LogContent);
+
+		
 		UE_LOG(LogTAChat, Log, TEXT("[%s] Send Chat"), *LogObject->GetName());
 		if (UCategoryLogSubsystem* CategoryLogSubsystem = LogObject->GetWorld()->GetSubsystem<UCategoryLogSubsystem>())
 		{
