@@ -72,4 +72,7 @@ protected:
 	// 存储所有标签及其词嵌数据，使用FName作为键
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TMap<FName, FTagEmbeddingData> EmbeddingsCache;
+
+private:
+	bool bHasTagEmbedding = false;
 };

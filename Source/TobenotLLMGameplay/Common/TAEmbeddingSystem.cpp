@@ -28,7 +28,14 @@ bool UTAEmbeddingSystem::GetTagEmbedding(const FName& Tag, FHighDimensionalVecto
 	}
 	else 
 	{
-		// 如果Tag还未开始嵌入，我们需要将新的Tag加入到嵌入缓存中，启动嵌入请求，并立刻返回false
+		// 如果Tag还未开始嵌入，看看有没有Tag在嵌入，因为Http并发限制，我们一次就嵌一个Tag就好
+		if(bHasTagEmbedding)
+		{
+			return false;
+		}
+		bHasTagEmbedding = true;
+		
+		// 如果没有Tag正在嵌入我们需要将新的Tag加入到嵌入缓存中，启动嵌入请求，并立刻返回false
 		FTagEmbeddingData NewEmbeddingData;
 		NewEmbeddingData.Tag = Tag;
 		NewEmbeddingData.Status = ETagEmbeddingStatus::Embedding;
@@ -37,7 +44,7 @@ bool UTAEmbeddingSystem::GetTagEmbedding(const FName& Tag, FHighDimensionalVecto
 		FEmbeddingSettings EmbeddingSettings;
 		EmbeddingSettings.model = EEmbeddingEngineType::TEXT_EMBEDDING_3_SMALL;
 		EmbeddingSettings.input = Tag.ToString(); // 假设FEmbeddingSettings有一个tag字段用来标识请求
-
+		
 		SendEmbeddingToOpenAIWithRetry(EmbeddingSettings, [this, Tag](const FEmbeddingResult& Result, const FString& ErrorMessage, bool Success)
 		{
 			if (Success)
@@ -62,6 +69,7 @@ bool UTAEmbeddingSystem::GetTagEmbedding(const FName& Tag, FHighDimensionalVecto
 					EmbeddingsCache[Tag].Status = ETagEmbeddingStatus::NotEmbedded;
 				}
 			}
+			bHasTagEmbedding = false;
 		}, this);
 
 		return false;
