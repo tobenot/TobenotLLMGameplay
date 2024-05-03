@@ -149,11 +149,12 @@ void UTAPlotManager::ParseNewEventToTagGroups()
 	TempMessagesList.Insert({EOAChatRole::SYSTEM, FormattedPrompt}, 0);*/
 	TArray<FChatLog> TempMessagesList = ShoutHistory;
 	TempMessagesList.Insert({EOAChatRole::SYSTEM, UTALLMLibrary::PromptToStr(PromptTagEvent)}, 0);
+	TempMessagesList.Add({EOAChatRole::SYSTEM, TEXT("Now Break new Event into tags:")});
 	
 	FChatSettings ChatSettings{
 		UTALLMLibrary::GetChatEngineTypeFromQuality(ELLMChatEngineQuality::Fast),
 		TempMessagesList,
-		0.8
+		0 // 0度，争取别搞错了
 	};
 	ChatSettings.jsonFormat = PromptTagEvent.bUseJsonFormat;
 
