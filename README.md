@@ -1,4 +1,99 @@
-English Version is below.
+Chinese Version is below.
+中文版在英文版之后。
+
+# Introduction to TobenotLLMGameplay Plugin Features
+
+This is the "Langchain," a tobenot LLM gameplay plugin dedicated for Unreal Engine C++. The plugin integrates a series of core logics to provide robust support for building characters, scenes, and events among other game development elements.
+
+## Supported Unreal Engine Version
+
+- Unreal Engine 5.3
+
+## Installation Guide
+
+1. Download the plugin repository.
+2. Create a new folder named `Plugins` in your Unreal Engine project's root directory.
+3. Extract the downloaded repository contents into the `Plugins` folder.
+4. Compile the project using C++.
+5. There are some settings available in the project settings, where some blueprint classes that override in the project can be set up initially with the base class.
+
+## Overview of Features
+
+### Character System
+- **Shout Component**: Allows characters to interact naturally with nearby Agents, offering functionalities like providing dialogue options for players and gathering names and identities of surrounding Agents.
+- **Dialogue Component**: Facilitates multi-person conversations, manages dialogue instances, and features long-term memory (automatic compression method).
+- **Chat Component**: Offers one-on-one dialogues along with the preservation of historic messages.
+- **Target Component**: Detects and selects dialogue targets.
+- **FunctionInvoke Component**: A lightweight component for function invocation, facilitating operations without strictly following OpenAI's FunctionCall process.
+- **Interactive Objects**: Designs basic information and logic for interactive items.
+- **Chat UI**: Ideally, UI should be done in blueprints, but here are dialog boxes used for Dialogue and Chat.
+- **Agent Interface**: Provides character identity names, positioning information, portrait display, and a simplified inventory.
+- **Agent Component**: Allows characters to decide communication moments based on timers.
+- **General Narrator (NarrativeAgent)**: Allows simplified settings and reading of preset JSON data, facilitating conversations and interactions.
+
+### Scene System
+- **Site Module**: Uses spherical models to represent game areas.
+
+### Event System
+- **Dynamic Event Generation**: Supports the dynamic creation of events including preset event import, loading, triggering, and the distribution and tracking process of various agents' desires within events.
+- **Event Triggering**: Implements proximity-based triggering mechanisms and plot-driven narrative triggering mechanisms.
+- **Interactive Item Generation**: Generates interactive items following event triggering.
+
+#### Network Narrative System
+- A system that records events to trigger new ones.
+
+### Peripheral Systems
+- **Identity Tables, GUID Archiving System**: Generates a unique GUID for each identity Actor, supporting conversation history save and restoration for chat components.
+- **Live-Image Module**: AI-generated images.
+- **Network Module**: Provides alternative API URLs and ports.
+- **Language Module**: Configures game language options.
+
+### API System
+**GPT Plugin**: Enhances [OpenAI-Api-Unreal](https://github.com/tobenot/OpenAI-Api-Unreal)
+  - Natively supports C++.
+  - Now allows mid-request HTTP cancellation.
+  - Adds word embedding interfaces.
+
+## Design Concepts
+### Network Narrative System Design
+
+The core of implementing a meshed narrative system is creating rich storylines through recording and triggering events. This system's design primarily includes event recording and the mechanism for triggering new events based on those records.
+
+#### Event Recording
+
+To accurately record the dynamics within the game, the system is capable of:
+
+- **Event Monitoring**:
+  - Monitoring and recording various in-game events, such as dialogues, player interactions, and changes in game mechanics.
+  - For game mechanics changes, an interface is provided for event reporting.
+
+- **Event Analysis**:
+  - Processes event results using a transformer large language model, breaking them down into several tags that encapsulate the event's meaning.
+  - Adheres to the "actor-then-outcome" tag recording principle.
+
+- **Tag Recording Principle**:
+  - Single record principle: Each record expresses only one event entity.
+  - Sequential coherence: Event outcomes are coherently linked through tag groups.
+
+- **Data Embedding**:
+  - Word embedding processing for each tag, facilitating further analysis and matching.
+
+#### Event Triggering
+
+New events are triggered based on recorded events and tags, including:
+
+- **Trigger Detection Interface**:
+  - Provides an external interface for the system to detect if event triggering conditions are met.
+
+- **Tag Matching**:
+  - Handles word embedding processing for tag groups against the prerequisites of the event to be triggered.
+  - Searches for matching tag groups within event records.
+  - Matching criteria: A tag group meets conditions only if all tags in a group appear in the correct order within a record and the similarity between tags exceeds 65%.
+
+- **Logic Fulfillment**:
+  - Determines whether tag groups fully satisfy conditions based on Boolean logic.
+  - Prerequisite verification: An event's prerequisite conditions are considered fulfilled only if all corresponding Boolean logic conditions are met.
+ 
 
 # TobenotLLMGameplay 插件功能介绍
 
@@ -94,95 +189,3 @@ English Version is below.
   - 根据布尔逻辑判断标签组是否全都满足条件。
   - 前置条件验证：只有当相应的布尔逻辑条件全部满足时，才认为事件触发的前置条件已经成立。
 
-# Introduction to TobenotLLMGameplay Plugin Features
-
-This is the "Langchain," a tobenot LLM gameplay plugin dedicated for Unreal Engine C++. The plugin integrates a series of core logics to provide robust support for building characters, scenes, and events among other game development elements.
-
-## Supported Unreal Engine Version
-
-- Unreal Engine 5.3
-
-## Installation Guide
-
-1. Download the plugin repository.
-2. Create a new folder named `Plugins` in your Unreal Engine project's root directory.
-3. Extract the downloaded repository contents into the `Plugins` folder.
-4. Compile the project using C++.
-5. There are some settings available in the project settings, where some blueprint classes that override in the project can be set up initially with the base class.
-
-## Overview of Features
-
-### Character System
-- **Shout Component**: Allows characters to interact naturally with nearby Agents, offering functionalities like providing dialogue options for players and gathering names and identities of surrounding Agents.
-- **Dialogue Component**: Facilitates multi-person conversations, manages dialogue instances, and features long-term memory (automatic compression method).
-- **Chat Component**: Offers one-on-one dialogues along with the preservation of historic messages.
-- **Target Component**: Detects and selects dialogue targets.
-- **FunctionInvoke Component**: A lightweight component for function invocation, facilitating operations without strictly following OpenAI's FunctionCall process.
-- **Interactive Objects**: Designs basic information and logic for interactive items.
-- **Chat UI**: Ideally, UI should be done in blueprints, but here are dialog boxes used for Dialogue and Chat.
-- **Agent Interface**: Provides character identity names, positioning information, portrait display, and a simplified inventory.
-- **Agent Component**: Allows characters to decide communication moments based on timers.
-- **General Narrator (NarrativeAgent)**: Allows simplified settings and reading of preset JSON data, facilitating conversations and interactions.
-
-### Scene System
-- **Site Module**: Uses spherical models to represent game areas.
-
-### Event System
-- **Dynamic Event Generation**: Supports the dynamic creation of events including preset event import, loading, triggering, and the distribution and tracking process of various agents' desires within events.
-- **Event Triggering**: Implements proximity-based triggering mechanisms and plot-driven narrative triggering mechanisms.
-- **Interactive Item Generation**: Generates interactive items following event triggering.
-
-#### Network Narrative System
-- A system that records events to trigger new ones.
-
-### Peripheral Systems
-- **Identity Tables, GUID Archiving System**: Generates a unique GUID for each identity Actor, supporting conversation history save and restoration for chat components.
-- **Live-Image Module**: AI-generated images.
-- **Network Module**: Provides alternative API URLs and ports.
-- **Language Module**: Configures game language options.
-
-### API System
-**GPT Plugin**: Enhances [OpenAI-Api-Unreal](https://github.com/tobenot/OpenAI-Api-Unreal)
-  - Natively supports C++.
-  - Now allows mid-request HTTP cancellation.
-  - Adds word embedding interfaces.
-
-## Design Concepts
-### Network Narrative System Design
-
-The core of implementing a meshed narrative system is creating rich storylines through recording and triggering events. This system's design primarily includes event recording and the mechanism for triggering new events based on those records.
-
-#### Event Recording
-
-To accurately record the dynamics within the game, the system is capable of:
-
-- **Event Monitoring**:
-  - Monitoring and recording various in-game events, such as dialogues, player interactions, and changes in game mechanics.
-  - For game mechanics changes, an interface is provided for event reporting.
-
-- **Event Analysis**:
-  - Processes event results using a transformer large language model, breaking them down into several tags that encapsulate the event's meaning.
-  - Adheres to the "actor-then-outcome" tag recording principle.
-
-- **Tag Recording Principle**:
-  - Single record principle: Each record expresses only one event entity.
-  - Sequential coherence: Event outcomes are coherently linked through tag groups.
-
-- **Data Embedding**:
-  - Word embedding processing for each tag, facilitating further analysis and matching.
-
-#### Event Triggering
-
-New events are triggered based on recorded events and tags, including:
-
-- **Trigger Detection Interface**:
-  - Provides an external interface for the system to detect if event triggering conditions are met.
-
-- **Tag Matching**:
-  - Handles word embedding processing for tag groups against the prerequisites of the event to be triggered.
-  - Searches for matching tag groups within event records.
-  - Matching criteria: A tag group meets conditions only if all tags in a group appear in the correct order within a record and the similarity between tags exceeds 65%.
-
-- **Logic Fulfillment**:
-  - Determines whether tag groups fully satisfy conditions based on Boolean logic.
-  - Prerequisite verification: An event's prerequisite conditions are considered fulfilled only if all corresponding Boolean logic conditions are met.
