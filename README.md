@@ -1,82 +1,188 @@
-# TobenotLLMGameplay: Tobenot's LLM Game Plugin — "Langchain" for Unreal Engine C++
+English Version is below.
 
-This plugin is a compilation of general logic frequently employed by Tobenot for his LLM gaming projects. It meticulously shapes three primary structures: character, scene, and event—encapsulating the essential components of game development.
+# TobenotLLMGameplay 插件功能介绍
 
-## Key Features
+这是一个专用于Unreal Engine C++的tobenot LLM游戏插件——“Langchain”。此插件集成了一系列的核心逻辑，为构建人物、场景与事件等游戏开发元素提供了强大的支持。
 
-### Character System:
-- **Dialogue Component**: Multi-person conversation component, dialogue instance management, includes long-term memory (automatic compression method).
-- **Chat Component**: Enables one-to-one dialogue interactions and records chat history.
-- **Target Component**: Detects and designates entities for conversation.
-- **FunctionInvoke Component**: A streamlined function call mechanism that initiates calls without return values.
-- **Interactive Objects**: Elementary data and mechanisms for object interaction.
-- **Chat UI**: Facilitates a selection of interactions and dialogues; minimal UI handling recommended as UI elements are outside the realm of C++.
+## 支持的虚幻引擎版本
 
-### Scene System:
-- **Location Module**: Denotes an area using a spherical representation.
-
-### Event System:
-- **Event Dynamic Creation**: Allows for on-the-fly event creation.
-- **Event Activation**: Presently limited to proximity-based activation.
-- **Interactive Object Production**: Spawns interactive objects upon event initiation.
-
-### Ancillary Systems:
-- **Identity Register & GUID Archive**: Assigns unique GUIDs to each character actor; currently limited to recording and retrieving chat logs in Chat Component.
-- **Image Production Module**: AI-assisted image creation.
-- **Networking Module**: Supplies customizable API endpoints and ports.
-- **Language Module**: Configurations for in-game language preferences.
-
-### API System:
-- **GPT Plugin**: An adaptation of [OpenAI-Api-Unreal](https://github.com/tobenot/OpenAI-Api-Unreal) tailored for native C++ support after considerable enhancements.
-
-## Installation Procedure
-1. Acquire the plugin repository download.
-2. In your Unreal project's root directory, parallel to the `Content` folder, establish a new folder titled `Plugins`.
-3. Decompress the downloaded repository and relocate its contents to the `Plugins` folder.
-4. Proceed to compile and integrate into your C++ workflow.
-
-## Compatibility
-- Unreal Engine version 5.3
-
-
-# 简体中文：
-# TobenotLLMGameplay: Tobenot's LLM Game Plugin —— "Langchain" for Unreal Engine C++
-
-这是一个由tobenot在其LLM游戏中使用的通用逻辑的集合插件。
-本插件精心设计了三大系统：人物、场景、事件，涵盖了游戏开发中的核心要素。
-
-## 目前的主要功能
-
-### 人物系统：
-- **Dialogue组件**：多人会话组件、对话实例管理，包含长记忆（自动压缩方式）。
-- **Chat组件**：一对一对话和保存历史的能力
-- **目标组件**：检测和选择对话目标的能力
-- **FunctionInvoke组件**：只调用不返回的轻量级FunctionCall
-- **交互物**：基础的交互物信息与交互逻辑
-- **Chat UI**：做了一些选择目标和聊天的，发现还是别管太多UI好，UI还是非C++吧
-
-### 场景系统：
-- **位点模块**：用球体表示一个区域
-  
-### 事件系统：
-- **事件动态生成**：支持事件动态生成
-- **事件触发**：目前只做了接近触发
-- **交互物生成**：触发事件后生成交互物
-
-### 外围系统：
-- **身份表、GUID存档系统**：对每个身份的Actor生成唯一GUID，目前只支持Chat组件的对话历史保存恢复
-- **生图模块**：AI生成图片
-- **网络模块**：提供替换的api网址与端口
-- **语言模块**：游戏语言设置
-
-### API系统：
-- **GPT插件**：Fork了[OpenAI-Api-Unreal](https://github.com/tobenot/OpenAI-Api-Unreal)，做了大量修改，使其原生支持C++。
+- Unreal Engine 5.3
 
 ## 安装指南
-1. 下载插件仓库
-2. 在您的虚幻项目根目录下创建一个名为`Plugins`的新文件夹（与`Content`文件夹同级）
-3. 将下载的仓库内容解压并放入`Plugins`文件夹中
-4. 通过C++进行编译使用。
 
-## 开发的虚幻引擎版本
-- 虚幻引擎 5.3
+1. 下载插件仓库。
+2. 在你的Unreal Engine项目根目录下创建一个名为`Plugins`的新文件夹。
+3. 将下载的仓库内容解压到`Plugins`文件夹中。
+4. 通过C++进行项目编译。
+5. 有一些设置可以在项目设置里看到，需要设置一些在项目中覆写的蓝图类，一开始可以直接写基类
+
+## 功能概览
+
+### 人物系统
+- **Shout喊话组件**：允许角色在附近的Agent间自然地交互。在里面示例地做了一些小功能，比如支持为玩家提供可选的对话选项，收集周围Agent的姓名和身份。
+  （用喊话组件说话会发给附近的Agent，以此来实现更自然的交互，比起它来说，一对一和多对一组件可以用来做那种通讯软件和小空间私聊，也可以用作文字交互小游戏，像做饭游戏、说服游戏）。
+- **Dialogue组件**：实现多人会话，管理对话实例，拥有长期记忆（自动压缩方式）的功能。
+- **Chat组件**：提供一对一对话及历史信息的保存。
+- **目标组件**：检测和选择对话目标。
+- **FunctionInvoke组件**：轻量级功能调用组件，实现函数调用操作，不严格走OpenAI的FunctionCall流程。
+- **交互物**：设计了基本的互动物品信息和逻辑。
+- **Chat UI**：说实话UI应该在蓝图里做，不过这里写了Dialogue和Chat用的对话框。
+- **Agent接口**：提供角色身份名字、身份定位信息、肖像显示和简易物品栏。
+- **Agent组件**：允许角色根据定时器自行决定交流时机。
+- **通用叙述者NarrativeAgent**：可以非常简化的设置和读取预设JSON数据、进行对话和交互。
+  
+### 场景系统
+- **位点模块**：使用球型模型表示游戏区域。
+
+### 事件系统
+- **事件动态生成**：支持动态创建事件。预设事件的导入、加载、触发，以及事件中各个Agent欲望的分发和追踪过程。
+- **事件触发**：目前实现了基于接近的触发机制和基于剧情的网状叙事触发机制。
+- **交互物生成**：在事件触发后可以生成可互动物品。
+  
+#### 网状叙事系统
+- 记录已经发生的事件来触发新事件的系统
+
+### 外围系统
+- **身份表、GUID存档系统**：对每个身份的Actor生成唯一GUID，支持聊天组件的对话历史保存和恢复。
+- **生图模块**：AI生成图片。
+- **网络模块**：提供替换的API网址与端口。
+- **语言模块**：配置游戏语言选项。
+
+### API系统
+**GPT插件**：改进了[OpenAI-Api-Unreal](https://github.com/tobenot/OpenAI-Api-Unreal)
+  - 使其原生支持C++。
+  - 现可中途取消HTTP请求。
+  - 添加了词嵌接口
+
+## 设计稿
+### 网状叙事系统设计
+
+实现网状叙事系统的核心是通过记录和触发事件来创建丰富的故事线。本系统设计主要包含事件的记录和基于此记录触发新事件的机制。
+
+#### 事件记录
+
+为了精确记录游戏中的动态，系统具备以下能力：
+
+- **事件监听**：
+  - 监听和记录游戏内发生的各种事件，如对话、玩家互动和游戏机制变化。
+  - 对于游戏机制变化，提供接口以供事件上报。
+
+- **事件分析**：
+  - 利用transformer大语言模型处理事件结果，拆分成能够表达事件含义的多个标签组。
+  - 遵循"先行动者后结果"的标签记录原则。
+
+- **标签记录原则**：
+  - 单一记录原则：每条记录仅表达一个事件实体。
+  - 结果连贯性：通过标签组串接，使得事件结果意义上连贯。
+
+- **数据嵌入**：
+  - 对每个标签进行词嵌入处理，以便进一步的分析和匹配。
+
+#### 事件触发
+
+依据记录的事件和标签对新事件进行触发，触发机制包括：
+
+- **触发检测接口**：
+  - 对外提供接口，以供系统检测事件触发条件是否满足。
+
+- **标签匹配**：
+  - 针对待触发事件的前置条件，进行标签组的词嵌入处理。
+  - 在事件记录中寻找符合条件的标签组。
+  - 条件匹配准则：一个标签组满足条件，当且仅当该组中所有标签在一条记录中以正确顺序出现，标签和标签之间词嵌相似度大于65%。
+
+- **逻辑满足**：
+  - 根据布尔逻辑判断标签组是否全都满足条件。
+  - 前置条件验证：只有当相应的布尔逻辑条件全部满足时，才认为事件触发的前置条件已经成立。
+
+# Introduction to TobenotLLMGameplay Plugin Features
+
+This is the "Langchain," a tobenot LLM gameplay plugin dedicated for Unreal Engine C++. The plugin integrates a series of core logics to provide robust support for building characters, scenes, and events among other game development elements.
+
+## Supported Unreal Engine Version
+
+- Unreal Engine 5.3
+
+## Installation Guide
+
+1. Download the plugin repository.
+2. Create a new folder named `Plugins` in your Unreal Engine project's root directory.
+3. Extract the downloaded repository contents into the `Plugins` folder.
+4. Compile the project using C++.
+5. There are some settings available in the project settings, where some blueprint classes that override in the project can be set up initially with the base class.
+
+## Overview of Features
+
+### Character System
+- **Shout Component**: Allows characters to interact naturally with nearby Agents, offering functionalities like providing dialogue options for players and gathering names and identities of surrounding Agents.
+- **Dialogue Component**: Facilitates multi-person conversations, manages dialogue instances, and features long-term memory (automatic compression method).
+- **Chat Component**: Offers one-on-one dialogues along with the preservation of historic messages.
+- **Target Component**: Detects and selects dialogue targets.
+- **FunctionInvoke Component**: A lightweight component for function invocation, facilitating operations without strictly following OpenAI's FunctionCall process.
+- **Interactive Objects**: Designs basic information and logic for interactive items.
+- **Chat UI**: Ideally, UI should be done in blueprints, but here are dialog boxes used for Dialogue and Chat.
+- **Agent Interface**: Provides character identity names, positioning information, portrait display, and a simplified inventory.
+- **Agent Component**: Allows characters to decide communication moments based on timers.
+- **General Narrator (NarrativeAgent)**: Allows simplified settings and reading of preset JSON data, facilitating conversations and interactions.
+
+### Scene System
+- **Site Module**: Uses spherical models to represent game areas.
+
+### Event System
+- **Dynamic Event Generation**: Supports the dynamic creation of events including preset event import, loading, triggering, and the distribution and tracking process of various agents' desires within events.
+- **Event Triggering**: Implements proximity-based triggering mechanisms and plot-driven narrative triggering mechanisms.
+- **Interactive Item Generation**: Generates interactive items following event triggering.
+
+#### Network Narrative System
+- A system that records events to trigger new ones.
+
+### Peripheral Systems
+- **Identity Tables, GUID Archiving System**: Generates a unique GUID for each identity Actor, supporting conversation history save and restoration for chat components.
+- **Live-Image Module**: AI-generated images.
+- **Network Module**: Provides alternative API URLs and ports.
+- **Language Module**: Configures game language options.
+
+### API System
+**GPT Plugin**: Enhances [OpenAI-Api-Unreal](https://github.com/tobenot/OpenAI-Api-Unreal)
+  - Natively supports C++.
+  - Now allows mid-request HTTP cancellation.
+  - Adds word embedding interfaces.
+
+## Design Concepts
+### Network Narrative System Design
+
+The core of implementing a meshed narrative system is creating rich storylines through recording and triggering events. This system's design primarily includes event recording and the mechanism for triggering new events based on those records.
+
+#### Event Recording
+
+To accurately record the dynamics within the game, the system is capable of:
+
+- **Event Monitoring**:
+  - Monitoring and recording various in-game events, such as dialogues, player interactions, and changes in game mechanics.
+  - For game mechanics changes, an interface is provided for event reporting.
+
+- **Event Analysis**:
+  - Processes event results using a transformer large language model, breaking them down into several tags that encapsulate the event's meaning.
+  - Adheres to the "actor-then-outcome" tag recording principle.
+
+- **Tag Recording Principle**:
+  - Single record principle: Each record expresses only one event entity.
+  - Sequential coherence: Event outcomes are coherently linked through tag groups.
+
+- **Data Embedding**:
+  - Word embedding processing for each tag, facilitating further analysis and matching.
+
+#### Event Triggering
+
+New events are triggered based on recorded events and tags, including:
+
+- **Trigger Detection Interface**:
+  - Provides an external interface for the system to detect if event triggering conditions are met.
+
+- **Tag Matching**:
+  - Handles word embedding processing for tag groups against the prerequisites of the event to be triggered.
+  - Searches for matching tag groups within event records.
+  - Matching criteria: A tag group meets conditions only if all tags in a group appear in the correct order within a record and the similarity between tags exceeds 65%.
+
+- **Logic Fulfillment**:
+  - Determines whether tag groups fully satisfy conditions based on Boolean logic.
+  - Prerequisite verification: An event's prerequisite conditions are considered fulfilled only if all corresponding Boolean logic conditions are met.
