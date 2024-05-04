@@ -1,8 +1,11 @@
 Chinese Version is below.
+
 中文版在英文版之后。
 
 # Introduction to TobenotLLMGameplay Plugin Features
+
 TobenotLLMGameplay: Tobenot's LLM Game Plugin —— "Langchain" for Unreal Engine C++
+
 This is a dedicated LLM game plugin for Unreal Engine C++. Perhaps with this plugin, one could quickly establish the relevant logic for large model games.
 
 ## Supported Unreal Engine Version
@@ -96,7 +99,9 @@ New events are triggered based on recorded events and tags, including:
  
 
 # TobenotLLMGameplay 插件功能介绍
+
 TobenotLLMGameplay: Tobenot's LLM Game Plugin —— "Langchain" for Unreal Engine C++
+
 虚幻引擎中的"Langchain"！这是一个专用于Unreal Engine C++的LLM游戏插件。也许用这个插件能快速地建立起大模型游戏的相关逻辑~
 
 ## 支持的虚幻引擎版本
