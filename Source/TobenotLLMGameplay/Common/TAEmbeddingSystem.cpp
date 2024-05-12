@@ -4,6 +4,7 @@
 #include "TAEmbeddingSystem.h"
 
 #include "OpenAIEmbedding.h"
+#include "OpenAIUtils.h"
 #include "TobenotToolkit/Debug/CategoryLogSubsystem.h"
 
 
@@ -186,5 +187,5 @@ FTagEmbeddingData UTAEmbeddingSystem::GetTagEmbeddingData(const FName& Tag) cons
 
 float UTAEmbeddingSystem::CalculateCosineSimilarity(const FHighDimensionalVector& VectorA,const FHighDimensionalVector& VectorB)
 {
-	return VectorA.CosineSimilaritySIMD(VectorA, VectorB);
+	return UOpenAIUtils::HDVectorCosineSimilaritySIMD(VectorA, VectorB);
 }
