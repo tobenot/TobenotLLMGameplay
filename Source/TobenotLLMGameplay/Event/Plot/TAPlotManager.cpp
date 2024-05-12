@@ -84,29 +84,37 @@ void UTAPlotManager::CheckEventsTagGroupCondition(TArray<FTAEventInfo>& Events)
     			
     			for (int i = 0; i < PlotGroup.Tags.Num(); ) {
     				const FName& PlotTag = PlotGroup.Tags[i];
-    				FHighDimensionalVector PlotTagEmbedding;
-    				if (EmbeddingSystem->GetTagEmbedding(PlotTag, PlotTagEmbedding)) {
-    					float Similarity = UTAEmbeddingSystem::CalculateCosineSimilarity(PresetTagEmbedding, PlotTagEmbedding);
-    					if(Similarity > 0.5)
-    					{
-    						UE_LOG(LogTAEventSystem, Warning,
-							TEXT("大于0.5的日志: 当前的预设前置 '%s' 与剧情标签 '%s' 的嵌入向量余弦相似度为：%f"),
-							*PresetGroup.Tags[TagIndex].ToString(), *PlotTag.ToString(), Similarity);
-    					}
-    					if (Similarity > 0.65) {
-    						TagIndex++; // 移动到前置标签组中的下一个标签
-    						if (TagIndex >= PresetGroup.Tags.Num()) {
-    							// 如果所有标签都已匹配，则此标签组条件满足
-    							bCurrentGroupConditionMet = true;
-    							PlotTagIndex = PlotTagGroups.Num(); // 退出外部循环
-    							break;
+    				bool IsMatch = PlotTag.IsEqual(PresetGroup.Tags[TagIndex]); //完全相同的直接成功
+    				if(!IsMatch)
+    				{
+    					FHighDimensionalVector PlotTagEmbedding;
+    					if (EmbeddingSystem->GetTagEmbedding(PlotTag, PlotTagEmbedding)) {
+    						float Similarity = UTAEmbeddingSystem::CalculateCosineSimilarity(PresetTagEmbedding, PlotTagEmbedding);
+    						if(Similarity > 0.5 && Similarity < 1)
+    						{
+    							UE_LOG(LogTAEventSystem, Warning,
+								TEXT("大于0.5小于1的日志: 当前的预设前置 '%s' 与剧情标签 '%s' 的嵌入向量余弦相似度为：%f"),
+								*PresetGroup.Tags[TagIndex].ToString(), *PlotTag.ToString(), Similarity);
     						}
+    						if (Similarity > 0.65) {
+    							IsMatch = true;
+    						}
+    					}
+    				}
+    				if(IsMatch)
+    				{
+    					TagIndex++; // 移动到前置标签组中的下一个标签
+    					if (TagIndex >= PresetGroup.Tags.Num()) {
+    						// 如果所有标签都已匹配，则此标签组条件满足
+    						bCurrentGroupConditionMet = true;
+    						PlotTagIndex = PlotTagGroups.Num(); // 退出外部循环
+    						break;
+    					}
 
-    						if (!EmbeddingSystem->GetTagEmbedding(PresetGroup.Tags[TagIndex], PresetTagEmbedding)) {
-    							break; // 无法获取下一个预设标签的嵌入向量
-    						}
-    						continue; // 匹配成功，继续使用当前的剧情标签进行下一轮匹配
+    					if (!EmbeddingSystem->GetTagEmbedding(PresetGroup.Tags[TagIndex], PresetTagEmbedding)) {
+    						break; // 无法获取下一个预设标签的嵌入向量
     					}
+    					continue; // 匹配成功，继续使用当前的剧情标签进行下一轮匹配
     				}
     				i++;  // 当前标签无匹配或匹配不成功，移动到下一个标签
     			}
@@ -336,16 +344,15 @@ const FTAPrompt UTAPlotManager::PromptTagEvent = FTAPrompt{
 	"       \"tags\": [\"Initiator (person full name/object)\", \"Specific action (accept mission, using prop)\", \"Related object (mission name), specific item (prop name) or individual (someone's full name) \"]"
 	"   }"
 	"Please record what actually happened, for example, if A only asked B to do something and B didn't actually do it, then you should not record B doing it. Instead, you should record \"A\", \"asking to do something\", \"B\"."
-		"例子 1："
-		"{""\"event\": \"约翰·史密斯接受了莎拉·约翰逊的任务。\",""\"tags\": [\"约翰·史密斯\", \"接受任务\", \"寂静森林中隐藏的宝藏\"]""}"
-		"例子 2："
-		"{""\"event\": \"莎拉·约翰逊使用神秘的博学灯笼，揭示了古代遗迹中的秘密入口。\",""\"tags\": [\"莎拉·约翰逊\", \"使用\", \"博学灯笼\"]""}"
-		"例子 3："
-		"{""\"event\": \"小偷马丁·布莱克从皇家军械库偷走了魔剑埃克斯卡利伯。\",""\"tags\": [\"马丁·布莱克\", \"偷窃\", \"埃克斯卡利伯\"]""}"
-		"例子 4："
-		"{""\"event\": \"莎拉·约翰逊攻击约翰·史密斯。\",""\"tags\": [\"莎拉·约翰逊\", \"攻击\", \"约翰·史密斯\"]""}"
-		"例子 5："
-		"{""\"event\": \"约翰·史密斯把苹果给莎拉·约翰。\",""\"tags\": [\"约翰·史密斯\", \"给予苹果\", \"莎拉·约翰\"]""}"
+		"Examples:"
+		"{""\"event\": \"John Smith accepted Sarah Johnson's task.\",""\"tags\": [\"约翰·史密斯\", \"接受任务\", \"隐藏的宝藏\"]""}"
+		"{""\"event\": \"Sarah Johnson used a mysterious and erudite lantern to reveal the secret entrance in ancient ruins.\",""\"tags\": [\"莎拉·约翰逊\", \"使用\", \"博学灯笼\"]""}"
+		"{""\"event\": \"Sarah Johnson used a mysterious and erudite lantern to reveal the secret entrance in ancient ruins.\",""\"tags\": [\"莎拉·约翰逊\", \"揭示\", \"入口\"]""}"
+		"{""\"event\": \"Thief Martin Blake stole the magic sword Exkeliber from the Royal Armory.\",""\"tags\": [\"马丁·布莱克\", \"偷窃\", \"埃克斯卡利伯\"]""}"
+		"{""\"event\": \"Sarah Johnson attacked John Smith.\",""\"tags\": [\"莎拉·约翰逊\", \"攻击\", \"约翰·史密斯\"]""}"
+		"{""\"event\": \"Sarah Johnson's attack on John Smith resulted in John Smith being injured.\",""\"tags\": [\"约翰·史密斯\", \"受伤\"]""}"
+		"{""\"event\": \"John Smith gave the apple to Sarah John.\",""\"tags\": [\"约翰·史密斯\", \"给予苹果\", \"莎拉·约翰\"]""}"
+	"You need to record things that are easier to match. For ambiguous things, if the context can be specific, you need to record them more specifically. For example, if A agrees to B's request, you should not record it as A agreeing to B. If you do, how can I match it? You can record it as 'A','agree to specific things', 'B', or as 'A','agree', or 'specific things'."
 	"Please focus only on the last message as it represents the newly occurring event. You have already processed what happened before. Showing them now is only for maintaining the context without loss."
 	"Kindly reply content solely in Chinese to comply with our system protocols."
 	"Avoid using English tags when responding!"
