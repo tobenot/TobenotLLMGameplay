@@ -159,8 +159,10 @@ void UTAShoutComponent::RequestToSpeak()
 	// 构造系统提示的ChatLog对象
 	const FString SystemPrompt = GetSystemPromptFromOwner()
 		+ "Your long-term memory: " + ShoutHistoryCompressedStr + "."
-		+ ". Output {\"no_response_needed\": \"No response needed because [Your_Reason_Here]\"} when the conversation is becoming boring or not point at you, note that others may not call you by your full name."
+		+ ". Output {\"no_response_needed\": \"No response needed because [Your_Reason_Here]\"} when the conversation is becoming boring"
+		+ (IsPartner ? " or not point at you. ":". ")
 		+ "Nearby agents: " + GetNearbyAgentNames();
+	
 	const FChatLog SystemPromptLog{EOAChatRole::SYSTEM, SystemPrompt};
 
 	if(!TempMessagesList.Num() || TempMessagesList[0].role != EOAChatRole::SYSTEM)
@@ -428,16 +430,22 @@ UTAShoutComponent* UTAShoutComponent::GetTAShoutComponent(AActor* Actor)
 
 void UTAShoutComponent::RequestChoices()
 {
-	// 暂时不要这个功能
-	return;
+	// // 暂时不要这个功能
+	// return;
 	
 	auto& TempMessagesList = ShoutHistory;
 	//使用系统提示创建ChatLog对象
-	const FString SystemPrompt = GetSystemPromptFromOwner()
+	/*const FString SystemPrompt = GetSystemPromptFromOwner()
 		+ "But now your task is different. Now you need to know that the above information is player information. "
 		+ "Please provide several choices for the player's next speech based on the dialogue history. The choices should come in a JSON string array format as shown below: "
 		+ "{\"message\" : [\"You too!\", \"I don't think so.\", \"I love it.\"]}."
-		+ "Please stand in the player's shoes, but don't need to output player's character's name before choices.";
+		+ "Please stand in the player's shoes, but don't need to output player's character's name before choices.";*/
+	const FString SystemPrompt =
+	TEXT(
+		"Please provide several choices for the player's next speech based on the dialogue history. The choices should come in a JSON string array format as shown below: "
+		"{\"message\" : [\"You too!\", \"I don't think so.\", \"I love it.\"]}."
+		"Please stand in the player's shoes, but don't need to output player's character's name before choices."
+		);
 	const FChatLog SystemPromptLog{EOAChatRole::SYSTEM, SystemPrompt};
 
 	// 将刚刚创建的系统提示设置为TempMessagesList的首个元素
@@ -453,7 +461,7 @@ void UTAShoutComponent::RequestChoices()
 	FChatSettings ChatSettings{
 		UTALLMLibrary::GetChatEngineTypeFromQuality(ELLMChatEngineQuality::Fast),
 		TempMessagesList,
-		0.8
+		0
 	};
 	ChatSettings.jsonFormat = true;
 
