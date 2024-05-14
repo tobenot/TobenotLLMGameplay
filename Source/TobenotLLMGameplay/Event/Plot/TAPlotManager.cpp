@@ -157,7 +157,7 @@ void UTAPlotManager::ParseNewEventToTagGroups()
 	TempMessagesList.Insert({EOAChatRole::SYSTEM, FormattedPrompt}, 0);*/
 	TArray<FChatLog> TempMessagesList = ShoutHistory;
 	TempMessagesList.Insert({EOAChatRole::SYSTEM, UTALLMLibrary::PromptToStr(PromptTagEvent)}, 0);
-	TempMessagesList.Add({EOAChatRole::SYSTEM, TEXT("Now Break new Event into tags:")});
+	//TempMessagesList.Add({EOAChatRole::SYSTEM, TEXT("Now Break new Event into tags:")});
 	
 	FChatSettings ChatSettings{
 		UTALLMLibrary::GetChatEngineTypeFromQuality(ELLMChatEngineQuality::Fast),
@@ -166,6 +166,71 @@ void UTAPlotManager::ParseNewEventToTagGroups()
 	};
 	ChatSettings.jsonFormat = PromptTagEvent.bUseJsonFormat;
 
+	UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings,
+    [this](const FChatCompletion& Message, const FString& ErrorMessage, bool bWasSuccessful)
+    {
+        if(bWasSuccessful)
+        {   
+            // 转换返回的字符串为Json
+            TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(Message.message.content);
+            TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+
+            if(FJsonSerializer::Deserialize(JsonReader, JsonObject) && JsonObject.IsValid())
+            {
+                // 解析proactive_action并存储tags
+                TSharedPtr<FJsonObject> ProactiveAction = JsonObject->GetObjectField("proactive_action");
+
+                TArray<FName> ProactiveTags;
+                ProactiveTags.Add(FName(*ProactiveAction->GetStringField("character_tag")));
+                ProactiveTags.Add(FName(*ProactiveAction->GetStringField("action_tag")));
+                ProactiveTags.Add(FName(*ProactiveAction->GetStringField("activity_tag")));
+
+                TArray<TSharedPtr<FJsonValue>> ProactiveDetailTagsJsonArray = ProactiveAction->GetArrayField("activity_detail_tags");
+                for (auto& JsonValue : ProactiveDetailTagsJsonArray)
+                {
+                    ProactiveTags.Add(FName(*JsonValue->AsString()));
+                }
+
+                // 将proactive_tags存入TagGroup结构体中
+                FTATagGroup ProactiveTagGroup;
+                ProactiveTagGroup.Tags.Append(ProactiveTags);
+
+                // 解析passive_action并存储tags
+                TSharedPtr<FJsonObject> PassiveAction = JsonObject->GetObjectField("passive_action");
+
+                TArray<FName> PassiveTags;
+                PassiveTags.Add(FName(*PassiveAction->GetStringField("character_tag")));
+                PassiveTags.Add(FName(*PassiveAction->GetStringField("action_tag")));
+                PassiveTags.Add(FName(*PassiveAction->GetStringField("activity_tag")));
+
+                TArray<TSharedPtr<FJsonValue>> PassiveDetailTagsJsonArray = PassiveAction->GetArrayField("activity_detail_tags");
+                for (auto& JsonValue : PassiveDetailTagsJsonArray)
+                {
+                    PassiveTags.Add(FName(*JsonValue->AsString()));
+                }
+                
+                // 将passive_tags存入TagGroup结构体中
+                FTATagGroup PassiveTagGroup;
+                PassiveTagGroup.Tags.Append(PassiveTags);
+
+                // 将ProactiveTagGroup 和 PassiveTagGroup加入PlotTagGroups
+                PlotTagGroups.Add(ProactiveTagGroup);
+                PlotTagGroups.Add(PassiveTagGroup);
+            }
+            else
+            {
+                // 解析JSON失败日志
+                UE_LOG(LogTAEventSystem, Warning, TEXT("解析JSON失败: %s"), *Message.message.content);
+            }
+        }
+        else
+        {
+             // 请求失败打印错误信息
+             UE_LOG(LogTAEventSystem, Error, TEXT("请求失败: %s"), *ErrorMessage);
+        }
+    },GetWorld());
+	
+	/* 旧版本
 	UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings,
 		[this](const FChatCompletion& Message, const FString& ErrorMessage, bool bWasSuccessful)
 		{
@@ -205,6 +270,7 @@ void UTAPlotManager::ParseNewEventToTagGroups()
 				 UE_LOG(LogTAEventSystem, Error, TEXT("请求失败: %s"), *ErrorMessage);
 			}
 		},GetWorld());
+		*/
 }
 
 
@@ -333,6 +399,97 @@ const FTAPrompt UTAPlotManager::PromptCompressShoutHistory = FTAPrompt{
 // 这个不能热更
 const FTAPrompt UTAPlotManager::PromptTagEvent = FTAPrompt{
 	TEXT(
+	R""""(
+Please analyze the events and dialogue content I subsequently provide you in the game and generate a set of structured tags called action records, which will be used to detect and trigger new game events. These tags should reflect what specific actions took place. Specifically:
+Character tags: Identify the subject of the action, such as Joan, Robert, etc.
+Action tags: Describe the actions performed by characters, such as "open", "accept".
+Activity tags: Indicate the general type of action, such as "trade", "quest", "monster".
+Activity detail tags: Provide specific information about the activity, which can be further divided into several tags, such as the name of the quest, target object, who assigned the quest.
+The response should use the following JSON format:
+{
+"guideline":"Faithfully record the actions that have actually occurred, do not conjecture actions that have not yet occurred, reply with Chinese tags, only decompose the latest message, do not leave second_analysis empty",
+"analysis":"What is the latest message, what happened in this message. Analyse the details inside, which may include proactive actions. Lastly, please have second_analysis raise doubts.",
+"second_analysis":"What analysis says can't actually be confirmed, because X, question",
+"combine_analysis":"The doubt raised by second_analysis about X is indeed reasonable (we generally consider the point of question to be reasonable), so we cannot record X, but should instead record X. Only give proactive records here.",
+"proactive_action":
+{
+"action": "Description of proactive action, A did what to B, character is A",
+"character_tag": "Proactive character",
+"action_tag": "Proactive behavior",
+"activity_tag": "Proactive activity",
+"activity_detail_tags": ["Proactive activity detail 1", "Proactive activity detail 2", ...]
+},
+"passive_reverse":"What is the action_tag of the proactive action, who is the initiator and who is the receiver, reversed, how should the passive record be written",
+"passive_action":
+{
+"action": "The passive action corresponding to the proactive action, it's the semantic passive of the proactive action, B was done what by A, character is B",
+"character_tag": "Passive character",
+"action_tag": "Passive behavior",
+"activity_tag": "Passive activity",
+"activity_detail_tags": ["Passive activity detail 1", "Passive activity detail 2", ...]
+}
+}
+Please focus only on the last message, as it represents the newly occurred action. You have already dealt with the actions that happened before. Showing them now is just to keep the context intact without loss.
+Example:
+{
+"guideline":"Faithfully record the actions that have actually occurred, do not conjecture actions that have not yet occurred, reply with Chinese tags, only decompose the latest message, do not leave second_analysis empty",
+"analysis":"The latest message is 'Adventurer, I've taken it, now let me take a look at this letter', here adventurer refers to Robert, in the previous message Joan had the action of giving out the letter, Robert's reply of taking it shows that he has got the letter, next he wants to check the letter. Decomposed into Joan delivering the letter and Robert checking the letter. Please have second_analysis raise doubts.",
+"second_analysis":"What analysis says can't actually be confirmed, because Robert says he took it, it might just be an expectation, the letter might still be with Joan, Robert might not have reached out to take it. Is the letter definitely in Robert's hands? Does Robert's statement necessarily mean he received it?",
+"combine_analysis":"The doubt raised by second_analysis that Robert might not have the letter is reasonable, because there is no action given by Joan, nor an accepting action by Robert, we need to wait until Robert actively takes the letter, or expresses that he has seen the content of the letter to be fully certain. So it cannot be decomposed into Robert obtained the letter, because we cannot be certain it was obtained, hoping for something does not mean it has already happened, we need to accurately describe the things that have happened, not conjecture about things not clearly occurred, we need to decompose it into Robert asking Joan for the letter",
+"proactive_action":
+{
+"action": "Robert asks Joan for the letter",
+"character_tag": "罗伯特",
+"action_tag": "要求",
+"activity_tag": "信件",
+"activity_detail_tags": ["天山信件", "琼"]
+},
+"passive_reverse":"The action_tag of the proactive action is request, initiator is Robert, receiver is Joan, reversed, the passive record should be written as Joan being requested by Robert for the letter.",
+"passive_action":
+{
+"action": "Joan is requested by Robert for the letter",
+"character_tag": "琼",
+"action_tag": "被请求",
+"activity_tag": "信件",
+"activity_detail_tags": ["天山信件", "罗伯特"]
+}
+}
+Next example:
+{
+"guideline":"Faithfully record the actions that have actually occurred, do not conjecture actions that have not yet occurred, reply with Chinese tags, only decompose the latest message, do not leave second_analysis empty",
+"analysis":"The latest message is 'I nod', Joan is nodding because in the previous message Robert was asking Joan if she accepts the task, the nodding action means Joan accepts the task of finding the sword from Robert. Decompose into accepting task proactive and passive actions. Please have second_analysis raise doubts.",
+"second_analysis":"What analysis says can't actually be confirmed, because Joan might not be agreeing to what Robert said. Does Joan's nodding equal accepting the task?",
+"combine_analysis":"Whether Joan definitely accepted the task as questioned by second_analysis is uncertain because Robert only mentioned the task, he didn't talk about any other topic, and Joan's nodding action is proactive, Joan's intention of nodding can only be towards Robert's task, so it cannot be decomposed into Joan nodding to Robert, we need to accurately describe the events that have taken place, we need to further refine, need to decompose it into Joan accepting the task",
+"proactive_action":
+{
+"action": "Joan accepts the task",
+"character_tag": "琼",
+"action_tag": "接受",
+"activity_tag": "任务",
+"activity_detail_tags": ["寻找宝剑", "罗伯特"]
+},
+"passive_reverse":"The action_tag of the proactive action is accept, the initiator is Joan, the receiver is the task, reversed, the passive record should be written as the task being accepted by Joan",
+"passive_action":
+{
+"action": "The task is accepted by Joan",
+"character_tag": "寻找宝剑",
+"action_tag": "被接受",
+"activity_tag": "任务",
+"activity_detail_tags": ["寻找宝剑", "罗伯特"]
+}
+}
+Please reply with Chinese tags in the tags fields to comply with our system's protocol.
+Extract and tag according to the instructions, focusing on the last content of the following game events/dialogue content:
+	)""""),
+	1,
+	true
+};
+
+/*
+
+旧版拆标签
+const FTAPrompt UTAPlotManager::PromptTagEvent = FTAPrompt{
+	TEXT(
 	"Please analyze the narrative content of the provided game event and generate a structured set of tags."
 	"These tags should sequentially reflect the key initiator (person/object), the specific action taken, and the individual/object affected or the specific item involved."
 	"Your task is to format the response as a JSON array, with each element representing a distinct event or action sequence and an associated set of tags."
@@ -361,3 +518,4 @@ const FTAPrompt UTAPlotManager::PromptTagEvent = FTAPrompt{
 	1,
 	true
 };
+*/
