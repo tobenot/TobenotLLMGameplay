@@ -39,6 +39,29 @@ struct FTagEmbeddingData
 	ETagEmbeddingStatus Status = ETagEmbeddingStatus::NotEmbedded;
 };
 
+USTRUCT()
+struct FEmbeddingArchive
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	FName Tag;
+
+	UPROPERTY()
+	FHighDimensionalVector EmbeddingVector;
+
+	UPROPERTY()
+	FString ModelName;
+
+	friend FArchive& operator<<(FArchive& Ar, FEmbeddingArchive& ArchiveData)
+	{
+		Ar << ArchiveData.Tag;
+		Ar << ArchiveData.EmbeddingVector;
+		Ar << ArchiveData.ModelName;
+		return Ar;
+	}
+};
+
 /**
  * 词嵌系统基类，继承自游戏实例子系统
  */
@@ -75,4 +98,7 @@ protected:
 
 private:
 	bool bHasTagEmbedding = false;
+	FString GetSaveFilePath(const FName& Tag, const FString& ModelName) const;
+	bool SaveEmbeddingToArchive(const FName& Tag, const FHighDimensionalVector& EmbeddingVector, const FString& ModelName);
+	bool LoadEmbeddingFromArchive(const FName& Tag, const FString& ModelName, FHighDimensionalVector& OutEmbeddingVector);
 };
