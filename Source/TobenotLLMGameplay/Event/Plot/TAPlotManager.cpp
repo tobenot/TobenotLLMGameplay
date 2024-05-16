@@ -70,12 +70,12 @@ void UTAPlotManager::CheckEventsTagGroupCondition(TArray<FTAEventInfo>& Events)
                 bHasOrGroup = true;
             }
     		FHighDimensionalVector PresetTagEmbedding;
-
+    		
     		// 迭代此剧情标签组中的所有标签
     		for (int32 PlotTagIndex = 0; PlotTagIndex < PlotTagGroups.Num(); ++PlotTagIndex)
     		{
     			const FTATagGroup& PlotGroup = PlotTagGroups[PlotTagIndex];
-    			// 每个事件记录独立
+    			// 每个事件记录独立 记录 当前预设组匹配到的下标
     			TagIndex = 0;
     			if(!EmbeddingSystem->GetTagEmbedding(PresetGroup.Tags[TagIndex], PresetTagEmbedding))
     			{
@@ -83,20 +83,38 @@ void UTAPlotManager::CheckEventsTagGroupCondition(TArray<FTAEventInfo>& Events)
     			}
     			
     			for (int i = 0; i < PlotGroup.Tags.Num(); ) {
+    				if(PresetGroup.FlagIndex == TagIndex + 1)
+    				{
+    					// 预设里的动作tag必须和第二个剧情tag匹配
+    					if(i>1)
+    					{
+    						break;
+    					}else if(!i)
+    					{
+    						++i;
+    						continue;
+    					}
+    				}
+    				
     				const FName& PlotTag = PlotGroup.Tags[i];
     				bool IsMatch = PlotTag.IsEqual(PresetGroup.Tags[TagIndex]); //完全相同的直接成功
     				if(!IsMatch)
     				{
     					FHighDimensionalVector PlotTagEmbedding;
     					if (EmbeddingSystem->GetTagEmbedding(PlotTag, PlotTagEmbedding)) {
-    						float Similarity = UTAEmbeddingSystem::CalculateCosineSimilarity(PresetTagEmbedding, PlotTagEmbedding);
+    						float Similarity = GetCachedCosineSimilarity(PresetGroup.Tags[TagIndex], PlotTag, PresetTagEmbedding, PlotTagEmbedding);
     						if(Similarity > 0.5 && Similarity < 1)
     						{
-    							UE_LOG(LogTAEventSystem, Warning,
-								TEXT("大于0.5小于1的日志: 当前的预设前置 '%s' 与剧情标签 '%s' 的嵌入向量余弦相似度为：%f"),
-								*PresetGroup.Tags[TagIndex].ToString(), *PlotTag.ToString(), Similarity);
+    							FString LogPairKey = PresetGroup.Tags[TagIndex].ToString() + TEXT("_") + PlotTag.ToString();
+    							if (!PrintedLogPairs.Contains(LogPairKey))
+    							{
+    								UE_LOG(LogTAEventSystem, Warning,
+										TEXT("大于0.5小于1的日志: 当前的预设前置 '%s' 与剧情标签 '%s' 的嵌入向量余弦相似度为：%f"),
+										*PresetGroup.Tags[TagIndex].ToString(), *PlotTag.ToString(), Similarity);
+    								PrintedLogPairs.Add(LogPairKey);
+    							}
     						}
-    						if (Similarity > 0.65) {
+    						if (Similarity > 0.62) {
     							IsMatch = true;
     						}
     					}
@@ -116,7 +134,7 @@ void UTAPlotManager::CheckEventsTagGroupCondition(TArray<FTAEventInfo>& Events)
     					}
     					continue; // 匹配成功，继续使用当前的剧情标签进行下一轮匹配
     				}
-    				i++;  // 当前标签无匹配或匹配不成功，移动到下一个标签
+    				i++;  // 当前标签无匹配或匹配不成功，移动到下一个剧情标签
     			}
 
     			if (bCurrentGroupConditionMet) {
@@ -188,13 +206,32 @@ void UTAPlotManager::ParseNewEventToTagGroups()
                 TArray<TSharedPtr<FJsonValue>> ProactiveDetailTagsJsonArray = ProactiveAction->GetArrayField("activity_detail_tags");
                 for (auto& JsonValue : ProactiveDetailTagsJsonArray)
                 {
-                    ProactiveTags.Add(FName(*JsonValue->AsString()));
+                    FName Tag = FName(*JsonValue->AsString());
+                    if (!Tag.IsNone())
+                    {
+                        ProactiveTags.Add(Tag);
+                    }
                 }
 
-                // 将proactive_tags存入TagGroup结构体中
-                FTATagGroup ProactiveTagGroup;
-                ProactiveTagGroup.Tags.Append(ProactiveTags);
+                // 在将标签添加到标签组之前进行验证
+                bool bIsValidTagGroup = true;
+                for (const auto& Tag : ProactiveTags)
+                {
+                    if (Tag.IsNone())
+                    {
+                        bIsValidTagGroup = false;
+                        break;
+                    }
+                }
 
+                if (bIsValidTagGroup)
+                {
+                    // 将proactive_tags存入TagGroup结构体中
+                    FTATagGroup ProactiveTagGroup;
+                    ProactiveTagGroup.Tags.Append(ProactiveTags);
+                    PlotTagGroups.Add(ProactiveTagGroup);
+                }
+                
                 // 解析passive_action并存储tags
                 TSharedPtr<FJsonObject> PassiveAction = JsonObject->GetObjectField("passive_action");
 
@@ -204,31 +241,46 @@ void UTAPlotManager::ParseNewEventToTagGroups()
                 PassiveTags.Add(FName(*PassiveAction->GetStringField("activity_tag")));
 
                 TArray<TSharedPtr<FJsonValue>> PassiveDetailTagsJsonArray = PassiveAction->GetArrayField("activity_detail_tags");
-                for (auto& JsonValue : PassiveDetailTagsJsonArray)
-                {
-                    PassiveTags.Add(FName(*JsonValue->AsString()));
-                }
-                
-                // 将passive_tags存入TagGroup结构体中
-                FTATagGroup PassiveTagGroup;
-                PassiveTagGroup.Tags.Append(PassiveTags);
+            	for (auto& JsonValue : PassiveDetailTagsJsonArray)
+            	{
+					FName Tag = FName(*JsonValue->AsString());
+					if (!Tag.IsNone())
+					{
+						PassiveTags.Add(Tag);
+					}
+				}
 
-                // 将ProactiveTagGroup 和 PassiveTagGroup加入PlotTagGroups
-                PlotTagGroups.Add(ProactiveTagGroup);
-                PlotTagGroups.Add(PassiveTagGroup);
-            }
-            else
-            {
-                // 解析JSON失败日志
-                UE_LOG(LogTAEventSystem, Warning, TEXT("解析JSON失败: %s"), *Message.message.content);
-            }
-        }
-        else
-        {
-             // 请求失败打印错误信息
-             UE_LOG(LogTAEventSystem, Error, TEXT("请求失败: %s"), *ErrorMessage);
-        }
-    },GetWorld());
+				// 在将标签添加到标签组之前进行验证
+				bIsValidTagGroup = true;
+				for (const auto& Tag : PassiveTags)
+				{
+					if (Tag.IsNone())
+					{
+						bIsValidTagGroup = false;
+						break;
+					}
+				}
+
+				if (bIsValidTagGroup)
+				{
+					// 将passive_tags存入TagGroup结构体中
+					FTATagGroup PassiveTagGroup;
+					PassiveTagGroup.Tags.Append(PassiveTags);
+					PlotTagGroups.Add(PassiveTagGroup);
+				}
+			}
+			else
+			{
+				// 解析JSON失败日志
+				UE_LOG(LogTAEventSystem, Warning, TEXT("解析JSON失败: %s"), *Message.message.content);
+			}
+		}
+		else
+		{
+			// 请求失败打印错误信息
+			UE_LOG(LogTAEventSystem, Error, TEXT("请求失败: %s"), *ErrorMessage);
+		}
+	},GetWorld());
 	
 	/* 旧版本
 	UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings,
@@ -377,6 +429,28 @@ FString UTAPlotManager::JoinShoutHistory()
 	// Trim and remove any excess whitespace if necessary
 	Result = Result.TrimStartAndEnd();
 	return Result;
+}
+
+float UTAPlotManager::GetCachedCosineSimilarity(FName TagA, FName TagB, const FHighDimensionalVector& VectorA, const FHighDimensionalVector& VectorB)
+{
+	const TPair<FName, FName> TagPair = TPair<FName, FName>(TagA, TagB);
+
+	// 尝试从缓存中获取结果
+	if (const float* CachedSimilarity = SimilarityCache.Find(TagPair))
+	{
+		return *CachedSimilarity;
+	}
+	else
+	{
+		// 如果缓存中未找到，需要调用计算相似度的函数
+		// 注意：这里假设UTAEmbeddingSystem类有一个静态方法可以直接使用两个FName标签进行相似度计算
+		const float Similarity = UTAEmbeddingSystem::CalculateCosineSimilarity(VectorA, VectorB);
+
+		// 将结果添加到缓存
+		SimilarityCache.Add(TagPair, Similarity);
+
+		return Similarity;
+	}
 }
 
 const FTAPrompt UTAPlotManager::PromptCompressShoutHistory = FTAPrompt{

@@ -23,6 +23,10 @@ struct FTATagGroup
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Plot Tags")
     TArray<FName> Tags;
 
+    // can use for logic/cache, 在事件配置里，其表示第几个tag必须是action_tag，标0就是没这个要求。标1就是第一个tag必须在action_tag里面被匹配到
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Plot Tags")
+    int FlagIndex = 0;
+    
     // can use for logic/cache, 在事件配置里，false表示或，true表示与，一个事件要满足前置，必须全部与组匹配，且如果有或组的话，至少有一个或组匹配
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Plot Tags")
     bool Flag = false;
@@ -110,4 +114,11 @@ public:
     bool bEnableCompressShout = true;
     
     FString JoinShoutHistory();
+    
+private:
+    TSet<FString> PrintedLogPairs;
+    TMap<TPair<FName, FName>, float> SimilarityCache;
+
+public:
+    float GetCachedCosineSimilarity(FName TagA, FName TagB, const FHighDimensionalVector& VectorA, const FHighDimensionalVector& VectorB);
 };
