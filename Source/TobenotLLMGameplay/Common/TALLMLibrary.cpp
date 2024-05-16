@@ -48,6 +48,11 @@ UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& Ch
     	}
         if (Success && bResponseFormatMet)
         {
+			int32 ThisTimeTokens = Message.totalTokens;
+			float ThisTimeCost = static_cast<float>(ThisTimeTokens) / 1000 * 0.006f;
+			TotalTokens += ThisTimeTokens;
+			TotalCost += ThisTimeCost;
+
             // 处理成功的响应
         	if(LogObject && LogObject->IsValidLowLevel())
         	{
@@ -56,11 +61,24 @@ UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& Ch
 				{
 					const FString ResponseStr = FString::Printf(TEXT("[%s] Assistant Response:\n%s\n"), *LogObject->GetName(),*Message.message.content);
 					CategoryLogSubsystem->WriteLog(TEXT("Chat"), *ResponseStr);
+
+					// 记录本次tokens数和花费
+					const FString ThisTimeLogStr = FString::Printf(TEXT("This time tokens: %d, This time cost: %.3f $"), ThisTimeTokens, ThisTimeCost);
+					CategoryLogSubsystem->WriteLog(TEXT("Chat"), *ThisTimeLogStr);
+
+					// 包括总token数和总花费
+					const FString CostLogStr = FString::Printf(TEXT("Total tokens: %d, Total cost: %.3f $"), TotalTokens, TotalCost);
+					CategoryLogSubsystem->WriteLog(TEXT("Chat"), *CostLogStr);
+					
+					UE_LOG(LogTAChat, Log, TEXT("This time tokens: %d, This time cost: %.3f $"), ThisTimeTokens, ThisTimeCost);
+					UE_LOG(LogTAChat, Log, TEXT("Total tokens: %d, Total cost: %.3f $"), TotalTokens, TotalCost);
 				}
         		Callback(Message, ErrorMessage, true);
 			}else
 			{
 				UE_LOG(LogTAChat, Log, TEXT("Response success: %s"), *Message.message.content);
+				UE_LOG(LogTAChat, Log, TEXT("This time tokens: %d, This time cost: %.3f $"), ThisTimeTokens, ThisTimeCost);
+				UE_LOG(LogTAChat, Log, TEXT("Total tokens: %d, Total cost: %.3f $"), TotalTokens, TotalCost);
 			}
 			//Chat = nullptr;
         }
@@ -151,6 +169,12 @@ FString UTALLMLibrary::PromptToStr(const FTAPrompt& Prompt)
 				*Prompt.PromptTemplate,
 				!Prompt.PromptExample.IsEmpty() ? *FString::Printf(TEXT("Example:%s;"), *Prompt.PromptExample) : TEXT(""),
 				Prompt.bUseJsonFormat ? TEXT("reply in json format;") : TEXT(""));
+}
+
+void UTALLMLibrary::GetAccumulatedTokenCost(int32& TotalTokenCount, float& AccumulatedCost)
+{
+	TotalTokenCount = TotalTokens;
+	AccumulatedCost = TotalCost;
 }
 
 UOpenAIChat* UTALLMLibrary::DownloadImageFromPollinations(const FString& ImagePrompt, const FTAImageDownloadedDelegate & OnDownloadComplete, const FTAImageDownloadedDelegate & OnDownloadFailed, const UObject* LogObject)

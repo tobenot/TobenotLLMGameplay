@@ -40,10 +40,16 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "Prompt")
 	static FString PromptToStr(const FTAPrompt& Prompt);
+
+	UFUNCTION(BlueprintCallable, Category = "Token Accounting")
+	static void GetAccumulatedTokenCost(int32 &TotalTokenCount, float &AccumulatedCost);
+	
 private:
 	// 最大重试次数和重试间隔定义
 	static constexpr int32 MaxRetryCount = 3;
 	static constexpr float RetryDelay = 3.0f;
+	inline static int32 TotalTokens = 0;
+	inline static float TotalCost = 0.0f;
 	
 private:
 	/** Handles image requests coming from the web */
