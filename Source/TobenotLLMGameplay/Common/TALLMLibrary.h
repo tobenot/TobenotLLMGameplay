@@ -44,6 +44,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Token Accounting")
 	static void GetAccumulatedTokenCost(int32 &TotalTokenCount, float &AccumulatedCost);
 	
+	UFUNCTION(BlueprintCallable, Category = "Token Accounting")
+	static void GetLogObjectTokenCosts(TArray<FString>& LogObjectNames, TArray<int32>& TotalTokenCounts, TArray<float>& AccumulatedCosts);
+
 private:
 	// 最大重试次数和重试间隔定义
 	static constexpr int32 MaxRetryCount = 3;
@@ -51,6 +54,17 @@ private:
 	inline static int32 TotalTokens = 0;
 	inline static float TotalCost = 0.0f;
 	
+	// 定义结构体用于存储每个LogObject的token统计和花费
+	struct FTokenCostStats
+	{
+		int32 TotalTokens;
+		float TotalCost;
+
+		FTokenCostStats() : TotalTokens(0), TotalCost(0.0f) {}
+	};
+	
+	static TMap<FString, FTokenCostStats> LogObjectTokenCosts;
+
 private:
 	/** Handles image requests coming from the web */
 	static void HandleImageRequest(FHttpRequestPtr HttpRequest, const FHttpResponsePtr&  HttpResponse, bool bSucceeded, const FTAImageDownloadedDelegate & OnDownloadComplete, const FTAImageDownloadedDelegate & OnDownloadFailed);

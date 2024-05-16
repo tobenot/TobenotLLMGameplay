@@ -18,6 +18,8 @@
 #include "Chat/TAChatLogCategory.h"
 #include "TobenotToolkit/Debug/CategoryLogSubsystem.h"
 
+TMap<FString, UTALLMLibrary::FTokenCostStats> UTALLMLibrary::LogObjectTokenCosts;
+
 EOAChatEngineType UTALLMLibrary::GetChatEngineTypeFromQuality(const ELLMChatEngineQuality Quality)
 {
 	switch (Quality)
@@ -49,10 +51,10 @@ UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& Ch
         if (Success && bResponseFormatMet)
         {
 			int32 ThisTimeTokens = Message.totalTokens;
-			float ThisTimeCost = static_cast<float>(ThisTimeTokens) / 1000 * 0.006f;
+			float ThisTimeCost = static_cast<float>(ThisTimeTokens) / 10000000 * 0.75f; // 官网定价
 			TotalTokens += ThisTimeTokens;
 			TotalCost += ThisTimeCost;
-
+        	
             // 处理成功的响应
         	if(LogObject && LogObject->IsValidLowLevel())
         	{
@@ -73,6 +75,22 @@ UOpenAIChat* UTALLMLibrary::SendMessageToOpenAIWithRetry(const FChatSettings& Ch
 					UE_LOG(LogTAChat, Log, TEXT("This time tokens: %d, This time cost: %.3f $"), ThisTimeTokens, ThisTimeCost);
 					UE_LOG(LogTAChat, Log, TEXT("Total tokens: %d, Total cost: %.3f $"), TotalTokens, TotalCost);
 				}
+        		
+                // 更新每个LogObject的统计信息
+                FString LogObjectName = LogObject->GetName();
+                if (LogObjectTokenCosts.Contains(LogObjectName))
+                {
+                	LogObjectTokenCosts[LogObjectName].TotalTokens += ThisTimeTokens;
+                	LogObjectTokenCosts[LogObjectName].TotalCost += ThisTimeCost;
+                }
+                else
+                {
+                	FTokenCostStats InitialStats;
+                	InitialStats.TotalTokens = ThisTimeTokens;
+                	InitialStats.TotalCost = ThisTimeCost;
+                	LogObjectTokenCosts.Add(LogObjectName, InitialStats);
+                }
+        		
         		Callback(Message, ErrorMessage, true);
 			}else
 			{
@@ -175,6 +193,21 @@ void UTALLMLibrary::GetAccumulatedTokenCost(int32& TotalTokenCount, float& Accum
 {
 	TotalTokenCount = TotalTokens;
 	AccumulatedCost = TotalCost;
+}
+
+void UTALLMLibrary::GetLogObjectTokenCosts(TArray<FString>& LogObjectNames, TArray<int32>& TotalTokenCounts,
+	TArray<float>& AccumulatedCosts)
+{
+	LogObjectNames.Empty();
+	TotalTokenCounts.Empty();
+	AccumulatedCosts.Empty();
+
+	for (const auto& Elem : LogObjectTokenCosts)
+	{
+		LogObjectNames.Add(Elem.Key);
+		TotalTokenCounts.Add(Elem.Value.TotalTokens);
+		AccumulatedCosts.Add(Elem.Value.TotalCost);
+	}
 }
 
 UOpenAIChat* UTALLMLibrary::DownloadImageFromPollinations(const FString& ImagePrompt, const FTAImageDownloadedDelegate & OnDownloadComplete, const FTAImageDownloadedDelegate & OnDownloadFailed, const UObject* LogObject)
