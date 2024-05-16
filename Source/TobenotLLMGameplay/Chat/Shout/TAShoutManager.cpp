@@ -82,12 +82,12 @@ void UTAShoutManager::BroadcastShout(const FChatCompletion& Message, AActor* Sho
 			}
 		}
 
-		// 网状叙事系统监听所有完整消息先
+		// 网状叙事系统监听只有message的消息
 		UWorld* World = GetWorld();
 		UTAPlotManager* PlotManager = World->GetSubsystem<UTAPlotManager>();
 		if(PlotManager)
 		{
-			PlotManager->ProcessShoutInGame(Message, Shouter, Volume);
+			PlotManager->ProcessShoutInGame(NewMessage, Shouter, Volume);
 		}
 	}
 }

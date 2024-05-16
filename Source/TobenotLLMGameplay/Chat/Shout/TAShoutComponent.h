@@ -140,5 +140,5 @@ private:
 	FString LastMessageContent;
 	
 	float LastRequestToSpeakTimestamp = -10.f; // 上次RequestToSpeak的时间戳
-	float RequestToSpeakInterval = 6.f; // 定义最小RequestToSpeak间隔限制时间，X秒，在这个间隔内再调用会被拖到 X秒的时限上
+	float RequestToSpeakInterval = 10.f; // 定义最小RequestToSpeak间隔限制时间，X秒，在这个间隔内再调用会被拖到 X秒的时限上
 };

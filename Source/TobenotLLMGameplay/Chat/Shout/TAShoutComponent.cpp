@@ -159,7 +159,7 @@ void UTAShoutComponent::RequestToSpeak()
 	// 构造系统提示的ChatLog对象
 	const FString SystemPrompt = GetSystemPromptFromOwner()
 		+ "Your long-term memory: " + ShoutHistoryCompressedStr + "."
-		+ ". Output {\"no_response_needed\": \"No response needed because [Your_Reason_Here]\"} when the conversation is becoming boring"
+		+ ". Output {\"no_response_needed\": \"No response needed because [Your_Reason_Here], and explain when you will speak again\"} when dialogue is becoming rubbish."
 		+ (IsPartner ? " or not point at you. ":". ")
 		+ "Nearby agents: " + GetNearbyAgentNames();
 	
