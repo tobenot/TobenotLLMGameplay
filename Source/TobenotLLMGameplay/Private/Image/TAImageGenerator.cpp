@@ -2,7 +2,7 @@
 
 // TAImageGenerator.cpp
 
-#include "TAImageGenerator.h"
+#include "Image/TAImageGenerator.h"
 
 #include "IImageWrapperModule.h"
 #include "IImageWrapper.h"

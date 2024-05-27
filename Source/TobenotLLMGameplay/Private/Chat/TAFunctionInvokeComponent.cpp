@@ -1,10 +1,10 @@
 // Copyright (c) 2024 tobenot, See LICENSE in the project root for license information.
 
 
-#include "TAFunctionInvokeComponent.h"
+#include "Chat/TAFunctionInvokeComponent.h"
 #include "Chat/TAChatLogCategory.h"
+#include "Chat/Shout/TAShoutComponent.h"
 #include "Event/Core/TAEventSubsystem.h"
-#include "Shout/TAShoutComponent.h"
 
 DEFINE_LOG_CATEGORY(LogFunctionInvoke);
 

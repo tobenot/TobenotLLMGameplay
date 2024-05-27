@@ -1,9 +1,9 @@
 // Copyright (c) 2024 tobenot, See LICENSE in the project root for license information.
 
 // DialogueManager.cpp
-#include "TADialogueManager.h"
+#include "Chat/Dialogue/TADialogueManager.h"
 
-#include "TADialogueComponent.h"
+#include "Chat/Dialogue/TADialogueComponent.h"
 #include "Chat/TAChatLogCategory.h"
 
 UTADialogueInstance* UTADialogueManager::CreateDialogueInstance(UObject* WorldContext)

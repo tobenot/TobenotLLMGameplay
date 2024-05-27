@@ -1,6 +1,6 @@
 // Copyright (c) 2024 tobenot, See LICENSE in the project root for license information.
 
-#include "TAPlaceActor.h"
+#include "Scene/TAPlaceActor.h"
 #include "Components/SphereComponent.h"
 
 // Sets default values

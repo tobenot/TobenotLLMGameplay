@@ -1,14 +1,14 @@
 // Copyright (c) 2024 tobenot, See LICENSE in the project root for license information.
 
 
-#include "TAEventInstance.h"
+#include "Event/Core/TAEventInstance.h"
 
-#include "TAEventSubsystem.h"
+#include "Event/Core/TAEventSubsystem.h"
 #include "Agent/TAAgentInterface.h"
 #include "Event/TAEventLogCategory.h"
 #include "Save/TASaveGameSubsystem.h"
 #include "Scene/TASceneSubsystem.h"
-#include "Shout/TAShoutComponent.h"
+#include "Chat/Shout/TAShoutComponent.h"
 
 void UTAEventInstance::TriggerEvent()
 {

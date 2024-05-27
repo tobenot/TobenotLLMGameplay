@@ -1,6 +1,6 @@
 // Copyright (c) 2024 tobenot, See LICENSE in the project root for license information.
 
-#include "TAChatMessageItemWidget.h"
+#include "UI/TAChatMessageItemWidget.h"
 
 void UTAChatMessageItemWidget::SetupMessage(const FString& Message, AActor* Sender, const FString& DynamicParam)
 {

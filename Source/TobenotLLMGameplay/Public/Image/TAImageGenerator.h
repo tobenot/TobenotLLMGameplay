@@ -7,7 +7,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "TobenotLLMGameplay/Common/TALLMLibrary.h"
+#include "Common/TALLMLibrary.h"
 #include "TAImageGenerator.generated.h"
 
 class UOpenAIChat;

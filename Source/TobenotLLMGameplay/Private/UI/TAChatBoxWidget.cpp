@@ -1,8 +1,8 @@
 // Copyright (c) 2024 tobenot, See LICENSE in the project root for license information.
 
 
-#include "TAChatBoxWidget.h"
-#include "TAChatMessageItemWidget.h"
+#include "UI/TAChatBoxWidget.h"
+#include "UI/TAChatMessageItemWidget.h"
 
 UTAChatBoxWidget::UTAChatBoxWidget(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)

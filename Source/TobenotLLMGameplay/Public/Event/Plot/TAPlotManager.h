@@ -3,7 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "TAPromptDefinitions.h"
+#include "Common/TAPromptDefinitions.h"
+
 #include "Subsystems/WorldSubsystem.h"
 #include "TAPlotManager.generated.h"
 

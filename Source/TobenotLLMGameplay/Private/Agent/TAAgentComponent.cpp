@@ -1,7 +1,8 @@
-#include "TAAgentComponent.h"
+
+#include "Agent/TAAgentComponent.h"
 #include "TimerManager.h"
 #include "Chat/Shout/TAShoutComponent.h"
-#include "Shout/TAShoutManager.h"
+#include "Chat/Shout/TAShoutManager.h"
 
 UTAAgentComponent::UTAAgentComponent()
 {

@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "TobenotLLMGameplay/Common/TAPromptDefinitions.h"
+#include "Common/TAPromptDefinitions.h"
 #include "TADialogueComponent.generated.h"
 
 struct FChatCompletion;

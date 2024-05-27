@@ -1,11 +1,11 @@
 // Copyright (c) 2024 tobenot, See LICENSE in the project root for license information.
 
 
-#include "TAChatComponent.h"
+#include "Chat/TAChatComponent.h"
 #include "OpenAIChat.h"
 #include "OpenAIDefinitions.h"
-#include "TAChatCallback.h"
-#include "TAFunctionInvokeComponent.h"
+#include "Chat/TAChatCallback.h"
+#include "Chat/TAFunctionInvokeComponent.h"
 #include "Agent/TAAgentInterface.h"
 #include "Save/TAGuidInterface.h"
 #include "Common/TALLMLibrary.h"

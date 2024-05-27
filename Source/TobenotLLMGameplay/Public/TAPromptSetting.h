@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "TobenotLLMGameplay/Common/TAPromptDefinitions.h"
+#include "Common/TAPromptDefinitions.h"
 #include "UObject/Object.h"
 #include "TAPromptSetting.generated.h"
 

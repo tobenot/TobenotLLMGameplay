@@ -1,6 +1,6 @@
 // Copyright (c) 2024 tobenot, See LICENSE in the project root for license information.
 
-#include "TAEventInfo.h"
+#include "Event/Data/TAEventInfo.h"
 
 FString FTAEventInfo::ToString() const
 {

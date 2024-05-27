@@ -2,7 +2,7 @@
 
 // TAEventGenerator.cpp
 
-#include "TAEventGenerator.h"
+#include "Event/Generator/TAEventGenerator.h"
 
 #include "OpenAIDefinitions.h"
 #include "Chat/TAChatCallback.h"

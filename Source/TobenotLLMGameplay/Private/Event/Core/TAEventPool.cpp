@@ -1,9 +1,10 @@
 // Copyright (c) 2024 tobenot, See LICENSE in the project root for license information.
 
 
-#include "TAEventPool.h"
+#include "Event/Core/TAEventPool.h"
 
 #include "Event/TAEventLogCategory.h"
+#include "Event/Plot/TAPlotManager.h"
 #include "Save/TAGuidSubsystem.h"
 #include "Scene/TAPlaceActor.h"
 

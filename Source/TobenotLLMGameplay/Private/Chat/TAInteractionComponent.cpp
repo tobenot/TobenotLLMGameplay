@@ -1,10 +1,10 @@
 // Copyright (c) 2024 tobenot, See LICENSE in the project root for license information.
 
 
-#include "TAInteractionComponent.h"
+#include "Chat/TAInteractionComponent.h"
 
-#include "TobenotLLMGameplay/Common/TALLMLibrary.h"
-#include "TobenotLLMGameplay/Common/TASystemLibrary.h"
+#include "Common/TALLMLibrary.h"
+#include "Common/TASystemLibrary.h"
 #include "Chat/TAChatLogCategory.h"
 
 UTAInteractionComponent::UTAInteractionComponent()

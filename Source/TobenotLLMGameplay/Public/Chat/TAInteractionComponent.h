@@ -5,7 +5,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "TobenotLLMGameplay/Common/TAPromptDefinitions.h"
+#include "Common/TAPromptDefinitions.h"
 #include "TAInteractionComponent.generated.h"
 
 USTRUCT(BlueprintType)

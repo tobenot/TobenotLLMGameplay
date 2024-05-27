@@ -6,9 +6,9 @@
 
 #include "CoreMinimal.h"
 #include "TAAgentInterface.h"
-#include "TobenotLLMGameplay/Common/TASystemLibrary.h"
+#include "Common/TASystemLibrary.h"
 #include "GameFramework/Actor.h"
-#include "TobenotLLMGameplay/Save/TAGuidInterface.h"
+#include "Save/TAGuidInterface.h"
 #include "TANarrativeAgent.generated.h"
 
 class UTAShoutComponent;

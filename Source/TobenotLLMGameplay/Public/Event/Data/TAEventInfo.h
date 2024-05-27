@@ -6,10 +6,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Plot/TAPlotManager.h"
+
 #include "TAEventInfo.generated.h"
 
 
+struct FTATagGroup;
 // 定义事件类型枚举
 UENUM(BlueprintType)
 enum class ETAEventType : uint8

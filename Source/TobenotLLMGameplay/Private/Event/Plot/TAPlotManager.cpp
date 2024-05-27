@@ -1,12 +1,13 @@
 ﻿// Copyright (c) 2024 tobenot, See LICENSE in the project root for license information.
 
 
-#include "TAPlotManager.h"
+#include "Event/Plot/TAPlotManager.h"
+
 #include "OpenAIDefinitions.h"
-#include "TAEmbeddingSystem.h"
-#include "TAEventLogCategory.h"
-#include "TALLMLibrary.h"
-#include "Core/TAEventInstance.h"
+#include "Common/TAEmbeddingSystem.h"
+#include "Common/TALLMLibrary.h"
+#include "Event/TAEventLogCategory.h"
+#include "Event/Core/TAEventInstance.h"
 
 class UTAEmbeddingSystem;
 

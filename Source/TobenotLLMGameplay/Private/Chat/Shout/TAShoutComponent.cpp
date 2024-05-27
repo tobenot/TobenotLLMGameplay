@@ -1,7 +1,7 @@
 // Copyright (c) 2024 tobenot, See LICENSE in the project root for license information.
 
 
-#include "TAShoutComponent.h"
+#include "Chat/Shout/TAShoutComponent.h"
 
 #include "OpenAIChat.h"
 #include "Chat/Shout/TAShoutManager.h"

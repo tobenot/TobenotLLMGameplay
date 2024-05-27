@@ -1,14 +1,14 @@
 // Copyright (c) 2024 tobenot, See LICENSE in the project root for license information.
 
 
-#include "TASceneSubsystem.h"
+#include "Scene/TASceneSubsystem.h"
 
 #include "NavigationSystem.h"
-#include "TAPlaceActor.h"
+#include "Scene/TAPlaceActor.h"
 #include "Event/Data/TAEventInfo.h"
-#include "TASceneLogCategory.h"
+#include "Scene/TASceneLogCategory.h"
 #include "TASettings.h"
-#include "TAAreaScene.h"
+#include "Scene/TAAreaScene.h"
 
 FString UTASceneSubsystem::QuerySceneMapInfo()
 {

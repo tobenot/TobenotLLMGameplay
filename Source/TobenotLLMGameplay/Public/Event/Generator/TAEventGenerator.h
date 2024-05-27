@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "TobenotLLMGameplay/Common/TAPromptDefinitions.h"
+#include "Common/TAPromptDefinitions.h"
 #include "TAEventGenerator.generated.h"
 
 struct FChatCompletion;

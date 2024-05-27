@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
-#include "TobenotLLMGameplay/Save/TAGuidInterface.h"
+#include "Save/TAGuidInterface.h"
 #include "UObject/NoExportTypes.h"
 #include "TAPlaceActor.generated.h"
 

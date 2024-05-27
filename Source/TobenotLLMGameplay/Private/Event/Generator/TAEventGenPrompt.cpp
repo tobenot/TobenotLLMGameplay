@@ -1,6 +1,6 @@
-#include "TAEventGenPrompt.h"
+#include "Event/Generator/TAEventGenPrompt.h"
 #include "Common/TAPromptDefinitions.h"
-#include "TAEventGenerator.h"
+#include "Event/Generator/TAEventGenerator.h"
 
 void UTAEventGenerator::InitPrompt()
 {

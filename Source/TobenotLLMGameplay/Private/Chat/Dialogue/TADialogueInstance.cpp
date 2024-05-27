@@ -1,9 +1,9 @@
 // Copyright (c) 2024 tobenot, See LICENSE in the project root for license information.
 
-#include "TADialogueInstance.h"
+#include "Chat/Dialogue/TADialogueInstance.h"
 
 #include "OpenAIDefinitions.h"
-#include "TADialogueComponent.h"
+#include "Chat/Dialogue/TADialogueComponent.h"
 #include "Agent/TAAgentInterface.h"
 #include "Engine/World.h"
 #include "Chat/TAChatLogCategory.h"

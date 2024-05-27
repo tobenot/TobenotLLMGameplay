@@ -1,14 +1,13 @@
 // Copyright (c) 2024 tobenot, See LICENSE in the project root for license information.
 
-
-#include "TAAreaScene.h"
-#include "TAInteractiveActor.h"
-#include "TASceneLogCategory.h"
+#include "Scene/TAAreaScene.h"
+#include "Scene/TAInteractiveActor.h"
 #include "TASettings.h"
 #include "Common/TALLMLibrary.h"
 #include "Common/TASystemLibrary.h"
 #include "Event/Data/TAEventInfo.h"
 #include "Save/TAGuidSubsystem.h"
+#include "Scene/TASceneLogCategory.h"
 
 void UTAAreaScene::LoadAreaScene(const FTAEventInfo& EventInfo)
 {

@@ -1,7 +1,7 @@
 // Copyright (c) 2024 tobenot, See LICENSE in the project root for license information.
 
 
-#include "TAGameLibrary.h"
+#include "Common/TAGameLibrary.h"
 
 TSoftObjectPtr<UTexture2D> UTAGameLibrary::GetRandomTextureFromCategory(const UDataTable* DataTable, const FName& CategoryName)
 {

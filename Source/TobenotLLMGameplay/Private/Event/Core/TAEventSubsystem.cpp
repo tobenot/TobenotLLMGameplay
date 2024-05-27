@@ -1,11 +1,11 @@
 // Copyright (c) 2024 tobenot, See LICENSE in the project root for license information.
 
 
-#include "TAEventSubsystem.h"
+#include "Event/Core/TAEventSubsystem.h"
 
 #include "TASettings.h"
-#include "TAEventInstance.h"
-#include "TAEventPool.h"
+#include "Event/Core/TAEventInstance.h"
+#include "Event/Core/TAEventPool.h"
 #include "Event/TAEventLogCategory.h"
 #include "Event/Generator/TAEventGenerator.h"
 #include "Image/TAImageGenerator.h"

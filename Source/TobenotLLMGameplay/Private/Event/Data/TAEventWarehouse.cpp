@@ -1,7 +1,7 @@
 // Copyright (c) 2024 tobenot, See LICENSE in the project root for license information.
 
 
-#include "TAEventWarehouse.h"
+#include "Event/Data/TAEventWarehouse.h"
 
 #include "Engine/DataTable.h"
 #include "Event/TAEventLogCategory.h"

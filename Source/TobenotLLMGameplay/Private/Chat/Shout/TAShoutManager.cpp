@@ -1,12 +1,12 @@
 // Copyright (c) 2024 tobenot, See LICENSE in the project root for license information.
 
-#include "TAShoutManager.h"
-#include "TAShoutComponent.h"
+#include "Chat/Shout/TAShoutManager.h"
+#include "Chat/Shout/TAShoutComponent.h"
 #include "OpenAIDefinitions.h"
 #include "Agent/TAAgentInterface.h"
 #include "Chat/TAChatLogCategory.h"
 #include "Dom/JsonObject.h"
-#include "Plot/TAPlotManager.h"
+#include "Event/Plot/TAPlotManager.h"
 #include "Serialization/JsonSerializer.h" 
 
 void UTAShoutManager::Initialize(FSubsystemCollectionBase& Collection)

@@ -1,11 +1,11 @@
 // Copyright (c) 2024 tobenot, See LICENSE in the project root for license information.
 
 
-#include "TAInteractiveActor.h"
+#include "Scene/TAInteractiveActor.h"
 
 #include "TASettings.h"
-#include "TobenotLLMGameplay/Chat/TAFunctionInvokeComponent.h"
-#include "TobenotLLMGameplay/Chat/Dialogue/TADialogueComponent.h"
+#include "Chat/TAFunctionInvokeComponent.h"
+#include "Chat/Dialogue/TADialogueComponent.h"
 #include "Components/SphereComponent.h"
 
 void ATAInteractiveActor::OnConstruction(const FTransform& Transform)

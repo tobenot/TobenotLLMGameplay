@@ -5,10 +5,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "TobenotLLMGameplay/Chat/TAInteractionComponent.h"
-#include "TobenotLLMGameplay/Chat/TAChatComponent.h"
-#include "TobenotLLMGameplay/Agent/TAAgentInterface.h"
-#include "TobenotLLMGameplay/Save/TAGuidInterface.h"
+#include "Chat/TAInteractionComponent.h"
+#include "Chat/TAChatComponent.h"
+#include "Agent/TAAgentInterface.h"
+#include "Save/TAGuidInterface.h"
 #include "TAInteractiveActor.generated.h"
 
 class UTADialogueComponent;
