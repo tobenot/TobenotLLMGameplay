@@ -159,8 +159,8 @@ void UTAShoutComponent::RequestToSpeak()
 	// 构造系统提示的ChatLog对象
 	const FString SystemPrompt = GetSystemPromptFromOwner()
 		+ "Your long-term memory: " + ShoutHistoryCompressedStr + "."
-		+ ". Output {\"no_response_needed\": \"No response needed because [Your_Reason_Here], and explain when you will speak again\"} when dialogue is becoming rubbish."
-		+ (IsPartner ? " or not point at you. ":". ")
+		//+ ". Output {\"no_response_needed\": \"No response needed because [Your_Reason_Here], and explain when you will speak again\"} when dialogue is becoming rubbish."
+		//+ (IsPartner ? " or not point at you. ":". ")
 		+ "Nearby agents: " + GetNearbyAgentNames();
 	
 	const FChatLog SystemPromptLog{EOAChatRole::SYSTEM, SystemPrompt};
@@ -430,8 +430,8 @@ UTAShoutComponent* UTAShoutComponent::GetTAShoutComponent(AActor* Actor)
 
 void UTAShoutComponent::RequestChoices()
 {
-	// // 暂时不要这个功能
-	// return;
+	// 暂时不要这个功能
+	return;
 	
 	auto& TempMessagesList = ShoutHistory;
 	//使用系统提示创建ChatLog对象
