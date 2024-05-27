@@ -71,6 +71,11 @@ FString ATAInteractiveActor::GetSystemPrompt()
 	return InteractionComponent->GetFullPrompt();
 }
 
+FString ATAInteractiveActor::GetPersonalityPrompt() const
+{
+	return InteractionComponent->GetFullPrompt();
+}
+
 const FString& ATAInteractiveActor::GetAgentName() const
 {
 	return InteractionComponent->GetInteractableName();

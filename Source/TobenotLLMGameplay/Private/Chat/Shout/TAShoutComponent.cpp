@@ -11,6 +11,7 @@
 #include "Common/TALLMLibrary.h"
 #include "Chat/TAChatLogCategory.h"
 #include "Save/TAGuidInterface.h"
+#include "Scene/TASceneSubsystem.h"
 
 UTAShoutComponent::UTAShoutComponent()
 {
@@ -501,6 +502,162 @@ TArray<FString> UTAShoutComponent::ParseChoicesFromResponse(const FString& Respo
 	}
         
 	return Choices;
+}
+
+FString UTAShoutComponent::GetPerceptionData() const
+{
+    FString PerceptionData = "周围的 Agent 名字：";
+
+    // 获取当前Agent的名字
+    FString CurrentAgentName;
+    const ITAAgentInterface* CurrentAgentInterface = Cast<ITAAgentInterface>(GetOwner());
+    if (CurrentAgentInterface)
+    {
+        CurrentAgentName = CurrentAgentInterface->GetAgentName();
+    }
+
+    // 获取声音可以达到的Agent
+    UTAShoutManager* ShoutManager = GetWorld()->GetSubsystem<UTAShoutManager>();
+    if (ShoutManager)
+    {
+        TArray<UTAShoutComponent*> NearbyAgentComponents = ShoutManager->GetShoutComponentsInRange(const_cast<AActor*>(GetOwner()), 700.f);
+
+        // 遍历Agent，获取他们的名字以及特定的IdentityPositionName
+        for (UTAShoutComponent* AgentComponent : NearbyAgentComponents)
+        {
+            if (AgentComponent && AgentComponent->GetOwner())
+            {
+                const ITAAgentInterface* AgentInterface = Cast<ITAAgentInterface>(AgentComponent->GetOwner());
+                const ITAGuidInterface* GuidInterface = Cast<ITAGuidInterface>(AgentComponent->GetOwner());
+
+                if (AgentInterface && GuidInterface)
+                {
+                    FString AgentName = AgentInterface->GetAgentName();
+                    const FName& IdentityPositionName = GuidInterface->GetIdentityPositionName();
+
+                    // 判断IdentityPositionName是否是"player's partner"或"player"，并在名字后面追加描述
+                    if (IdentityPositionName == "player's partner" || IdentityPositionName == "player")
+                    {
+                        AgentName += " (" + IdentityPositionName.ToString() + ")";
+                    }
+
+                    // 如果AgentName是当前AgentName，则在后面追加"(你)"
+                    if (AgentName == CurrentAgentName)
+                    {
+                        AgentName += " (You)";
+                    }
+
+                    PerceptionData += AgentName + ", ";
+                }
+            }
+        }
+    }
+
+    // 如果存在列表，移除最后添加的", "，否则返回"周围没有Agent"
+    PerceptionData = PerceptionData.IsEmpty() ? "周围没有Agent" : PerceptionData.LeftChop(2);
+
+    // 获取地理位置信息
+    FString CurrentSceneInfo;
+    FString LocationInfo;
+    UTASceneSubsystem* SceneSubsystem = GetWorld()->GetSubsystem<UTASceneSubsystem>();
+    if (SceneSubsystem)
+    {
+        CurrentSceneInfo = SceneSubsystem->QuerySceneMapInfo();
+        LocationInfo = SceneSubsystem->QueryLocationInfo(GetOwner()->GetActorLocation());
+    }
+
+    // 组装感知数据
+    PerceptionData += "\n当前场景信息：" + CurrentSceneInfo;
+    PerceptionData += "\n当前位置：" + LocationInfo;
+
+    return PerceptionData;
+}
+
+FString UTAShoutComponent::GetMemoryData() const
+{
+	FString MemoryData = ShoutHistoryCompressedStr;
+	for (const FChatLog& LogEntry : ShoutHistory)
+	{
+		MemoryData += " " + LogEntry.content;
+	}
+	return MemoryData.TrimStartAndEnd();
+}
+
+void UTAShoutComponent::GenerateDialogueAsync(const FString& SituationDescription, TFunction<void(const FString& Dialogue)> Callback)
+{
+    if (SituationDescription.IsEmpty())
+    {
+        Callback(TEXT("{\"dialogue\":\"Situation description is empty.\"}"));
+        return;
+    }
+
+    // 获取感知数据
+    const FString PerceptionData = GetPerceptionData();
+
+    // 获取记忆数据
+    const FString MemoryData = GetMemoryData();
+
+	const ITAAgentInterface* CurrentAgentInterface = Cast<ITAAgentInterface>(GetOwner());
+	if (!CurrentAgentInterface)
+	{
+		Callback(TEXT("{\"dialogue\":\"Not ITAAgentInterface.\"}"));
+		return;
+	}
+	const FString PersonalityData = CurrentAgentInterface->GetPersonalityPrompt();
+
+    // 构造 JSON 格式的系统提示作为 ChatLog 对象
+    TSharedPtr<FJsonObject> JsonObject = MakeShareable(new FJsonObject);
+    JsonObject->SetStringField("情境描述", SituationDescription);
+	JsonObject->SetStringField("人设数据", PersonalityData);
+    JsonObject->SetStringField("记忆数据", MemoryData);
+    JsonObject->SetStringField("感知数据", PerceptionData);
+
+    FString SystemPrompt;
+    TSharedRef<TJsonWriter<>> Writer = TJsonWriterFactory<>::Create(&SystemPrompt);
+    FJsonSerializer::Serialize(JsonObject.ToSharedRef(), Writer);
+
+    // 添加对输出格式的说明
+    SystemPrompt = "请根据以下描述生成合适的对话，并保证输出为以下JSON格式：\n{\"dialogue\":\"生成的对话内容\"}\n以下是描述的内容：\n" + SystemPrompt;
+
+    TArray<FChatLog> TempMessagesList;
+    TempMessagesList.Add(FChatLog{EOAChatRole::SYSTEM, SystemPrompt});
+
+    // 设置 ChatSettings，包括引擎质量、历史记录等
+    FChatSettings ChatSettings{
+        UTALLMLibrary::GetChatEngineTypeFromQuality(ELLMChatEngineQuality::Fast),
+        TempMessagesList,
+        0
+    };
+    ChatSettings.jsonFormat = true;
+
+    // 发送请求，获取对话结果
+    UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, [Callback](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
+    {
+        if (Success)
+        {
+            // 构建输出的 JSON 格式
+            TSharedPtr<FJsonObject> OutputJsonObject = MakeShareable(new FJsonObject);
+            OutputJsonObject->SetStringField("dialogue", Message.message.content);
+
+            FString OutputString;
+            TSharedRef<TJsonWriter<>> OutputWriter = TJsonWriterFactory<>::Create(&OutputString);
+            FJsonSerializer::Serialize(OutputJsonObject.ToSharedRef(), OutputWriter);
+
+            Callback(OutputString);
+        }
+        else
+        {
+            // 构建错误消息的 JSON 格式
+            TSharedPtr<FJsonObject> ErrorJsonObject = MakeShareable(new FJsonObject);
+            ErrorJsonObject->SetStringField("dialogue", FString::Printf(TEXT("对话生成失败: %s"), *ErrorMessage));
+
+            FString ErrorOutputString;
+            TSharedRef<TJsonWriter<>> ErrorOutputWriter = TJsonWriterFactory<>::Create(&ErrorOutputString);
+            FJsonSerializer::Serialize(ErrorJsonObject.ToSharedRef(), ErrorOutputWriter);
+
+            Callback(ErrorOutputString);
+        }
+    }, nullptr);
 }
 
 void UTAShoutComponent::RequestToSpeakCheckSurrounding()

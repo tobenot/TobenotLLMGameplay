@@ -37,3 +37,13 @@ bool ITAAgentInterface::ConsumeInventoryItem(FName ItemName, int32 ConsumeCount)
 {
 	return false;
 }
+
+FString ITAAgentInterface::GetPerceptionData() const
+{
+	return "未实现感知接口";
+}
+
+FString ITAAgentInterface::GetMemoryData() const
+{
+	return "未实现记忆接口";
+}

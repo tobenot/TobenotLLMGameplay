@@ -182,7 +182,8 @@ public:
 	
 	// 获取系统提示
 	virtual FString GetSystemPrompt() override;
-    
+	virtual FString GetPersonalityPrompt() const override;
+	
 	// 获取Agent的名字
 	virtual const FString& GetAgentName() const override;
 
@@ -198,6 +199,9 @@ public:
 	virtual TMap<FName, int32> QueryInventoryItems() const override;
 	virtual int32 QueryItemAmountByName(FName ItemName) const override;
 	virtual bool ConsumeInventoryItem(FName ItemName, int32 ConsumeCount) override;
+	virtual FString GetPerceptionData() const override;
+	virtual FString GetMemoryData() const override;
+	
 public:
 	virtual bool IsVoiceover() const;
 

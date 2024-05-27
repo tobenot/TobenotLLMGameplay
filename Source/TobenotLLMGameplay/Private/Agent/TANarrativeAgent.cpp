@@ -100,6 +100,15 @@ FString ATANarrativeAgent::GetSystemPrompt()
 	return SystemPrompt + AppendSystemPrompt;
 }
 
+FString ATANarrativeAgent::GetPersonalityPrompt() const
+{
+	if (!TotalDesire.IsEmpty())	
+	{
+		return FString::Printf(TEXT("%s. Your Near Information is:[%s]"), *SystemPrompt, *TotalDesire);
+	}
+	return SystemPrompt + AppendSystemPrompt;
+}
+
 const FString& ATANarrativeAgent::GetAgentName() const
 {
 	return AgentInfo.AgentName;
@@ -157,6 +166,24 @@ bool ATANarrativeAgent::ConsumeInventoryItem(FName ItemName, int32 ConsumeCount)
 		return true;
 	}
 	return false;
+}
+
+FString ATANarrativeAgent::GetPerceptionData() const
+{
+	if (ShoutComponent)
+	{
+		return ShoutComponent->GetPerceptionData();
+	}
+	return "没有感知数据";
+}
+
+FString ATANarrativeAgent::GetMemoryData() const
+{
+	if (ShoutComponent)
+	{
+		return ShoutComponent->GetMemoryData();
+	}
+	return "没有记忆数据";
 }
 
 bool ATANarrativeAgent::IsVoiceover() const

@@ -141,4 +141,15 @@ private:
 	
 	float LastRequestToSpeakTimestamp = -10.f; // 上次RequestToSpeak的时间戳
 	float RequestToSpeakInterval = 10.f; // 定义最小RequestToSpeak间隔限制时间，X秒，在这个间隔内再调用会被拖到 X秒的时限上
+
+public:
+	// 获取感知数据
+	UFUNCTION(BlueprintCallable, Category = "TAShoutComponent")
+	FString GetPerceptionData() const;
+
+	// 获取记忆数据
+	UFUNCTION(BlueprintCallable, Category = "TAShoutComponent")
+	FString GetMemoryData() const;
+	
+	void GenerateDialogueAsync(const FString& SituationDescription, TFunction<void(const FString& Dialogue)> Callback);
 };
