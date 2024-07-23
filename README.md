@@ -2,6 +2,10 @@ Chinese Version is below.
 
 中文版在英文版之后。
 
+main branch is the stable one.
+
+main 分支是稳定分支。
+
 # Introduction to TobenotLLMGameplay Plugin Features
 
 TobenotLLMGameplay: Tobenot's LLM Game Plugin —— "Langchain" for Unreal Engine C++
