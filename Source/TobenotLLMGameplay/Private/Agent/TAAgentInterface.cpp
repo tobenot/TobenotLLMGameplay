@@ -47,3 +47,8 @@ FString ITAAgentInterface::GetMemoryData() const
 {
 	return "未实现记忆接口";
 }
+
+bool ITAAgentInterface::IsAgentPlayer() const
+{
+	return false;
+}

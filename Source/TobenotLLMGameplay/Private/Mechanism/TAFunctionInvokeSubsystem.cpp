@@ -1,15 +1,59 @@
 #include "Mechanism/TAFunctionInvokeSubsystem.h"
+#include "Agent/TAAgentComponent.h"
 #include "GameFramework/Actor.h"
 #include "Engine/World.h"
-
-TMap<FString, FString> UTAFunctionInvokeSubsystem::FunctionDescriptions;
+#include "Save/TASaveGameSubsystem.h"
 
 void UTAFunctionInvokeSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
     Super::Initialize(Collection);
-    FunctionDescriptions.Add("ItemExchange", "在角色之间移动物品。\n调用说明：\"depict\": \"ItemName number SourceCharacter TargetCharacter\"。参数说明：物品名称、数量、源角色和目标角色。\n注意：请确保目标和源均已指定，否则可能导致错误。");
-    FunctionDescriptions.Add("FinishSection", "结束本桥段。\n调用说明：\"depict\": \"\"。参数说明：无。\n注意：使用此函数结束当前桥段，标志着剧情结束，进入下一章。");
-    FunctionDescriptions.Add("MoveToLocation", "移动角色到特定地点。\n调用说明：\"depict\": \"Character LocationName\"。参数说明：目标地点的名称。\n注意：请确保地点存在且角色可以安全移动。");
+
+    FunctionDescriptions.Add("ItemExchange", 
+        TEXT(
+            R""""(
+            在角色之间移动物品。
+            调用说明：{
+                "params": {
+                    "ItemName": "物品名称",
+                    "Number": "数量",
+                    "SourceCharacter": "源角色",
+                    "TargetCharacter": "目标角色"
+                }
+            }
+            )""""));
+
+    FunctionDescriptions.Add("FinishSection", 
+        TEXT(
+            R""""(
+            结束本桥段。
+            调用说明：{
+                "params": {}
+            }
+            无参数。
+            )""""));
+
+    FunctionDescriptions.Add("MoveToLocation", 
+        TEXT(
+            R""""(
+            移动角色到特定地点。
+            调用说明：{
+                "params": {
+                    "Character": "角色",
+                    "LocationName": "目标地点"
+                }
+            }
+            )""""));
+
+    FunctionDescriptions.Add("InvokeImmediateDecision",
+        TEXT(
+            R"""(
+            令角色做出反应。一般用于被对话所指向的若干角色。
+            调用说明：{
+                "params": {
+                    "Character": "角色"
+                }
+            }
+            )"""));
 }
 
 void UTAFunctionInvokeSubsystem::Deinitialize()
@@ -17,9 +61,9 @@ void UTAFunctionInvokeSubsystem::Deinitialize()
     Super::Deinitialize();
 }
 
-FString UTAFunctionInvokeSubsystem::GetFunctionDescription(const FString& FunctionName)
+FString UTAFunctionInvokeSubsystem::GetFunctionDescription(const FString& FunctionName) const
 {
-    FString* Description = FunctionDescriptions.Find(FunctionName);
+    const FString* Description = FunctionDescriptions.Find(FunctionName);
     if (Description)
     {
         return *Description;
@@ -27,7 +71,7 @@ FString UTAFunctionInvokeSubsystem::GetFunctionDescription(const FString& Functi
     return FString("未知函数");
 }
 
-FString UTAFunctionInvokeSubsystem::GetAllFunctionDescriptions()
+FString UTAFunctionInvokeSubsystem::GetAllFunctionDescriptions() const
 {
     FString AllDescriptions;
     for (const auto& Pair : FunctionDescriptions)
@@ -37,7 +81,7 @@ FString UTAFunctionInvokeSubsystem::GetAllFunctionDescriptions()
     return AllDescriptions;
 }
 
-void UTAFunctionInvokeSubsystem::InvokeFunction(const FString& FunctionName, AActor* AgentActor, const FString& Params)
+void UTAFunctionInvokeSubsystem::InvokeFunction(const FString& FunctionName, AActor* AgentActor, const TMap<FString, FString>& Params)
 {
     if (FunctionName == "ItemExchange")
     {
@@ -51,28 +95,92 @@ void UTAFunctionInvokeSubsystem::InvokeFunction(const FString& FunctionName, AAc
     {
         MoveToLocation(AgentActor, Params);
     }
+    else if (FunctionName == "InvokeImmediateDecision")
+    {
+        InvokeImmediateDecision(AgentActor, Params);
+    }
     else
     {
         UE_LOG(LogTemp, Warning, TEXT("未识别的函数调用: %s"), *FunctionName);
     }
 }
 
-void UTAFunctionInvokeSubsystem::ItemExchange(AActor* AgentActor, const FString& Params)
+void UTAFunctionInvokeSubsystem::ItemExchange(AActor* AgentActor, const TMap<FString, FString>& Params)
 {
-    // TODO: 实现 ItemExchange 的实际逻辑
+    // 使用 Params 来进行参数解析和后续逻辑
+    FString ItemName = Params.FindRef("ItemName");
+    FString Number = Params.FindRef("Number");
+    FString SourceCharacter = Params.FindRef("SourceCharacter");
+    FString TargetCharacter = Params.FindRef("TargetCharacter");
+
+    if (!ItemName.IsEmpty() && !Number.IsEmpty() && !SourceCharacter.IsEmpty() && !TargetCharacter.IsEmpty())
+    {
+        AActor* SourceActor = FindActorByName(SourceCharacter);
+        AActor* TargetActor = FindActorByName(TargetCharacter);
+        
+        if (SourceActor && TargetActor)
+        {
+            // 实现 ItemExchange 的实际逻辑
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("未能找到源角色或目标角色: %s 或 %s"), *SourceCharacter, *TargetCharacter);
+        }
+    }   
 }
 
-void UTAFunctionInvokeSubsystem::FinishSection(AActor* AgentActor, const FString& Params)
+void UTAFunctionInvokeSubsystem::FinishSection(AActor* AgentActor, const TMap<FString, FString>& Params)
 {
-    // TODO: 实现 FinishSection 的实际逻辑
+    // 使用 Params 来进行参数解析和后续逻辑
 }
 
-void UTAFunctionInvokeSubsystem::MoveToLocation(AActor* AgentActor, const FString& Params)
+void UTAFunctionInvokeSubsystem::MoveToLocation(AActor* AgentActor, const TMap<FString, FString>& Params)
 {
-    // TODO: 实现 MoveToLocation 的实际逻辑
+    // 使用 Params 来进行参数解析和后续逻辑
+    FString CharacterName = Params.FindRef("Character");
+    FString LocationName = Params.FindRef("LocationName");
+
+    if (!CharacterName.IsEmpty() && !LocationName.IsEmpty())
+    {
+        AActor* CharacterActor = FindActorByName(CharacterName);
+        if (CharacterActor)
+        {
+            // 实现 MoveToLocation 的实际逻辑
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("未能找到角色: %s"), *CharacterName);
+        }
+    }
 }
 
-FString UTAFunctionInvokeSubsystem::GenerateFunctionDescription(const TArray<FFunctionInvokeInfo>& FunctionCalls)
+void UTAFunctionInvokeSubsystem::InvokeImmediateDecision(AActor* AgentActor, const TMap<FString, FString>& Params)
+{
+    FString CharacterName = Params.FindRef("Character");
+    
+    if (!CharacterName.IsEmpty())
+    {
+        AActor* CharacterActor = FindActorByName(CharacterName);
+        if (CharacterActor)
+        {
+            UTAAgentComponent* AgentComponent = CharacterActor->FindComponentByClass<UTAAgentComponent>();
+            if (AgentComponent)
+            {
+                AgentComponent->PerceiveAndDecide();
+            }
+            else
+            {
+                UE_LOG(LogTemp, Warning, TEXT("%s 没有找到相应的 UTAAgentComponent"), *CharacterName);
+            }
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("未能找到角色: %s"), *CharacterName);
+        }
+    }
+}
+
+FString UTAFunctionInvokeSubsystem::GenerateFunctionDescription(const TArray<FFunctionInvokeInfo>& FunctionCalls) const
 {
     FString Description;
     for (const auto& FunctionCall : FunctionCalls)
@@ -83,4 +191,21 @@ FString UTAFunctionInvokeSubsystem::GenerateFunctionDescription(const TArray<FFu
         Description += FString::Printf(TEXT("\n函数 %s: %s，参数: %s"), *FunctionName, *FunctionSpecificDescription, *Params);
     }
     return Description;
+}
+
+AActor* UTAFunctionInvokeSubsystem::FindActorByName(const FString& ActorName) const
+{
+    UWorld* World = GetWorld();
+    if (World)
+    {
+        if (UTASaveGameSubsystem* SaveGameSubsystem = World->GetGameInstance()->GetSubsystem<UTASaveGameSubsystem>())
+        {
+            return SaveGameSubsystem->FindActorByName(FName(ActorName));
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("未能找到 SaveGameSubsystem"));
+        }
+    }
+    return nullptr;
 }

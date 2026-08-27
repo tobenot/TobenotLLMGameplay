@@ -1,4 +1,3 @@
-
 #include "Agent/TAAgentComponent.h"
 #include "TimerManager.h"
 #include "Agent/TAAgentInterface.h"
@@ -10,94 +9,109 @@
 
 void UTAAgentComponent::PerceiveAndDecide()
 {
-	// 获取Owner对象
-	const ITAAgentInterface* AgentInterface = Cast<ITAAgentInterface>(GetOwner());
-	if (!AgentInterface)
-	{
-		UE_LOG(LogTemp, Error, TEXT("Owner does not implement ITAAgentInterface."));
-		return;
-	}
+    // 获取Owner对象
+    const ITAAgentInterface* AgentInterface = Cast<ITAAgentInterface>(GetOwner());
+    if (!AgentInterface)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Owner does not implement ITAAgentInterface."));
+        return;
+    }
 
-	// 获取感知和记忆数据
-	FString PerceptionData = AgentInterface->GetPerceptionData();
-	FString MemoryData = AgentInterface->GetMemoryData();
+    // 获取感知和记忆数据
+    FString PerceptionData = AgentInterface->GetPerceptionData();
+    FString MemoryData = AgentInterface->GetMemoryData();
 
-	// 构造系统提示作为 ChatLog 对象
-	FString SystemPrompt = "请根据以下感知数据和记忆数据做出决策: ";
-	SystemPrompt += "感知数据: " + PerceptionData + ", 记忆数据: " + MemoryData;
+    // 构造系统提示作为 ChatLog 对象
+    FString SystemPrompt = "请根据以下感知数据和记忆数据做出决策: ";
+    SystemPrompt += "感知数据: " + PerceptionData + ", 记忆数据: " + MemoryData;
     
-	TArray<FChatLog> TempMessagesList;
-	TempMessagesList.Add(FChatLog{EOAChatRole::SYSTEM, SystemPrompt});
+    TArray<FChatLog> TempMessagesList;
+    TempMessagesList.Add(FChatLog{EOAChatRole::SYSTEM, SystemPrompt});
     
-	// 设置 ChatSettings，包括引擎质量、历史记录等
-	FChatSettings ChatSettings{
-		UTALLMLibrary::GetChatEngineTypeFromQuality(ELLMChatEngineQuality::Fast),
-		TempMessagesList,
-		0
-	};
-	ChatSettings.jsonFormat = true;
+    // 设置 ChatSettings，包括引擎质量、历史记录等
+    FChatSettings ChatSettings{
+        UTALLMLibrary::GetChatEngineTypeFromQuality(ELLMChatEngineQuality::Fast),
+        TempMessagesList,
+        0
+    };
+    ChatSettings.jsonFormat = true;
     
-	// 发送请求，获取决策结果
-	UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, [this](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
-	{
-		FString Decision;
-		if(Success)
-		{
-			Decision = Message.message.content;
+    // 发送请求，获取决策结果
+    UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, [this](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
+    {
+        FString Decision;
+        if(Success)
+        {
+            Decision = Message.message.content;
             
-			// 将决策发送给 Game Master
-			SendDecisionToGameMaster(Decision);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("获取决策失败: %s"), *ErrorMessage);
+            // 将决策发送给 Game Master
+            SendDecisionToGameMaster(Decision);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("获取决策失败: %s"), *ErrorMessage);
             
-			// 如果失败，可以选择发回一个默认的或重试的决策
-			Decision = "不行动";
-			SendDecisionToGameMaster(Decision);
-		}
-	}, GetOwner());
+            // 如果失败，可以选择发回一个默认的或重试的决策
+            Decision = "不行动";
+            SendDecisionToGameMaster(Decision);
+        }
+        
+        ScheduleNextDecision();
+        
+    }, GetOwner());
+    ScheduleNextDecision();
 }
 
 void UTAAgentComponent::SendDecisionToGameMaster(const FString& Decision)
 {
-	UTAGameMasterSubsystem* GameMasterSubsystem = GetWorld()->GetSubsystem<UTAGameMasterSubsystem>();
-	if (GameMasterSubsystem)
-	{
-		GameMasterSubsystem->ReceiveDecisionFromAgent(GetOwner(), Decision);
-	}
+    UTAGameMasterSubsystem* GameMasterSubsystem = GetWorld()->GetSubsystem<UTAGameMasterSubsystem>();
+    if (GameMasterSubsystem)
+    {
+        GameMasterSubsystem->ReceiveDecisionFromAgent(GetOwner(), Decision);
+    }
 }
 
 void UTAAgentComponent::HandleDecisionResponse(const FString& Outcome, bool bIsDecisionValid)
 {
-	if (bIsDecisionValid)
-	{
-		// 决策是有效的，开始生成对话
-		UTAShoutComponent* ShoutComponent = GetOwner()->FindComponentByClass<UTAShoutComponent>();
-		if (ShoutComponent)
-		{
-			ShoutComponent->GenerateDialogueAsync(Outcome, [this](const FString& Dialogue)
-			{
-				// 把对话反馈给主持人，完成整个流程
-				UTAGameMasterSubsystem* GameMasterSubsystem = GetWorld()->GetSubsystem<UTAGameMasterSubsystem>();
-				if (GameMasterSubsystem)
-				{
-					GameMasterSubsystem->ReceiveDialogueGenerated(GetOwner(), Dialogue);
-				}
-			});
-		}
-	}
-	else
-	{
-		// 决策无效，重新进行决策
-		PerceiveAndDecide();
-	}
+    if (bIsDecisionValid)
+    {
+        const ITAAgentInterface* AgentInterface = Cast<ITAAgentInterface>(GetOwner());
+        if (!AgentInterface)
+        {
+            return;
+        }
+        if(!AgentInterface->IsAgentPlayer())
+        {
+            // 决策是有效的，开始生成对话
+            UTAShoutComponent* ShoutComponent = GetOwner()->FindComponentByClass<UTAShoutComponent>();
+            if (ShoutComponent)
+            {
+                ShoutComponent->GenerateDialogueAsync(Outcome, [this](const FString& Dialogue)
+                {
+                    // 把对话反馈给主持人，完成整个流程
+                    UTAGameMasterSubsystem* GameMasterSubsystem = GetWorld()->GetSubsystem<UTAGameMasterSubsystem>();
+                    if (GameMasterSubsystem)
+                    {
+                        GameMasterSubsystem->ReceiveDialogueGenerated(GetOwner(), Dialogue);
+                    }
+                });
+            }
+        }else
+        {
+            OnPlayerDecisionResponse.Broadcast(Outcome, bIsDecisionValid);
+        }
+    }
+    else
+    {
+        // 决策无效，重新进行决策
+        PerceiveAndDecide();
+    }
 }
 
 void UTAAgentComponent::ScheduleNextShout()
 {
-	// 在配置的最小和最大时间之间随机选择下次喊话的时间
-	TimeToNextShout = FMath::RandRange(MinTimeBetweenShouts, MaxTimeBetweenShouts);
+    // 在配置的最小和最大时间之间随机选择下次喊话的时间
+    TimeToNextShout = FMath::RandRange(MinTimeBetweenShouts, MaxTimeBetweenShouts);
 }
 
 UTAAgentComponent::UTAAgentComponent()
@@ -124,38 +138,47 @@ void UTAAgentComponent::BeginPlay()
     TimeToNextShout = MaxTimeBetweenRetryShouts;
 
     // 调度第一次喊话和决策时间
-	
+    
     // 暂时不组织喊话了
     // ScheduleNextShout();
-	
+    
     ScheduleNextDecision();
 }
 
 void UTAAgentComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+    const ITAAgentInterface* AgentInterface = Cast<ITAAgentInterface>(GetOwner());
+    if (!AgentInterface)
+    {
+        return;
+    }
     
     if(GetOwner()->GetLocalRole() == ROLE_Authority)
     {
-        if(bEnableScheduleShout)
+        if(!AgentInterface->IsAgentPlayer()) // 检查是否是玩家
         {
-            // 减少等待时间
-            TimeToNextShout -= DeltaTime;
-
-            // 当等待时间结束时，调用RequestSpeak并计划下一次喊话
-            if(TimeToNextShout <= 0)
+            if(bEnableScheduleShout)
             {
-                RequestSpeak();
+                // 减少等待时间
+                TimeToNextShout -= DeltaTime;
+
+                // 当等待时间结束时，调用RequestSpeak并计划下一次喊话
+                if(TimeToNextShout <= 0)
+                {
+                    RequestSpeak();
+                }
             }
-        }
+            
+            // 新的决策逻辑时间减少
+            TimeToNextDecision -= DeltaTime;
 
-        // 新的决策逻辑时间减少
-        TimeToNextDecision -= DeltaTime;
-
-        // 当等待时间结束时，调用RequestDecision并计划下一次决策
-        if(TimeToNextDecision <= 0)
-        {
-            RequestDecision();
+            // 当等待时间结束时，调用RequestDecision并计划下一次决策
+            if(TimeToNextDecision <= 0)
+            {
+                RequestDecision();
+            }
         }
     }
 }
@@ -193,9 +216,6 @@ void UTAAgentComponent::RequestDecision()
 {
     // 获取感知、做出决策
     PerceiveAndDecide();
-
-    // 重新调度下一次决策时间
-    ScheduleNextDecision();
 }
 
 void UTAAgentComponent::ScheduleNextDecision()

@@ -1,61 +1,68 @@
+// TAAgentComponent.h
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "TAAgentComponent.generated.h"
 
+// 声明蓝图委托
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnDecisionResponse, const FString&, Outcome, bool, bIsDecisionValid);
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class TOBENOTLLMGAMEPLAY_API UTAAgentComponent : public UActorComponent
 {
-	GENERATED_BODY()
+    GENERATED_BODY()
 
 public:    
-	UTAAgentComponent();
+    UTAAgentComponent();
 
 protected:
-	virtual void BeginPlay() override;
+    virtual void BeginPlay() override;
 
 public:
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+    virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Agent")
-	bool bEnableScheduleShout;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Agent")
+    bool bEnableScheduleShout;
 
-	UFUNCTION(BlueprintCallable, Category="Agent")
-	void RequestSpeak();
+    UFUNCTION(BlueprintCallable, Category="Agent")
+    void RequestSpeak();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Agent")
-	float MinTimeBetweenShouts;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Agent")
+    float MinTimeBetweenShouts;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Agent")
-	float MaxTimeBetweenShouts;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Agent")
+    float MaxTimeBetweenShouts;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Agent")
-	float MinTimeBetweenRetryShouts;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Agent")
+    float MinTimeBetweenRetryShouts;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Agent")
-	float MaxTimeBetweenRetryShouts;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Agent")
+    float MaxTimeBetweenRetryShouts;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Agent")
-	float MinTimeBetweenDecisions;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Agent")
+    float MinTimeBetweenDecisions;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Agent")
-	float MaxTimeBetweenDecisions;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Agent")
+    float MaxTimeBetweenDecisions;
+    
+    UFUNCTION(BlueprintCallable, Category="Agent")
+    void PerceiveAndDecide();
+    
+    UFUNCTION(BlueprintCallable, Category="Agent")
+    void HandleDecisionResponse(const FString& Outcome, bool bIsDecisionValid);
 
-	UFUNCTION(BlueprintCallable, Category="Agent")
-	void PerceiveAndDecide();
-
-	UFUNCTION(BlueprintCallable, Category="Agent")
-	void HandleDecisionResponse(const FString& Outcome, bool bIsDecisionValid);
-
-	UFUNCTION(BlueprintCallable, Category="Agent")
-	void RequestDecision();
+    UFUNCTION(BlueprintCallable, Category="Agent")
+    void RequestDecision();
+    
+    UPROPERTY(BlueprintAssignable, Category="Agent")
+    FOnDecisionResponse OnPlayerDecisionResponse;
 
 private:
-	float TimeToNextShout;
-	void ScheduleNextShout();
-	void SendDecisionToGameMaster(const FString& Decision);
+    float TimeToNextShout;
+    void ScheduleNextShout();
+    void SendDecisionToGameMaster(const FString& Decision);
 
-	float TimeToNextDecision;
-	void ScheduleNextDecision();
+    float TimeToNextDecision;
+    void ScheduleNextDecision();
 };

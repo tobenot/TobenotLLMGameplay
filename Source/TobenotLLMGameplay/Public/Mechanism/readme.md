@@ -184,3 +184,6 @@ void UTAGameMasterSubsystem::DistributeDialogueAndInvokeMechanisms(AActor* Agent
 每个环节似乎都能够正确衔接，满足流程所需。如果运行过程中遇到问题，建议使用日志（Log）功能，仔细检讨各函数的日志输出，以便准确定位和解决问题。
 
 假如遇到具体问题，可以随时提供更详细的信息或日志，以便进一步分析和解决问题。
+
+### 问题
+平时的时候不需要轮流决策，因为玩家可以随时做出决策，其他NPC被影响到了，主持人可以FunctionInvoke直接让被影响的决策做决策。而在其他NPC空闲时，它们可以就按现在写的每半分钟决策一次。

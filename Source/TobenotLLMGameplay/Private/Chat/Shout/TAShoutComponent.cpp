@@ -113,6 +113,9 @@ FString UTAShoutComponent::GetNearbyAgentNames()
 
 void UTAShoutComponent::RequestToSpeak()
 {
+	// 弃用这个函数，改用职责分离的主持人链路。
+	return;
+	
 	if(IsPlayer)
 	{
 		return;

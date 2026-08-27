@@ -22,23 +22,24 @@ void UTAGameMasterSubsystem::ReceiveDecisionFromAgent(AActor* AgentActor, const 
         UE_LOG(LogTemp, Warning, TEXT("无效的Agent Actor"));
         return;
     }
-    
+
     FString AgentName = AgentActor->GetName();
     UE_LOG(LogTemp, Log, TEXT("%s 提交了决策: %s"), *AgentName, *Decision);
 
-    // 异步裁定合理性
-    AdjudicateDecisionAsync(AgentActor, Decision);
+    // 创建上下文并异步裁定合理性
+    FDecisionContext Context(AgentActor, Decision);
+    AdjudicateDecisionAsync(Context);
 }
 
-void UTAGameMasterSubsystem::AdjudicateDecisionAsync(const AActor* AgentActor, const FString& Decision)
+void UTAGameMasterSubsystem::AdjudicateDecisionAsync(const FDecisionContext& Context)
 {
-    if (!AgentActor)
+    if (!Context.AgentActor)
     {
         UE_LOG(LogTemp, Warning, TEXT("无效的Agent Actor"));
         return;
     }
 
-    FString AgentName = AgentActor->GetName();
+    FString AgentName = Context.AgentActor->GetName();
 
     // 获取 FunctionInvokeSubsystem
     UTAFunctionInvokeSubsystem* FunctionInvokeSubsystem = GetWorld()->GetSubsystem<UTAFunctionInvokeSubsystem>();
@@ -52,32 +53,32 @@ void UTAGameMasterSubsystem::AdjudicateDecisionAsync(const AActor* AgentActor, c
 
     // 构造实际的大模型请求数据
     FString SystemPrompt = FString::Printf(
-    TEXT(
-        R""""(
-        请判断以下决策是否合理，并以JSON格式回复包括以下字段：
-        {
-        "description": "对决策的详细说明", 
-        "explanation": "主持人对发起者角色私下的说明",
-        "is_valid": 布尔值（是否合理）,
-        "event_description": "对实际发生的事件描述",
-        "function_calls": [
+        TEXT(
+            R""""(
+            请判断以下决策是否合理，并以JSON格式回复包括以下字段：
             {
-                "name": "调用的函数名",
-                "depict": "函数调用说明"
-            }
-        ]
-        }。
+            "description": "对决策的详细说明", 
+            "explanation": "主持人对发起者角色私下的说明",
+            "is_valid": 布尔值（是否合理）,
+            "event_description": "对实际发生的事件描述",
+            "function_calls": [
+                {
+                    "name": "调用的函数名",
+                    "params": { "参数名": "值" ...},
+                }
+            ]
+            }。
 
-        如果合理，请详细说明并向角色二次确认是否要这么做。
-        如果不合理，请具体说明不合理之处并要求其重新决策。
+            如果合理，请详细说明并向角色二次确认是否要这么做。
+            如果不合理，请具体说明不合理之处并要求其重新决策。
 
-        函数说明:
-        %s
+            函数说明:
+            %s
 
-        Agent %s 的决策是：%s
-        )""""),
+            Agent %s 的决策是：%s
+            )""""),
         *FunctionDescriptions,
-        *AgentName, *Decision);
+        *AgentName, *Context.OriginalDecision);
 
     TArray<FChatLog> TempMessagesList;
     TempMessagesList.Add(FChatLog{EOAChatRole::SYSTEM, SystemPrompt});
@@ -91,69 +92,23 @@ void UTAGameMasterSubsystem::AdjudicateDecisionAsync(const AActor* AgentActor, c
     ChatSettings.jsonFormat = true;
 
     // 发送请求
-    UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, [this, AgentActor, Decision](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
+    UTALLMLibrary::SendMessageToOpenAIWithRetry(ChatSettings, [this, Context](const FChatCompletion& Message, const FString& ErrorMessage, bool Success)
     {
         if (Success)
         {
-            this->OnAdjudicateDecisionCompleted(AgentActor, Decision, Message.message.content);
+            this->OnAdjudicateDecisionCompleted(Context, Message.message.content);
         }
         else
         {
-            this->OnAdjudicateDecisionCompleted(AgentActor, Decision, FString::Printf(TEXT("{\"is_valid\": false, \"description\": \"Error: %s\", \"explanation\": \"模型请求失败，请重新尝试决策。\"}"), *ErrorMessage));
+            this->OnAdjudicateDecisionCompleted(Context, FString::Printf(TEXT("{\"is_valid\": false, \"description\": \"Error: %s\", \"explanation\": \"模型请求失败，请重新尝试决策。\"}"), *ErrorMessage));
         }
     }, this);
 }
 
-void UTAGameMasterSubsystem::ReturnDecisionToAgent(AActor* AgentActor, const FString& Outcome, bool bIsDecisionValid)
+
+void UTAGameMasterSubsystem::OnAdjudicateDecisionCompleted(const FDecisionContext& Context, const FString& JSONResponse)
 {
-    if (!AgentActor)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("无效的Agent Actor"));
-        return;
-    }
-    
-    FString AgentName = AgentActor->GetName();
-    UE_LOG(LogTemp, Log, TEXT("发送结果给 %s: %s"), *AgentName, *Outcome);
-
-    UTAAgentComponent* AgentComponent = AgentActor->FindComponentByClass<UTAAgentComponent>();
-    if (AgentComponent)
-    {
-        AgentComponent->HandleDecisionResponse(Outcome, bIsDecisionValid);
-    }
-    else
-    {
-        UE_LOG(LogTemp, Warning, TEXT("%s 没有找到相应的 UTAAgentComponent"), *AgentName);
-    }
-}
-
-void UTAGameMasterSubsystem::ReceiveDialogueGenerated(AActor* AgentActor, const FString& Dialogue)
-{
-    if (!AgentActor)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("无效的Agent Actor"));
-        return;
-    }
-    
-    // 动态数组存储函数调用信息
-    TArray<FFunctionInvokeInfo> EmptyFunctionCalls;
-    DistributeDialogueAndInvokeMechanisms(AgentActor, Dialogue, EmptyFunctionCalls);
-}
-
-void UTAGameMasterSubsystem::ExecuteGameMechanism(const AActor* AgentActor, const FString& Decision)
-{
-    if (!AgentActor)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("无效的Agent Actor"));
-        return;
-    }
-
-    FString AgentName = AgentActor->GetName();
-    UE_LOG(LogTemp, Log, TEXT("执行 %s 的决策: %s"), *AgentName, *Decision);
-}
-
-void UTAGameMasterSubsystem::OnAdjudicateDecisionCompleted(const AActor* AgentActor, const FString& Decision, const FString& JSONResponse)
-{
-    if (!AgentActor)
+    if (!Context.AgentActor)
     {
         UE_LOG(LogTemp, Warning, TEXT("无效的Agent Actor"));
         return;
@@ -176,24 +131,84 @@ void UTAGameMasterSubsystem::OnAdjudicateDecisionCompleted(const AActor* AgentAc
                 return;
             }
 
+            // 缓存函数调用
+            PendingFunctionCalls.Add(Context.AgentActor, FDecisionOutcome(FunctionCalls));
+            
             // 生成函数调用描述
             FString FunctionDescription = FunctionInvokeSubsystem->GenerateFunctionDescription(FunctionCalls);
             FString Explanation = FString::Printf(TEXT("决策合理: %s。实际发生的事件是: %s。包含的额外改变有：%s。请确认你是否想继续。"), *Description, *EventDescription, *FunctionDescription);
-            FString FullOutcome = FString::Printf(TEXT("%s 回应: %s"), *Decision, *Explanation);
-            ReturnDecisionToAgent(const_cast<AActor*>(AgentActor), FullOutcome, true);
+            FString FullOutcome = FString::Printf(TEXT("%s 回应: %s"), *Context.OriginalDecision, *Explanation);
+            ReturnDecisionToAgent(Context, FullOutcome, true);
         }
         else
         {
             FString Explanation = Description; // 直接使用解释原因
             FString Outcome = FString::Printf(TEXT("决策被判定为不合理: %s, 请重新给出决策"), *Explanation);
-            ReturnDecisionToAgent(const_cast<AActor*>(AgentActor), Outcome, false);
+            ReturnDecisionToAgent(Context, Outcome, false);
         }
     }
     else
     {
         FString Outcome = FString::Printf(TEXT("解析大模型回复时出错: %s"), *JSONResponse);
-        ReturnDecisionToAgent(const_cast<AActor*>(AgentActor), Outcome, false);
+        ReturnDecisionToAgent(Context, Outcome, false);
     }
+}
+
+void UTAGameMasterSubsystem::ReturnDecisionToAgent(const FDecisionContext& Context, const FString& Outcome, bool bIsDecisionValid)
+{
+    if (!Context.AgentActor)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("无效的Agent Actor"));
+        return;
+    }
+    
+    FString AgentName = Context.AgentActor->GetName();
+    UE_LOG(LogTemp, Log, TEXT("发送结果给 %s: %s"), *AgentName, *Outcome);
+
+    UTAAgentComponent* AgentComponent = Context.AgentActor->FindComponentByClass<UTAAgentComponent>();
+    if (AgentComponent)
+    {
+        AgentComponent->HandleDecisionResponse(Outcome, bIsDecisionValid);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("%s 没有找到相应的 UTAAgentComponent"), *AgentName);
+    }
+}
+
+void UTAGameMasterSubsystem::ReceiveDialogueGenerated(AActor* AgentActor, const FString& Dialogue)
+{
+    if (!AgentActor)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("无效的Agent Actor"));
+        return;
+    }
+    
+    // 从缓存中取出 FunctionCalls
+    FDecisionOutcome* CachedOutcome = PendingFunctionCalls.Find(AgentActor);
+    if (CachedOutcome)
+    {
+        DistributeDialogueAndInvokeMechanisms(AgentActor, Dialogue, CachedOutcome->FunctionCalls);
+        PendingFunctionCalls.Remove(AgentActor);
+    }
+    else
+    {
+        // 若没有缓存的 FunctionCalls，仍然分发对话
+        TArray<FFunctionInvokeInfo> EmptyFunctionCalls;
+        DistributeDialogueAndInvokeMechanisms(AgentActor, Dialogue, EmptyFunctionCalls);
+    }
+}
+
+void UTAGameMasterSubsystem::ExecuteGameMechanism(const AActor* AgentActor, const FString& Decision)
+{
+    if (!AgentActor)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("无效的Agent Actor"));
+        return;
+    }
+
+    FString AgentName = AgentActor->GetName();
+    UE_LOG(LogTemp, Log, TEXT("执行 %s 的决策: %s"), *AgentName, *Decision);
 }
 
 bool UTAGameMasterSubsystem::ParseDecisionResponse(const FString& JSONResponse, FString& Description, FString& EventDescription, bool& bIsValid, TArray<FFunctionInvokeInfo>& FunctionCalls)
@@ -260,7 +275,7 @@ void UTAGameMasterSubsystem::DistributeDialogueAndInvokeMechanisms(AActor* Agent
     // 调用游戏机制
     for (const auto& FunctionCall : FunctionCalls)
     {
-        FunctionInvokeSubsystem->InvokeFunction(FunctionCall.FunctionName, AgentActor, FunctionCall.Params);
+        FunctionInvokeSubsystem->InvokeFunction(FunctionCall.FunctionName, AgentActor, FunctionCall.ParsedParams);
     }
 
     // 记录事件（根据你的事件记录系统，可能需要调用不同的方法）

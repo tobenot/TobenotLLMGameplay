@@ -61,4 +61,7 @@ class TOBENOTLLMGAMEPLAY_API ITAAgentInterface
 	
 	UFUNCTION(BlueprintCallable, Category = "TA|Agent")
 	virtual FString GetMemoryData() const;
+
+	UFUNCTION(BlueprintCallable, Category = "TA|Agent")
+	virtual bool IsAgentPlayer() const;
 };
